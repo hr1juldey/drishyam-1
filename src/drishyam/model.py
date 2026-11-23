@@ -2,6 +2,7 @@
 
 import torch
 import torch.nn as nn
+from transformers.modeling_outputs import BaseModelOutput
 
 from drishyam.tokenize import add_slot_token, question_text  # noqa: F401 — re-export (tests/eval import from here)
 
@@ -52,8 +53,20 @@ class DecoupledDecision(nn.Module):
         super().__init__()
         self.bb, self.slot_id = backbone, slot_id
         cfg = backbone.config
-        inner = getattr(cfg, "text_config", cfg)
-        d = getattr(inner, "d_model", None) or cfg.d_model
+        d = None
+        for src in (getattr(cfg, "text_config", None), cfg,
+                    getattr(cfg, "decoder", None), getattr(cfg, "encoder", None)):
+            if src is None:
+                continue
+            for attr in ("d_model", "hidden_size"):
+                v = src.get(attr) if isinstance(src, dict) else getattr(src, attr, None)
+                if v:
+                    d = int(v)
+                    break
+            if d:
+                break
+        if not d:
+            raise RuntimeError("cannot locate model dim in config (d_model/hidden_size)")
         self.head = SlotHead(d)
         import inspect
 
@@ -66,7 +79,11 @@ class DecoupledDecision(nn.Module):
     def forward(self, state_ids, state_mask, dec_ids, dec_mask, slot_pos_list, row_case=None):
         h_enc = self.encode_state(state_ids, state_mask)
         if row_case is not None:
-            h_enc = h_enc[row_case]  # decoder rows reuse their case's cached H_enc
+            h_enc = h_enc[row_case]
+        else:
+            h_enc = h_enc.expand(dec_ids.size(0), -1, -1)
+            # merged-attn builds the mask by cat'ing against the encoder mask — batches must match
+            state_mask = state_mask.expand(dec_ids.size(0), -1)
         # output_hidden_states=True: Seq2SeqLMOutput has no decoder_last_hidden_state field,
         # so the last decoder layer comes from decoder_hidden_states[-1] (pre-final-LN — the
         # head's own LayerNorm absorbs the difference, and both train/eval use the same path).
@@ -74,14 +91,15 @@ class DecoupledDecision(nn.Module):
         kwargs: dict = {"output_hidden_states": True}
         if self._can_limit_logits:
             kwargs["logits_to_keep"] = 0
+        # transformers 5.x requires encoder_outputs as a ModelOutput (tuple form no longer accepted)
         out = self.bb(
             decoder_input_ids=dec_ids,
             decoder_attention_mask=dec_mask,
-            encoder_outputs=(h_enc,),
+            encoder_outputs=BaseModelOutput(last_hidden_state=h_enc),
             attention_mask=state_mask,
             **kwargs,
         )
-        h = out.decoder_hidden_states[-1]
+        h = out.decoder_hidden_states[-1].float()  # head stays fp32 for calibration-grade numerics
         return [self.head(h[i, p]) for i, p in enumerate(slot_pos_list)]  # per-question [n_slots_i]
 
 

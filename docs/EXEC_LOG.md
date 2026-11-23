@@ -3,3 +3,4 @@
 2026-11-23 22:17:16 DONE G1-D1 750a360b counts 300/100 x4 exact; primitives noul/choice/score verified; scorer snapshot sha recorded
 2026-11-23 22:17:46 DONE G1-D2 433fd122 240/60 per seen workflow; uniform composition key; disjoint asserts green; unseen train only sha-hashed
 2026-11-23 22:17:46 DONE G1-D3 bfb3f3f3 jitter 300 + multiq 100, regeneration byte-identical sha=adf315347de9
+2026-11-23 22:21:07 DONE G1-S0 d77a5033 PASS: torch.AdamW 20/20 finite 15.38->0.11; ManualAdamW 20/20 finite 15.09->0.15; artifacts/sanity_gate.json

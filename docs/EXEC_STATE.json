@@ -12,10 +12,10 @@
       "artifact": ""
     },
     "G1-S0": {
-      "status": "in_progress",
-      "attempts": 1,
-      "note": "attempt 1: gated repo 403 \u2014 google/t5gemma-2-270m-270m requires HF gate acceptance + authorized token; S0_EXIT=1 before any GPU step",
-      "commit": "",
+      "status": "done",
+      "attempts": 2,
+      "note": "PASS: torch.AdamW 20/20 finite 15.38->0.11; ManualAdamW 20/20 finite 15.09->0.15; artifacts/sanity_gate.json",
+      "commit": "d77a5033b31d74ee7cf72316530e1e46401fd151",
       "artifact": ""
     },
     "G1-D1": {
