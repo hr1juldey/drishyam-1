@@ -1,0 +1,49 @@
+{
+  "ckpt": "runs/g1-t1-lr3e4/best.pt",
+  "temperatures": {
+    "noul": {
+      "T": 1.09,
+      "n": 300
+    },
+    "choice": {
+      "T": 1.1075,
+      "n": 240
+    },
+    "score": {
+      "T": 1.1949999999999998,
+      "n": 360
+    }
+  },
+  "in_domain_test": {
+    "acc": 0.704,
+    "brier": 0.10936115228194725,
+    "score_mae": 0.42333333333333334,
+    "ece15": 0.10036138043800992,
+    "ovr_auc": 0.8716237061178475,
+    "n": 1500
+  },
+  "unseen_workflow": {
+    "acc": 0.368,
+    "brier": 0.2390940749132487,
+    "score_mae": 1.06,
+    "ece15": 0.11706909847259524,
+    "ovr_auc": 0.521718991004035,
+    "n": 500
+  },
+  "multiq": {
+    "n_states": 100,
+    "max_delta_full_prec": 0.9634658694267273,
+    "max_delta_4dp": 0.9635,
+    "bitwise_equal_frac": 0.0,
+    "median_speedup": 4.029975153128694
+  },
+  "state_ablation": {
+    "state_ablation_flip_rate": 0.258,
+    "real_acc": 0.368,
+    "blank_acc": 0.39,
+    "acc_drop": -0.02200000000000002,
+    "real_brier": 0.2390940749132487,
+    "blank_brier": 0.20309302123361123
+  },
+  "jitter_flip_rate": 0.021333333333333333
+}

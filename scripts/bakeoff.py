@@ -19,13 +19,17 @@ ROOT = Path(__file__).resolve().parents[1]
 OLLAMA = "http://127.0.0.1:11434/api/chat"
 
 
-def call(model: str, prompt: str, temperature: float, seed: int, num_predict: int = 320):
+def call(model: str, prompt: str, temperature: float, seed: int, num_predict: int = 320,
+         num_gpu: int | None = None):
+    opts = {"temperature": temperature, "num_predict": num_predict,
+            "seed": seed, "num_thread": 8}
+    if num_gpu is not None:
+        opts["num_gpu"] = num_gpu  # 0 = CPU-only by law on training nights
     r = requests.post(OLLAMA, json={
         "model": model, "stream": False,
         "messages": [{"role": "user", "content": prompt}],
-        "options": {"temperature": temperature, "num_predict": num_predict,
-                    "seed": seed, "num_thread": 8, "num_gpu": 0},
-    }, timeout=600)
+        "options": opts,
+    }, timeout=1800)
     r.raise_for_status()
     return r.json()["message"]["content"]
 
@@ -107,7 +111,8 @@ def sample_cases(n: int, seed: int) -> list[dict]:
     return picked[:n]
 
 
-def bakeoff(models: list[str], n_cases: int, samples: int, seed: int) -> dict:
+def bakeoff(models: list[str], n_cases: int, samples: int, seed: int,
+            num_gpu: int | None = None) -> dict:
     cases = sample_cases(n_cases, seed)
     out = {"n_cases": len(cases), "samples": samples, "models": {}}
     for model in models:
@@ -117,7 +122,7 @@ def bakeoff(models: list[str], n_cases: int, samples: int, seed: int) -> dict:
             prompt = label_prompt(c["state"], c["questions"])
             sample_ps = []
             for s in range(samples):
-                txt = call(model, prompt, 0.7, seed * 100 + s)
+                txt = call(model, prompt, 0.7, seed * 100 + s, num_gpu=num_gpu)
                 j = extract_json(txt)
                 if j and "answers" in j:
                     norm = answers_to_gold_keys(j["answers"], c["gold"])
@@ -142,7 +147,8 @@ def bakeoff(models: list[str], n_cases: int, samples: int, seed: int) -> dict:
     return out
 
 
-def drafter(model: str, budget_epoch: int, max_cases: int, seed: int) -> None:
+def drafter(model: str, budget_epoch: int, max_cases: int, seed: int,
+            num_gpu: int | None = None) -> None:
     from datasets import load_dataset
 
     from drishyam.data_inspect import REPO
@@ -163,7 +169,7 @@ def drafter(model: str, budget_epoch: int, max_cases: int, seed: int) -> None:
             'OUTPUT ONLY JSON: {"state": "...", "answers": {"<qid>": {"<key>": p, ...}}}'
         )
         try:
-            j = extract_json(call(model, prompt, 0.8, seed + done))
+            j = extract_json(call(model, prompt, 0.8, seed + done, num_gpu=num_gpu))
         except requests.RequestException:
             j = None
         if not j or "state" not in j or "answers" not in j:
@@ -187,14 +193,17 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--budget-hours", type=float, default=4.0)
     ap.add_argument("--max-cases", type=int, default=400)
+    ap.add_argument("--num-gpu", type=int, default=None,
+                    help="ollama num_gpu layers; omit = server default, 0 = CPU-only")
     ap.add_argument("--out", default="artifacts/bakeoff.json")
     a = ap.parse_args()
     if a.mode == "bakeoff":
-        rep = bakeoff(a.model.split("+"), a.cases, a.samples, a.seed)
+        rep = bakeoff(a.model.split("+"), a.cases, a.samples, a.seed, num_gpu=a.num_gpu)
         (ROOT / a.out).write_text(json.dumps(rep, indent=2))
         print(json.dumps(rep, indent=2))
     else:
-        drafter(a.model, time.time() + a.budget_hours * 3600, a.max_cases, a.seed)
+        drafter(a.model, time.time() + a.budget_hours * 3600, a.max_cases, a.seed,
+                num_gpu=a.num_gpu)
 
 
 if __name__ == "__main__":
