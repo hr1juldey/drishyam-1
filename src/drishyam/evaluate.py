@@ -157,6 +157,10 @@ def main() -> None:
     temperatures = json.loads((ROOT / "artifacts/temperatures.json").read_text()) \
         if (ROOT / "artifacts/temperatures.json").exists() else {}
     model, tok, fixed_len = load_model(ROOT / a.ckpt)
+    # fp32 eval: bf16 GPU GEMMs change reduction order with decoder batch shape, and a
+    # softmax near-tie amplifies that to Δp≈0.99 (CPU fp32/bf16 repro: exact 0.0 delta).
+    # fp32 keeps logits deterministic to ~1e-7 across batch shapes → 4dp bar passes.
+    model.float()
 
     test, unseen = [], []
     for wf in SEEN:

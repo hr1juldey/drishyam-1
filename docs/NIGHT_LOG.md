@@ -545,3 +545,6 @@ Traceback (most recent call last):
 torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.27 GiB. GPU 0 has a total capacity of 11.61 GiB of which 1.86 GiB is free. Process 2627 has 36.53 MiB memory in use. Process 2630 has 34.66 MiB memory in use. Process 3261 has 70.28 MiB memory in use. Process 372545 has 34.16 MiB memory in use. Process 486650 has 154.16 MiB memory in use. Process 3874839 has 232.00 MiB memory in use. Process 3506424 has 232.00 MiB memory in use. Process 667166 has 6.60 GiB memory in use. Including non-PyTorch memory, this process has 1.87 GiB memory in use. Of the allocated memory 1.70 GiB is allocated by PyTorch, and 37.56 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
 - 00:53:19 STEP T1LR5 fail#2 rc=1 — retrying
 - 00:53:39 STEP T1LR5 PARKED (3-strikes)
+- 00:53:39 STEP PUSH2 start: git push -q origin main
+- 00:53:41 STEP PUSH2 PASS (rc=0)
+- 00:53:41 === NIGHT GPU QUEUE end ===
