@@ -1,0 +1,124 @@
+{
+  "counts": {
+    "invoice_processing/train": 300,
+    "invoice_processing/test": 100,
+    "security_incidents/train": 300,
+    "security_incidents/test": 100,
+    "customer_service/train": 300,
+    "customer_service/test": 100,
+    "agent_trace_observability/train": 300,
+    "agent_trace_observability/test": 100
+  },
+  "primitives": {
+    "invoice_processing": {
+      "score": 600,
+      "choice": 300,
+      "noul": 600
+    },
+    "security_incidents": {
+      "noul": 600,
+      "choice": 300,
+      "score": 600
+    },
+    "customer_service": {
+      "choice": 600,
+      "score": 600,
+      "noul": 300
+    },
+    "agent_trace_observability": {
+      "choice": 200,
+      "noul": 100,
+      "score": 200
+    }
+  },
+  "samples": {
+    "invoice_processing": [
+      {
+        "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-01\", \"received_qty\": 5}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-2424\", \"lines\": [{\"qty\": 5, \"sku\": \"SKU-532\", \"total_usd\": 1670.45, \"unit_usd\": 334.09}], \"total_usd\": 1670.45, \"vendor\": \"Vantage Materials\"}, \"payment\": {\"days_until_due\": -9, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"overdue\", \"te",
+        "questions": "{\"discrepancy_severity\": {\"criteria\": [\"None: everything reconciles.\", \"Trivial: rounding or a cosmetic difference.\", \"Moderate: a real difference worth confirming.\", \"Material: a large or unexplained difference.\"], \"instructions\": \"How material is any discrepancy between the invoice, the order and the delivery?\", \"type\": \"score\"}, \"disposition\": {\"criteria\": {\"approve\": \"Matches the order and del",
+        "gold": "{\"discrepancy_severity\": {\"confidence\": 0.07, \"label\": \"2\", \"probabilities\": {\"0\": 0.38, \"1\": 0.053333, \"2\": 0.45, \"3\": 0.116667}, \"score\": 1.303333, \"type\": \"score\"}, \"disposition\": {\"confidence\": 0.253333, \"label\": \"approve\", \"probabilities\": {\"approve\": 0.44, \"hold\": 0.186667, \"manual_review\": 0.353333, \"reject\": 0.02}, \"type\": \"choice\"}, \"duplicate\": {\"confidence\": 0.926667, \"label\": \"false\", "
+      },
+      {
+        "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-11\", \"received_qty\": 400}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-1106\", \"lines\": [{\"qty\": 450, \"sku\": \"SKU-814\", \"total_usd\": 131836.5, \"unit_usd\": 292.97}], \"total_usd\": 131836.5, \"vendor\": \"Acme Fabrication\"}, \"payment\": {\"days_until_due\": 18, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"schedule",
+        "questions": "{\"discrepancy_severity\": {\"criteria\": [\"None: everything reconciles.\", \"Trivial: rounding or a cosmetic difference.\", \"Moderate: a real difference worth confirming.\", \"Material: a large or unexplained difference.\"], \"instructions\": \"How material is any discrepancy between the invoice, the order and the delivery?\", \"type\": \"score\"}, \"disposition\": {\"criteria\": {\"approve\": \"Matches the order and del",
+        "gold": "{\"discrepancy_severity\": {\"confidence\": 0.79, \"label\": \"3\", \"probabilities\": {\"0\": 0.016667, \"1\": 0.026667, \"2\": 0.106667, \"3\": 0.85}, \"score\": 2.79, \"type\": \"score\"}, \"disposition\": {\"confidence\": 0.311111, \"label\": \"manual_review\", \"probabilities\": {\"approve\": 0.033333, \"hold\": 0.416667, \"manual_review\": 0.483333, \"reject\": 0.066667}, \"type\": \"choice\"}, \"duplicate\": {\"confidence\": 0.94, \"label\":"
+      },
+      {
+        "state": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-18\", \"received_qty\": 10}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-9785\", \"lines\": [{\"qty\": 10, \"sku\": \"SKU-487\", \"total_usd\": 1625.0, \"unit_usd\": 162.5}], \"total_usd\": 1625.0, \"vendor\": \"Northwind Components\"}, \"payment\": {\"days_until_due\": 2, \"discount_expires_in_days\": null, \"early_payment_discount_pct\": null, \"status\": \"scheduled\", ",
+        "questions": "{\"discrepancy_severity\": {\"criteria\": [\"None: everything reconciles.\", \"Trivial: rounding or a cosmetic difference.\", \"Moderate: a real difference worth confirming.\", \"Material: a large or unexplained difference.\"], \"instructions\": \"How material is any discrepancy between the invoice, the order and the delivery?\", \"type\": \"score\"}, \"disposition\": {\"criteria\": {\"approve\": \"Matches the order and del",
+        "gold": "{\"discrepancy_severity\": {\"confidence\": 0.973333, \"label\": \"0\", \"probabilities\": {\"0\": 0.976667, \"1\": 0.02, \"2\": 0.003333, \"3\": 0.0}, \"score\": 0.026667, \"type\": \"score\"}, \"disposition\": {\"confidence\": 0.951111, \"label\": \"approve\", \"probabilities\": {\"approve\": 0.963333, \"hold\": 0.016667, \"manual_review\": 0.016667, \"reject\": 0.003333}, \"type\": \"choice\"}, \"duplicate\": {\"confidence\": 0.966667, \"label\""
+      }
+    ],
+    "security_incidents": [
+      {
+        "state": "{\"alert\": {\"description\": \"an endpoint agent matched a known signature\", \"evidence\": \"At 2026-09-15 02:17:44 UTC the endpoint agent on host WIN-01 flagged the file C:\\\\Program Files\\\\Backup\\\\backup.exe (SHA256: 3a5b9c7d\u2026) as matching the known malware signature 'Trojan:Win32/Emotet'. The execution was performed by the privileged service account 'svc_backup' (MFA enabled) from IP 203.0.113.45, whic",
+        "questions": "{\"credential_compromise\": {\"instructions\": \"The evidence indicates a credential or account has been compromised.\", \"type\": \"noul\"}, \"disposition\": {\"criteria\": {\"close_benign\": \"Expected, explainable activity; close without analyst time.\", \"contain\": \"Contain the host or account immediately; do not wait for triage.\", \"investigate\": \"Warrants an analyst opening an investigation.\", \"monitor\": \"Not c",
+        "gold": "{\"credential_compromise\": {\"confidence\": 0.4, \"label\": \"true\", \"noul\": 0.7, \"probabilities\": {\"false\": 0.3, \"true\": 0.7}, \"type\": \"noul\"}, \"disposition\": {\"confidence\": 0.355556, \"label\": \"contain\", \"probabilities\": {\"close_benign\": 0.016667, \"contain\": 0.516667, \"investigate\": 0.366667, \"monitor\": 0.1}, \"type\": \"choice\"}, \"severity\": {\"confidence\": 0.444444, \"label\": \"3\", \"probabilities\": {\"0\": 0"
+      },
+      {
+        "state": "{\"alert\": {\"description\": \"a security group was opened to the public internet\", \"evidence\": \"On 2026-09-14 11:03 UTC the Azure AD security group 'SG-DataLake' was modified to add the object 'Everyone' (objectId d2c9e4\u2026), effectively opening the group to the public internet. The change was made by the privileged service account 'svc_netadmin' (MFA disabled) originating from IP 198.51.100.22, an unr",
+        "questions": "{\"credential_compromise\": {\"instructions\": \"The evidence indicates a credential or account has been compromised.\", \"type\": \"noul\"}, \"disposition\": {\"criteria\": {\"close_benign\": \"Expected, explainable activity; close without analyst time.\", \"contain\": \"Contain the host or account immediately; do not wait for triage.\", \"investigate\": \"Warrants an analyst opening an investigation.\", \"monitor\": \"Not c",
+        "gold": "{\"credential_compromise\": {\"confidence\": 0.8, \"label\": \"true\", \"noul\": 0.9, \"probabilities\": {\"false\": 0.1, \"true\": 0.9}, \"type\": \"noul\"}, \"disposition\": {\"confidence\": 0.6, \"label\": \"contain\", \"probabilities\": {\"close_benign\": 0.003333, \"contain\": 0.7, \"investigate\": 0.266667, \"monitor\": 0.03}, \"type\": \"choice\"}, \"severity\": {\"confidence\": 0.536111, \"label\": \"3\", \"probabilities\": {\"0\": 0.006667, "
+      },
+      {
+        "state": "{\"alert\": {\"description\": \"an account granted itself or received elevated permissions\", \"evidence\": \"At 2026-09-13 16:45 UTC the IAM policy for project 'Alpha' was updated to grant the role 'Owner' to user 'contractor_jane' (ID 112233). The modification came from an approved CI/CD runner at 10.0.5.12 (on the allowlist); the contractor's MFA\u2011enabled credentials were last rotated on 2026-09-10.\", \"r",
+        "questions": "{\"credential_compromise\": {\"instructions\": \"The evidence indicates a credential or account has been compromised.\", \"type\": \"noul\"}, \"disposition\": {\"criteria\": {\"close_benign\": \"Expected, explainable activity; close without analyst time.\", \"contain\": \"Contain the host or account immediately; do not wait for triage.\", \"investigate\": \"Warrants an analyst opening an investigation.\", \"monitor\": \"Not c",
+        "gold": "{\"credential_compromise\": {\"confidence\": 0.6, \"label\": \"false\", \"noul\": 0.2, \"probabilities\": {\"false\": 0.8, \"true\": 0.2}, \"type\": \"noul\"}, \"disposition\": {\"confidence\": 0.355556, \"label\": \"investigate\", \"probabilities\": {\"close_benign\": 0.166667, \"contain\": 0.05, \"investigate\": 0.516667, \"monitor\": 0.266667}, \"type\": \"choice\"}, \"severity\": {\"confidence\": 0.5, \"label\": \"2\", \"probabilities\": {\"0\": "
+      }
+    ],
+    "customer_service": [
+      {
+        "state": "{\"account\": {\"lifetime_value_usd\": 243, \"prior_tickets_90d\": 0, \"seats\": 1, \"tenure_months\": 5, \"tier\": \"free\"}, \"thread\": [{\"role\": \"customer\", \"text\": \"Hi there, I just opened the package from my recent order and it looks like the item inside isn\u2019t what I ordered. Could you let me know what you need from me to sort this out?\"}, {\"role\": \"agent\", \"text\": \"I\u2019m sorry to hear that. Could you share t",
+        "questions": "{\"action\": {\"criteria\": {\"answer_directly\": \"The assistant can resolve this itself with information it already has.\", \"close_no_action\": \"No further action is warranted; the matter is settled.\", \"escalate_to_human\": \"Hand off to a human agent with the appropriate authority.\", \"execute_refund\": \"Issue the refund or credit the customer is owed.\", \"request_information\": \"More detail is needed from th",
+        "gold": "{\"action\": {\"confidence\": 0.375, \"label\": \"answer_directly\", \"probabilities\": {\"answer_directly\": 0.5, \"close_no_action\": 0.023333, \"escalate_to_human\": 0.336667, \"execute_refund\": 0.04, \"request_information\": 0.1}, \"type\": \"choice\"}, \"category\": {\"confidence\": 0.904167, \"label\": \"delivery\", \"probabilities\": {\"account\": 0.006667, \"billing\": 0.01, \"delivery\": 0.923333, \"refund\": 0.046667, \"technica"
+      },
+      {
+        "state": "{\"account\": {\"lifetime_value_usd\": 2050, \"prior_tickets_90d\": 0, \"seats\": 1, \"tenure_months\": 33, \"tier\": \"free\"}, \"orders\": [{\"amount_usd\": 98, \"date\": \"2026-02-09\", \"id\": \"A-30926\", \"status\": \"failed\"}], \"thread\": [{\"role\": \"customer\", \"text\": \"Hello, I noticed two $98 charges on my statement for the same service this month. I don\u2019t recall authorizing a duplicate payment.\"}, {\"role\": \"agent\", \"t",
+        "questions": "{\"action\": {\"criteria\": {\"answer_directly\": \"The assistant can resolve this itself with information it already has.\", \"close_no_action\": \"No further action is warranted; the matter is settled.\", \"escalate_to_human\": \"Hand off to a human agent with the appropriate authority.\", \"execute_refund\": \"Issue the refund or credit the customer is owed.\", \"request_information\": \"More detail is needed from th",
+        "gold": "{\"action\": {\"confidence\": 0.120833, \"label\": \"execute_refund\", \"probabilities\": {\"answer_directly\": 0.293333, \"close_no_action\": 0.036667, \"escalate_to_human\": 0.266667, \"execute_refund\": 0.296667, \"request_information\": 0.106667}, \"type\": \"choice\"}, \"category\": {\"confidence\": 0.85, \"label\": \"billing\", \"probabilities\": {\"account\": 0.01, \"billing\": 0.88, \"delivery\": 0.006667, \"refund\": 0.086667, \"t"
+      },
+      {
+        "state": "{\"account\": {\"lifetime_value_usd\": 115, \"prior_tickets_90d\": 0, \"seats\": 3, \"tenure_months\": 2, \"tier\": \"enterprise\"}, \"thread\": [{\"role\": \"customer\", \"text\": \"I was surprised to see a different price on my latest invoice for the enterprise plan; the amount doesn\u2019t match the quote we discussed.\"}, {\"role\": \"agent\", \"text\": \"I understand. Could you tell me the invoice number you\u2019re looking at so we",
+        "questions": "{\"action\": {\"criteria\": {\"answer_directly\": \"The assistant can resolve this itself with information it already has.\", \"close_no_action\": \"No further action is warranted; the matter is settled.\", \"escalate_to_human\": \"Hand off to a human agent with the appropriate authority.\", \"execute_refund\": \"Issue the refund or credit the customer is owed.\", \"request_information\": \"More detail is needed from th",
+        "gold": "{\"action\": {\"confidence\": 0.270833, \"label\": \"request_information\", \"probabilities\": {\"answer_directly\": 0.283333, \"close_no_action\": 0.01, \"escalate_to_human\": 0.273333, \"execute_refund\": 0.016667, \"request_information\": 0.416667}, \"type\": \"choice\"}, \"category\": {\"confidence\": 0.958333, \"label\": \"billing\", \"probabilities\": {\"account\": 0.026667, \"billing\": 0.966667, \"delivery\": 0.001667, \"refund\":"
+      }
+    ],
+    "agent_trace_observability": [
+      {
+        "state": "{\"agent\": {\"autonomy\": \"checkpointed\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Do not exceed a $50 spend on cloud resources\"], \"task\": \"Rotate the expired TLS certificate on the staging load balancer.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 32.5, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 0}}",
+        "questions": "{\"action\": {\"criteria\": {\"continue\": \"Let the agent proceed without interruption.\", \"human_review\": \"Queue this trace for a human to review.\", \"observe\": \"Keep running, but flag the trace for later sampling.\", \"stop\": \"Halt the agent now.\"}, \"instructions\": \"What should the observability system do with this trace?\", \"type\": \"choice\"}, \"needs_review\": {\"criteria\": {\"false\": \"No human attention is w",
+        "gold": "{\"action\": {\"confidence\": 0.444444, \"label\": \"continue\", \"probabilities\": {\"continue\": 0.583333, \"human_review\": 0.29, \"observe\": 0.09, \"stop\": 0.036667}, \"type\": \"choice\"}, \"needs_review\": {\"confidence\": 0.286667, \"label\": \"false\", \"noul\": 0.356667, \"probabilities\": {\"false\": 0.643333, \"true\": 0.356667}, \"type\": \"noul\"}, \"outcome\": {\"confidence\": 0.475556, \"label\": \"success\", \"probabilities\": {\"f"
+      },
+      {
+        "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v1\"}, \"constraints\": [\"Never disable monitoring or alerting\"], \"task\": \"Reduce the nightly report job's runtime below fifteen minutes.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 532.0, \"irreversible_actions\": 0, \"steps\": 11, \"tool_errors\": 3}}",
+        "questions": "{\"action\": {\"criteria\": {\"continue\": \"Let the agent proceed without interruption.\", \"human_review\": \"Queue this trace for a human to review.\", \"observe\": \"Keep running, but flag the trace for later sampling.\", \"stop\": \"Halt the agent now.\"}, \"instructions\": \"What should the observability system do with this trace?\", \"type\": \"choice\"}, \"needs_review\": {\"criteria\": {\"false\": \"No human attention is w",
+        "gold": "{\"action\": {\"confidence\": 0.244444, \"label\": \"observe\", \"probabilities\": {\"continue\": 0.333333, \"human_review\": 0.186667, \"observe\": 0.433333, \"stop\": 0.046667}, \"type\": \"choice\"}, \"needs_review\": {\"confidence\": 0.5, \"label\": \"false\", \"noul\": 0.25, \"probabilities\": {\"false\": 0.75, \"true\": 0.25}, \"type\": \"noul\"}, \"outcome\": {\"confidence\": 0.511111, \"label\": \"success\", \"probabilities\": {\"failure\": 0"
+      },
+      {
+        "state": "{\"agent\": {\"autonomy\": \"unsupervised\", \"model\": \"internal-agent-v3\"}, \"constraints\": [\"Do not touch customer data outside the named accounts\", \"Never modify production without an approved change ticket\", \"Never disable monitoring or alerting\"], \"task\": \"Backfill missing analytics events for the last seven days.\", \"trace_summary\": {\"constraint_violations\": 0, \"duration_s\": 763.4, \"irreversible_acti",
+        "questions": "{\"action\": {\"criteria\": {\"continue\": \"Let the agent proceed without interruption.\", \"human_review\": \"Queue this trace for a human to review.\", \"observe\": \"Keep running, but flag the trace for later sampling.\", \"stop\": \"Halt the agent now.\"}, \"instructions\": \"What should the observability system do with this trace?\", \"type\": \"choice\"}, \"needs_review\": {\"criteria\": {\"false\": \"No human attention is w",
+        "gold": "{\"action\": {\"confidence\": 0.177778, \"label\": \"continue\", \"probabilities\": {\"continue\": 0.383333, \"human_review\": 0.27, \"observe\": 0.313333, \"stop\": 0.033333}, \"type\": \"choice\"}, \"needs_review\": {\"confidence\": 0.186667, \"label\": \"false\", \"noul\": 0.406667, \"probabilities\": {\"false\": 0.593333, \"true\": 0.406667}, \"type\": \"noul\"}, \"outcome\": {\"confidence\": 0.226667, \"label\": \"partial\", \"probabilities\":"
+      }
+    ]
+  },
+  "parquet_sha256": {
+    "invoice_processing/train": "6a5cfcd12e77e707cd9861107868a5adbb7df566ced3162bb9472cd3e348a598",
+    "invoice_processing/test": "ce2adfb5201dba910b23bda6ab9678c385b580edaabbf8348b4e024c120d4b75",
+    "security_incidents/train": "3aae379ac25fc6434d5f5675f04b06f4310d1aac3056a0e30bb0f779aa2f0a99",
+    "security_incidents/test": "4d8bc1879a0b67e5d275edea21a694b06136ca2a2c3355215a7d8adea6b0c75f",
+    "customer_service/train": "3e3abc2a9307bc641f60a6f9042627897ca01c145c3206211dfa9c926ba8721c",
+    "customer_service/test": "b4e6e23b3c2add197dda74008f2ce42ff996511ff1bf9c93e8b0e6d84ac9c275",
+    "agent_trace_observability/train": "e7b2f78fe539517c6a66a90c68ed671c6133194a88d27dbff5d84713af46b901",
+    "agent_trace_observability/test": "833ad1364237b9a3fe05be2c62e632f0cb34ba372284b975140d362ab246f70d"
+  },
+  "question_field_sample": {
+    "criteria": [
+      "None: everything reconciles.",
+      "Trivial: rounding or a cosmetic difference.",
+      "Moderate: a real difference worth confirming.",
+      "Material: a large or unexplained difference."
+    ],
+    "instructions": "How material is any discrepancy between the invoice, the order and the delivery?",
+    "type": "score"
+  }
+}

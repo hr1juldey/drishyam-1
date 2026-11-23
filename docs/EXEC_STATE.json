@@ -12,9 +12,9 @@
       "artifact": ""
     },
     "G1-S0": {
-      "status": "todo",
-      "attempts": 0,
-      "note": "",
+      "status": "in_progress",
+      "attempts": 1,
+      "note": "attempt 1: gated repo 403 \u2014 google/t5gemma-2-270m-270m requires HF gate acceptance + authorized token; S0_EXIT=1 before any GPU step",
       "commit": "",
       "artifact": ""
     },

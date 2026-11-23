@@ -35,7 +35,7 @@ def build(seed: int):
             if len(mrows) < 100:
                 mrows.append({
                     "case_id": f"{wf}/test/{i}", "workflow": wf,
-                    "qids": [q.get("id", f"q{k}") for k, q in enumerate(qs)],
+                    "qids": list(qs.keys()),
                 })
     return jrows, mrows
 

@@ -39,7 +39,8 @@ def main() -> None:
         spec.parquet_sha256[f"{wf}/test"] = parquet_sha(wf, "test")
     for wf in SEEN:
         ds = load_dataset(REPO, wf, split="train")
-        keys = ["+".join(sorted(q_prim(q) for q in json.loads(r["questions"]))) for r in ds]
+        keys = ["+".join(sorted(q_prim(m) for m in json.loads(r["questions"]).values()))
+                for r in ds]
         tr, va = stratify_240_60(len(ds), keys, seed=42)
         spec.train[wf], spec.val[wf] = tr, va
         print(wf, "train", len(tr), "val", len(va),

@@ -9,6 +9,8 @@ from pathlib import Path
 from datasets import load_dataset
 from huggingface_hub import hf_hub_download
 
+from drishyam.schemas import Primitive, Question
+
 REPO = "LocalLLaMA/typed-decisions"
 SEEN = ["invoice_processing", "security_incidents", "customer_service"]
 UNSEEN = "agent_trace_observability"  # held-out zero-shot workflow (user-confirmed scope)
@@ -23,11 +25,54 @@ def parquet_sha(cfg: str, split: str) -> str:
     return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
 
-def q_prim(q: dict) -> str:
-    for key in ("primitive", "type", "kind"):  # field name discovered HERE, defensively
-        if key in q and q[key] in PRIMS:
-            return q[key]
-    raise SystemExit(f"UNKNOWN question primitive keys={list(q)} sample={json.dumps(q)[:300]}")
+def q_prim(meta: dict) -> str:
+    """questions is a DICT qid -> {type, instructions, criteria} (discovered 2026-11-23)."""
+    t = meta.get("type")
+    if t in PRIMS:
+        return t
+    raise SystemExit(f"UNKNOWN question type keys={list(meta)} sample={json.dumps(meta)[:300]}")
+
+
+def to_questions(row: dict) -> list:
+    """Normalise a dataset row into schema.Question list in dict insertion order."""
+    out = []
+    for qid, meta in json.loads(row["questions"]).items():
+        prim = q_prim(meta)
+        crit = meta.get("criteria")
+        if prim == "score":
+            options = [f"{i}: {c}" for i, c in enumerate(crit)]
+        elif prim == "choice":
+            options = [f"{name}: {desc}" for name, desc in crit.items()]
+        else:  # noul — criteria may be {'false': desc, 'true': desc} or None
+            options = [
+                f"false: {crit['false']}" if isinstance(crit, dict) else "false",
+                f"true: {crit['true']}" if isinstance(crit, dict) else "true",
+            ]
+        out.append(Question(
+            qid=qid, primitive=Primitive(prim), text=meta["instructions"], options=options,
+        ))
+    return out
+
+
+def to_gold(row: dict) -> dict[str, list[float]]:
+    """gold[qid] -> distribution vector aligned to to_questions option order (sums to 1)."""
+    gold_json = json.loads(row["gold"])
+    questions = json.loads(row["questions"])
+    out: dict[str, list[float]] = {}
+    for qid, meta in questions.items():
+        probs = gold_json[qid]["probabilities"]
+        if meta["type"] == "score":
+            keys = [str(i) for i in range(len(meta["criteria"]))]
+        elif meta["type"] == "choice":
+            keys = list(meta["criteria"].keys())
+        else:
+            keys = ["false", "true"]
+        vec = [float(probs[k]) for k in keys]
+        s = sum(vec)
+        if abs(s - 1.0) > 1e-2:
+            raise SystemExit(f"gold distribution for {qid} sums to {s}: {vec}")
+        out[qid] = [v / s for v in vec]
+    return out
 
 
 def main() -> None:
@@ -44,12 +89,14 @@ def main() -> None:
             ds = load_dataset(REPO, wf, split=split)
             card["counts"][f"{wf}/{split}"] = len(ds)
             card["parquet_sha256"][f"{wf}/{split}"] = parquet_sha(wf, split)
-        rows = load_dataset(REPO, wf, split="test" if wf == UNSEEN else "train")
-        # unseen primitive counts come from TEST only — its train rows are never deserialized
+        if wf == UNSEEN:
+            rows = load_dataset(REPO, wf, split="test")  # test only; train rows never deserialized
+        else:
+            rows = load_dataset(REPO, wf, split="train")
         pc: Counter = Counter()
         for row in rows:
-            for q in json.loads(row["questions"]):
-                pc[q_prim(q)] += 1
+            for meta in json.loads(row["questions"]).values():
+                pc[q_prim(meta)] += 1
         card["primitives"][wf] = dict(pc)
         test = load_dataset(REPO, wf, split="test")
         card["samples"][wf] = [
@@ -57,9 +104,9 @@ def main() -> None:
              for k in ("state", "questions", "gold")}
             for row in test.select(range(3))
         ]
-    card["question_field_sample"] = json.loads(
-        load_dataset(REPO, WORKFLOWS[0], split="test")[0]["questions"]
-    )[0]
+    card["question_field_sample"] = next(iter(
+        json.loads(load_dataset(REPO, WORKFLOWS[0], split="test")[0]["questions"]).items()
+    ))[1]
     print(json.dumps(card["counts"], indent=1))
     print(json.dumps(card["primitives"], indent=1))
     (ART / "data_card.json").write_text(json.dumps(card, indent=2))
