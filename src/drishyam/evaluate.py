@@ -110,7 +110,7 @@ def multiq_suite(model, tok, cases, fixed_len, device="cuda"):
         def q1_batched(qs=qs, s_ids=s_ids, s_mask=s_mask):
             di, dm, pos, _ = collate_questions(tok, qs, fixed_len, device)
             with torch.no_grad():
-                return model(s_ids, s_mask, di, dm, pos)[0]
+                return model(s_ids, s_mask, di, dm, pos)  # full list; [0] would walk slot scalars
 
         def reencode_all(qs=qs, s_ids=s_ids, s_mask=s_mask):
             outs = []
