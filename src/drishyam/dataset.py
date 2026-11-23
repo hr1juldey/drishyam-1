@@ -38,6 +38,7 @@ def load_seen_splits(split_file="splits/split_v1.json"):
     from drishyam.splits import SEEN
 
     spec = json.loads(Path(split_file).read_text())
+    # dataset exposes only train/test: train and val are disjoint INDEX lists into split="train"
     train = {wf: CaseDataset(wf, "train", spec["train"][wf], split_file) for wf in SEEN}
-    val = {wf: CaseDataset(wf, "val", spec["val"][wf], split_file) for wf in SEEN}
+    val = {wf: CaseDataset(wf, "train", spec["val"][wf], split_file) for wf in SEEN}
     return train, val

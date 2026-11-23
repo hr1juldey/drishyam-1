@@ -14,7 +14,7 @@ from transformers import AutoTokenizer, get_cosine_schedule_with_warmup
 
 from drishyam.augs import jitter_state, shuffled_options
 from drishyam.dataset import load_seen_splits
-from drishyam.losses import brier, question_loss
+from drishyam.losses import question_loss
 from drishyam.model import DecoupledDecision, attach_lora, build_backbone, trainable_groups
 from drishyam.tokenize import add_slot_token, collate_questions, question_text
 from drishyam.tracking import mlflow_run
@@ -49,9 +49,10 @@ def state_batch(tok, states, device):
     return ids, mask
 
 
-def ece15(probs: np.ndarray, golds: np.ndarray) -> float:
-    conf = probs.max(-1)
-    ok = (probs.argmax(-1) == golds.argmax(-1)).astype(float)
+def ece15(probs: list, golds: list) -> float:
+    """Ragged per-question ECE over 15 confidence bins."""
+    conf = np.array([p.max() for p in probs])
+    ok = np.array([float(p.argmax() == g.argmax()) for p, g in zip(probs, golds, strict=False)])
     bins = np.linspace(0.0, 1.0, 16)
     n = len(conf)
     e = 0.0
@@ -88,8 +89,7 @@ def run_epoch(model, tok, cases, device, fixed_len, opt=None, sched=None, augmen
         row_case = torch.tensor([ci for ci, _ in qtexts], device=device)
         if train:
             opt.zero_grad(set_to_none=True)
-        with torch.autocast("cuda", dtype=torch.bfloat16, enabled=train):
-            out = model(s_ids, s_mask, dec_ids, dec_mask, slot_pos, row_case=row_case)
+        out = model(s_ids, s_mask, dec_ids, dec_mask, slot_pos, row_case=row_case)
         per_q = [question_loss(logit.float(), torch.tensor(g, device=logit.device), p)
                  for logit, g, p in zip(out, golds, prims, strict=False)]
         loss = torch.stack(per_q).mean()
@@ -106,7 +106,8 @@ def run_epoch(model, tok, cases, device, fixed_len, opt=None, sched=None, augmen
             for logit, g in zip(out, golds, strict=False):
                 all_p.append(torch.softmax(logit.float(), -1).cpu().numpy())
                 all_g.append(np.asarray(g, dtype=float))
-    return total / max(count, 1), (np.array(all_p), np.array(all_g), prims)
+    return (total / max(count, 1),
+            (np.array(all_p, dtype=object), np.array(all_g, dtype=object), prims))
 
 
 def evaluate_split(model, tok, cases, device, fixed_len):
@@ -126,7 +127,7 @@ def evaluate_split(model, tok, cases, device, fixed_len):
             all_g.append(np.asarray(g, dtype=float))
             prims.append(q.primitive.value)
     model.train()
-    p, g = np.array(all_p), np.array(all_g)
+    p, g = np.array(all_p, dtype=object), np.array(all_g, dtype=object)
     return float(np.mean(losses)), p, g, prims
 
 
@@ -136,7 +137,8 @@ def main() -> None:
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--max-cases", type=int, default=0, help="smoke: cap per workflow")
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--batch-cases", type=int, default=8)
+    ap.add_argument("--batch-cases", type=int, default=4,
+                    help="8-case batches OOM: merged-attn masks scale with decoder rows")
     ap.add_argument("--out", default="runs/g1-t1")
     a = ap.parse_args()
 
@@ -164,6 +166,21 @@ def main() -> None:
     bb = build_backbone(MODEL_ID)
     slot_id = add_slot_token(tok, bb)
     bb = attach_lora(bb)
+    # text-only Gate 1: the vision tower never runs, so it must not hold VRAM
+    for path in ("vision_tower", "vision_model", "model.vision_tower", "model.vision_model"):
+        tgt, ok = bb, True
+        for part in path.split("."):
+            if hasattr(tgt, part):
+                tgt = getattr(tgt, part)
+            else:
+                ok = False
+                break
+        if ok and hasattr(tgt, "parameters") and next(tgt.parameters(), None) is not None:
+            tgt.to("cpu")
+            print(f"vision offloaded to CPU: {path}")
+            break
+    bb.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
+    print("gradient checkpointing: on")
     model = DecoupledDecision(bb, slot_id).to(device)
     opt = torch.optim.AdamW(trainable_groups(model, wd=0.01), lr=a.lr)
     steps_per_epoch = (len(train_cases) + a.batch_cases - 1) // a.batch_cases
@@ -199,8 +216,10 @@ def main() -> None:
                                    opt=opt, sched=sched, augment=True,
                                    seed=a.seed * 1000 + epoch)
             vl, vp, vg, vprims = evaluate_split(model, tok, val_cases, device, fixed_len)
-            acc = float((vp.argmax(-1) == vg.argmax(-1)).mean())
-            bri = float(brier(torch.tensor(vp), torch.tensor(vg)).mean())
+            acc = float(np.mean([float(p.argmax() == g.argmax())
+                                 for p, g in zip(vp, vg, strict=False)]))
+            bri = float(np.mean([float(((p - g) ** 2).sum())
+                                 for p, g in zip(vp, vg, strict=False)]))
             ece = ece15(vp, vg)
             peak = torch.cuda.max_memory_allocated() / 1e6
             history.append({"epoch": epoch, "train_loss": tr_loss, "val_loss": vl,
@@ -230,7 +249,9 @@ def main() -> None:
         ck = torch.load(out / "best.pt", map_location=device, weights_only=False)
         model.load_state_dict(ck["model"])
         _, vp, vg, vprims = evaluate_split(model, tok, val_cases, device, fixed_len)
-        np.savez(ART / "val_logits.npz", probs=vp, gold=vg, prims=np.array(vprims))
+        np.savez(ART / "val_logits.npz",
+                 probs=np.array(vp, dtype=object), gold=np.array(vg, dtype=object),
+                 prims=np.array(vprims))
         report = {
             "cfg_hash": cfg_hash, "git_sha": git_sha(), "seed": a.seed, **cfg,
             "epochs_run": len(history), "best_val_loss": best,

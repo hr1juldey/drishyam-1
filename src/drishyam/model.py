@@ -78,17 +78,21 @@ class DecoupledDecision(nn.Module):
 
     def forward(self, state_ids, state_mask, dec_ids, dec_mask, slot_pos_list, row_case=None):
         h_enc = self.encode_state(state_ids, state_mask)
+        n_dec = dec_ids.size(0)
+        # transformers 5 mask builders (create_bidirectional_mask) vmap-index the padding
+        # mask by decoder batch — stride-0 expand() views die on device-side asserts, so
+        # masks/hidden must be MATERIALIZED to the decoder batch, never shipped as views.
         if row_case is not None:
             h_enc = h_enc[row_case]
+            state_mask = state_mask[row_case]
         else:
-            h_enc = h_enc.expand(dec_ids.size(0), -1, -1)
-            # merged-attn builds the mask by cat'ing against the encoder mask — batches must match
-            state_mask = state_mask.expand(dec_ids.size(0), -1)
+            h_enc = h_enc.repeat(n_dec, 1, 1)
+            state_mask = state_mask.repeat(n_dec, 1)
         # output_hidden_states=True: Seq2SeqLMOutput has no decoder_last_hidden_state field,
         # so the last decoder layer comes from decoder_hidden_states[-1] (pre-final-LN — the
         # head's own LayerNorm absorbs the difference, and both train/eval use the same path).
         # logits_to_keep=0 skips the vocab-wide lm_head matmul (~GBs saved) when supported.
-        kwargs: dict = {"output_hidden_states": True}
+        kwargs: dict = {"output_hidden_states": True, "use_cache": False}
         if self._can_limit_logits:
             kwargs["logits_to_keep"] = 0
         # transformers 5.x requires encoder_outputs as a ModelOutput (tuple form no longer accepted)
