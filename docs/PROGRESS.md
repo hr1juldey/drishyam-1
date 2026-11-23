@@ -25,6 +25,7 @@ in `docs/EXEC_LOG.md` (created by the engine at G1-E0).
 ## Execution checklist (updated by the engine, never by hand)
 
 - [ ] G1-E0 — bootstrap exec engine + environment
+      (execution plan: .hermes/plans/2026-11-23_214256-drishyam-gate1-execution.md, local, gitignored)
 - [ ] G1-S0 — ROCm→CUDA sanity gate (20 steps, bf16, finite)
 - [ ] G1-D1 — dataset inspection + scorer metric extraction
 - [ ] G1-D2 — zero-leakage splits (in-domain + unseen workflow)
