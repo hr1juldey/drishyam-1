@@ -19,10 +19,10 @@
       "artifact": ""
     },
     "G1-D1": {
-      "status": "todo",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "counts 300/100 x4 exact; primitives noul/choice/score verified; scorer snapshot sha recorded",
+      "commit": "750a360ba0bd7087b8340588d990d734043cf415",
       "artifact": ""
     },
     "G1-D2": {
