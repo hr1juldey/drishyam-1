@@ -239,9 +239,10 @@ Banking77 >70-option scaling. Requires G1-G1 verdict = GO.
 
 ## Gate 2 preview sub-tasks (recorded 2026-11-23, NOT scheduled — outside the G1 engine)
 
-G2-TF1 Overnight teacher data factory: Gemma-431B offline batch generation,
-minimized-reasoning structured output, verify/filter gate, leakage guardrails
-per DECISIONS §20. Spec exists; no PASS criterion yet — specified at Gate 2 open.
+G2-TF1 Overnight teacher data factory: local ollama `gemma4:31b-16k` offline
+batch generation (20 GB, CPU-offloaded — NEVER co-resident with Gate-1
+training on the 3060), minimized-reasoning structured output, verify/filter
+gate, leakage guardrails per DECISIONS §20; first new domain Banking77.
 G2-V0 Browser image pipeline: Firefox capture → 896×896 vision states →
 teacher-labeled pairs, per DECISIONS §21. Spec exists; no PASS criterion yet.
 
