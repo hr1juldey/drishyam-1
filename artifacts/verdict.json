@@ -2,49 +2,49 @@
   "ckpt": "runs/g1-t1/best.pt",
   "temperatures": {
     "noul": {
-      "T": 0.94,
+      "T": 1.1999999999999997,
       "n": 300
     },
     "choice": {
-      "T": 0.955,
+      "T": 1.1675,
       "n": 240
     },
     "score": {
-      "T": 0.9375,
+      "T": 1.1075,
       "n": 360
     }
   },
   "criteria": {
     "1_state_ablation": {
-      "flip_rate": 0.192,
+      "flip_rate": 0.194,
       "bar": "> 0.30",
-      "acc_drop": 0.006000000000000005,
+      "acc_drop": -0.007999999999999952,
       "acc_bar": "> 0.15",
       "pass": false
     },
     "2_invariance": {
       "max_delta_4dp": 0.9947,
       "bar": "== 0.0",
-      "speedup": 4.424046744747157,
+      "speedup": 3.888664622338606,
       "speedup_bar": "> 1.5",
       "pass": false
     },
     "3_robustness_calibration": {
-      "jitter_flip": 0.029333333333333333,
+      "jitter_flip": 0.028666666666666663,
       "bar": "< 0.05",
-      "post_ts_ece_indomain": 0.14696889460086826,
+      "post_ts_ece_indomain": 0.18513940117756528,
       "ece_bar": "< 0.08",
       "pass": false
     },
     "4_unseen_generalization": {
-      "unseen_auc": 0.4987853697006382,
+      "unseen_auc": 0.49734617594060015,
       "bar": "> 0.75",
-      "unseen_acc": 0.274,
+      "unseen_acc": 0.276,
       "majority_acc": 0.26,
       "pass": false
     },
     "5_unseen_ece": {
-      "unseen_post_ts_ece": 0.16219686758518223,
+      "unseen_post_ts_ece": 0.13670498710870743,
       "bar": "< 0.12",
       "pass": false
     }
@@ -59,18 +59,18 @@
   ],
   "ours_vs_b2": {
     "in_domain": {
-      "acc": 0.792,
-      "brier": 0.054116294843431535,
-      "ece15": 0.14696889460086826,
-      "ovr_auc": 0.9405537096409438,
+      "acc": 0.7913333333333333,
+      "brier": 0.05447717744779611,
+      "ece15": 0.18513940117756528,
+      "ovr_auc": 0.9399846416407058,
       "score_mae": 0.25833333333333336
     },
     "unseen": {
-      "acc": 0.274,
-      "brier": 0.24960353601485216,
-      "ece15": 0.16219686758518223,
-      "ovr_auc": 0.4987853697006382,
-      "score_mae": 1.165
+      "acc": 0.276,
+      "brier": 0.23573027879807676,
+      "ece15": 0.13670498710870743,
+      "ovr_auc": 0.49734617594060015,
+      "score_mae": 1.16
     },
     "b2_reference": {
       "acc": 0.7586666666666667,

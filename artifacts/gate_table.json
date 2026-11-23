@@ -2,48 +2,48 @@
   "ckpt": "runs/g1-t1/best.pt",
   "temperatures": {
     "noul": {
-      "T": 0.94,
+      "T": 1.1999999999999997,
       "n": 300
     },
     "choice": {
-      "T": 0.955,
+      "T": 1.1675,
       "n": 240
     },
     "score": {
-      "T": 0.9375,
+      "T": 1.1075,
       "n": 360
     }
   },
   "in_domain_test": {
-    "acc": 0.792,
-    "brier": 0.054116294843431535,
+    "acc": 0.7913333333333333,
+    "brier": 0.05447717744779611,
     "score_mae": 0.25833333333333336,
-    "ece15": 0.14696889460086826,
-    "ovr_auc": 0.9405537096409438,
+    "ece15": 0.18513940117756528,
+    "ovr_auc": 0.9399846416407058,
     "n": 1500
   },
   "unseen_workflow": {
-    "acc": 0.274,
-    "brier": 0.24960353601485216,
-    "score_mae": 1.165,
-    "ece15": 0.16219686758518223,
-    "ovr_auc": 0.4987853697006382,
+    "acc": 0.276,
+    "brier": 0.23573027879807676,
+    "score_mae": 1.16,
+    "ece15": 0.13670498710870743,
+    "ovr_auc": 0.49734617594060015,
     "n": 500
   },
   "multiq": {
     "n_states": 100,
-    "max_delta_full_prec": 0.9946786165237427,
+    "max_delta_full_prec": 0.9946938753128052,
     "max_delta_4dp": 0.9947,
     "bitwise_equal_frac": 0.0,
-    "median_speedup": 4.424046744747157
+    "median_speedup": 3.888664622338606
   },
   "state_ablation": {
-    "state_ablation_flip_rate": 0.192,
-    "real_acc": 0.274,
-    "blank_acc": 0.268,
-    "acc_drop": 0.006000000000000005,
-    "real_brier": 0.24960353601485216,
-    "blank_brier": 0.2245711954469344
+    "state_ablation_flip_rate": 0.194,
+    "real_acc": 0.276,
+    "blank_acc": 0.284,
+    "acc_drop": -0.007999999999999952,
+    "real_brier": 0.23573027879807676,
+    "blank_brier": 0.213430679327753
   },
-  "jitter_flip_rate": 0.029333333333333333
+  "jitter_flip_rate": 0.028666666666666663
 }
