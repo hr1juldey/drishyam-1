@@ -1,0 +1,89 @@
+{
+  "ckpt": "runs/g1-t1/best.pt",
+  "temperatures": {
+    "noul": {
+      "T": 0.94,
+      "n": 300
+    },
+    "choice": {
+      "T": 0.955,
+      "n": 240
+    },
+    "score": {
+      "T": 0.9375,
+      "n": 360
+    }
+  },
+  "criteria": {
+    "1_state_ablation": {
+      "flip_rate": 0.192,
+      "bar": "> 0.30",
+      "acc_drop": 0.006000000000000005,
+      "acc_bar": "> 0.15",
+      "pass": false
+    },
+    "2_invariance": {
+      "max_delta_4dp": 0.9947,
+      "bar": "== 0.0",
+      "speedup": 4.424046744747157,
+      "speedup_bar": "> 1.5",
+      "pass": false
+    },
+    "3_robustness_calibration": {
+      "jitter_flip": 0.029333333333333333,
+      "bar": "< 0.05",
+      "post_ts_ece_indomain": 0.14696889460086826,
+      "ece_bar": "< 0.08",
+      "pass": false
+    },
+    "4_unseen_generalization": {
+      "unseen_auc": 0.4987853697006382,
+      "bar": "> 0.75",
+      "unseen_acc": 0.274,
+      "majority_acc": 0.26,
+      "pass": false
+    },
+    "5_unseen_ece": {
+      "unseen_post_ts_ece": 0.16219686758518223,
+      "bar": "< 0.12",
+      "pass": false
+    }
+  },
+  "gate": "NO-GO",
+  "failed": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5"
+  ],
+  "ours_vs_b2": {
+    "in_domain": {
+      "acc": 0.792,
+      "brier": 0.054116294843431535,
+      "ece15": 0.14696889460086826,
+      "ovr_auc": 0.9405537096409438,
+      "score_mae": 0.25833333333333336
+    },
+    "unseen": {
+      "acc": 0.274,
+      "brier": 0.24960353601485216,
+      "ece15": 0.16219686758518223,
+      "ovr_auc": 0.4987853697006382,
+      "score_mae": 1.165
+    },
+    "b2_reference": {
+      "acc": 0.7586666666666667,
+      "auc": 0.9187387525390367,
+      "unseen_acc": 0.71,
+      "unseen_auc": 0.910485817772079,
+      "jitter_flip": 0.056666666666666664,
+      "multiq_delta_4dp": 0.0599,
+      "ece_indomain": 0.18265156266666666
+    }
+  },
+  "notes": [
+    "reliability-curve monotonicity: manual check pending bins artifact",
+    "in-domain/unseen numbers are post per-primitive TS (see gate_table)"
+  ]
+}
