@@ -50,15 +50,20 @@ def label_prompt(state: str, questions: dict) -> str:
     )
 
 
+def _num(x) -> float:
+    """Null-safe coercion: teacher JSON may contain explicit nulls."""
+    return float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else 0.0
+
+
 def mean_kl(draft: dict, gold: dict) -> float:
     """KL(gold || draft) averaged over questions with matching keys."""
     kls = []
     for qid, g in gold.items():
         keys = list(g.keys())
-        gv = np.array([gold[qid][k] for k in keys]) + 1e-9
+        gv = np.array([_num(gold[qid][k]) for k in keys]) + 1e-9
         if qid not in draft:
             continue
-        dv = np.array([float(draft[qid].get(k, 0.0)) for k in keys]) + 1e-9
+        dv = np.array([_num(draft[qid].get(k)) for k in keys]) + 1e-9
         gv, dv = gv / gv.sum(), dv / dv.sum()
         kls.append(float((gv * np.log(gv / dv)).sum()))
     return float(np.mean(kls)) if kls else float("nan")
@@ -104,7 +109,7 @@ def bakeoff(models: list[str], n_cases: int, samples: int, seed: int) -> dict:
                 continue
             ok += 1
             keys = {q: list(g.keys()) for q, g in c["gold"].items()}
-            acc_p = {q: {k: float(np.mean([p.get(q, {}).get(k, 0.0) for p in sample_ps]))
+            acc_p = {q: {k: float(np.mean([_num(p.get(q, {}).get(k)) for p in sample_ps]))
                          for k in ks} for q, ks in keys.items()}
             kls.append(mean_kl(acc_p, c["gold"]))
             agree.append(all(
