@@ -677,3 +677,54 @@ T1 DONE best_val=0.8443 wall=69.7min vram=4431MB
 drafted 0 cases (3 consecutive fails at stop)
 - 03:31:23 [cpu] night drafter end — drafts at drafts/seen3_drafts.jsonl (0 cases)
 - 03:31:23 [cpu] === NIGHT CPU LANE end ===
+lfm3-omni:latest {'ok_cases': 25, 'mean_soft_kl': 1.4656140916768725, 'argmax_agree_frac': 0.0, 'cases_per_hour': 194.3355534009356, 'wall_min': 7.718608220418294}
+{
+  "ckpt": "runs/g1-t1-lr5e5/best.pt",
+  "temperatures": {
+    "noul": {
+      "T": 1.1999999999999997,
+      "n": 300
+    },
+    "choice": {
+      "T": 1.1675,
+      "n": 240
+    },
+    "score": {
+      "T": 1.1075,
+      "n": 360
+    }
+  },
+  "in_domain_test": {
+    "acc": 0.7773333333333333,
+    "brier": 0.057212633867256404,
+    "score_mae": 0.295,
+    "ece15": 0.13731287016471225,
+    "ovr_auc": 0.9344813924447237,
+    "n": 1500
+  },
+  "unseen_workflow": {
+    "acc": 0.324,
+    "brier": 0.2474391349647442,
+    "score_mae": 1.16,
+    "ece15": 0.15013424021005628,
+    "ovr_auc": 0.491679521493839,
+    "n": 500
+  },
+  "multiq": {
+    "n_states": 100,
+    "max_delta_full_prec": 0.9976332783699036,
+    "max_delta_4dp": 0.9976,
+    "bitwise_equal_frac": 0.0,
+    "median_speedup": 3.3202904154813453
+  },
+  "state_ablation": {
+    "state_ablation_flip_rate": 0.282,
+    "real_acc": 0.324,
+    "blank_acc": 0.39,
+    "acc_drop": -0.066,
+    "real_brier": 0.2474391349647442,
+    "blank_brier": 0.19112162490360673
+  },
+  "jitter_flip_rate": 0.036
+}
+- 03:44:35 STEP V1LR5 PASS (rc=0)
