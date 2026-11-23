@@ -1016,3 +1016,7 @@ lfm3-omni:latest {'ok_cases': 25, 'mean_soft_kl': 1.4656140916768725, 'argmax_ag
     "in-domain/unseen numbers are post per-primitive TS (see gate_table)"
   ]
 }
+- 05:06:09 [gpu-manual] verdict + evidence + push done
+drafted 0 cases (3 consecutive fails at stop)
+- 05:07:39 [cpu] drafter end (0 cases)
+- 05:07:39 [cpu] lane v6 done

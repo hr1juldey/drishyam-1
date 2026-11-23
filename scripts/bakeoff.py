@@ -169,7 +169,9 @@ def drafter(model: str, budget_epoch: int, max_cases: int, seed: int,
             'OUTPUT ONLY JSON: {"state": "...", "answers": {"<qid>": {"<key>": p, ...}}}'
         )
         try:
-            j = extract_json(call(model, prompt, 0.8, seed + done, num_gpu=num_gpu))
+            # state + full answers JSON needs ~350-500 tokens; 320 truncated every call
+            j = extract_json(call(model, prompt, 0.8, seed + done,
+                                  num_predict=900, num_gpu=num_gpu))
         except requests.RequestException:
             j = None
         if not j or "state" not in j or "answers" not in j:
