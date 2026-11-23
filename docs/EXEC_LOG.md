@@ -5,3 +5,4 @@
 2026-11-23 22:17:46 DONE G1-D3 bfb3f3f3 jitter 300 + multiq 100, regeneration byte-identical sha=adf315347de9
 2026-11-23 22:21:07 DONE G1-S0 d77a5033 PASS: torch.AdamW 20/20 finite 15.38->0.11; ManualAdamW 20/20 finite 15.09->0.15; artifacts/sanity_gate.json
 2026-11-23 22:24:16 DONE G1-M1 86ee3504 smoke: trainable=7800705, slot shapes [2][3][4], vram 2001MB, backward ok; CPU wiring 2/2
+2026-11-23 22:48:17 DONE G1-B1 1431fbce TF-IDF LogReg: test acc .633 Brier .161 AUC .826; unseen acc .260 AUC .491 = honest zero-shot floor

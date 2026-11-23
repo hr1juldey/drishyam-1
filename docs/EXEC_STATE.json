@@ -68,10 +68,10 @@
       "artifact": ""
     },
     "G1-B1": {
-      "status": "todo",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "TF-IDF LogReg: test acc .633 Brier .161 AUC .826; unseen acc .260 AUC .491 = honest zero-shot floor",
+      "commit": "1431fbce00faf4daa15f27fe785914b9e99670c3",
       "artifact": ""
     },
     "G1-B2": {
