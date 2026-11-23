@@ -1,12 +1,14 @@
-# PROGRESS — decoupled-t5g2 Gate 1
+# PROGRESS — drishyam-1 Gate 1
 
 Human ledger. Machine state lives in `docs/EXEC_STATE.json`; append-only journal
 in `docs/EXEC_LOG.md` (created by the engine at G1-E0).
 
 ## Planning run — 2026-11-23 (no execution, per user directive)
 
-- [x] Repo created: https://github.com/hr1juldey/decoupled-t5g2 (public, MIT,
-      cloned at `~/Documents/code/decoupled-t5g2`).
+- [x] Repo created: https://github.com/hr1juldey/drishyam-1 (public, MIT,
+      cloned at `~/Documents/code/drishyam-1`; renamed from decoupled-t5g2 the
+      same day on the user's naming decision — drishyam = Skt. "vision", the
+      Gate-2 destination; real-time constraint recorded in DECISIONS §18).
 - [x] Environment verified: RTX 3060 12 GB (SM 8.6, driver 580.178.04, native
       bf16) · uv 0.13.7 · ast-grep 0.51.3 · gh 2.105.0 authed (hr1juldey) ·
       635 GB free disk.

@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "updated": "2026-11-23",
-  "project": "decoupled-t5g2 Gate 1 (CUDA)",
+  "project": "drishyam-1 Gate 1 (CUDA)",
   "roadmap": "docs/ROADMAP.md",
   "sub_tasks": {
     "G1-E0": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },

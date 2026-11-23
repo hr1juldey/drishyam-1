@@ -1,4 +1,8 @@
-# decoupled-t5g2
+# drishyam-1
+
+> **drishyam** (Sanskrit दृश्यम्) — "that which is seen." The project becomes a
+> vision decision model at Gate 2; before that, everything it scores is
+> real-time-first (user directive 2026-11-23).
 
 **Decoupled T5Gemma-2-270M System-1 decision engine** — a state-only encoder whose
 hidden states are cached once per decision state, feeding a parallel
@@ -10,6 +14,12 @@ The architectural claim under test: if questions and options never touch the
 encoder, one cached state serves unlimited questions with **exact** cross-question
 invariance, measurable cache speedup, and no case/whitespace flip bugs — the
 failure class documented by the benchmark below for encoder-stuffed models.
+
+The real-time thesis: **look once, decide many.** The expensive look — one
+encoder pass over the state (later: the 896×896 scene) — runs once and is
+cached; every question after it is a short parallel decode off the cache. That
+is the shape that makes multi-question decision serving real-time, and it is
+why the same architecture carries the vision gate.
 
 ## Benchmark
 

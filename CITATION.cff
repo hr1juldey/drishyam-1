@@ -1,12 +1,12 @@
 cff-version: 1.2.0
-title: decoupled-t5g2
+title: drishyam-1
 message: >-
   If you use this software, please cite it using these metadata.
 type: software
 authors:
   - name: hr1juldey
-repository-code: "https://github.com/hr1juldey/decoupled-t5g2"
-url: "https://github.com/hr1juldey/decoupled-t5g2"
+repository-code: "https://github.com/hr1juldey/drishyam-1"
+url: "https://github.com/hr1juldey/drishyam-1"
 abstract: >-
   Decoupled T5Gemma-2-270M System-1 decision engine: state-only encoder cache
   plus parallel non-autoregressive slot decoder with per-primitive temperature
