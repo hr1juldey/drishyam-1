@@ -2,3 +2,4 @@
 2026-11-23 22:14:48 FAIL G1-S0 attempt 1 attempt 1: gated repo 403 — google/t5gemma-2-270m-270m requires HF gate acceptance + authorized token; S0_EXIT=1 before any GPU step
 2026-11-23 22:17:16 DONE G1-D1 750a360b counts 300/100 x4 exact; primitives noul/choice/score verified; scorer snapshot sha recorded
 2026-11-23 22:17:46 DONE G1-D2 433fd122 240/60 per seen workflow; uniform composition key; disjoint asserts green; unseen train only sha-hashed
+2026-11-23 22:17:46 DONE G1-D3 bfb3f3f3 jitter 300 + multiq 100, regeneration byte-identical sha=adf315347de9

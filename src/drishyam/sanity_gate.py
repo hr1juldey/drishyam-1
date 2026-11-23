@@ -47,7 +47,7 @@ class ManualAdamW(torch.optim.Optimizer):
 
 def load_backbone():
     try:
-        m = AutoModelForSeq2SeqLM.from_pretrained(MODEL_ID, torch_dtype=torch.bfloat16)
+        m = AutoModelForSeq2SeqLM.from_pretrained(MODEL_ID, dtype=torch.bfloat16)
         return m.to("cuda")
     except (ValueError, KeyError, OSError):
         from transformers import T5Gemma2ForConditionalGeneration
@@ -71,14 +71,15 @@ def run_arm(name: str, lr: float = 1e-4) -> SanityReport:
         opt.zero_grad(set_to_none=True)
         loss = model(input_ids=enc, labels=dec).loss
         loss.backward()
+        loss_d = loss.detach()
         gn = torch.nn.utils.clip_grad_norm_(model.parameters(), 1e9)
         opt.step()
         steps.append(
             SanityStep(
                 step=step,
-                loss=float(loss),
-                grad_norm=float(gn),
-                finite=bool(torch.isfinite(loss).item() and torch.isfinite(gn).item()),
+                loss=float(loss_d),
+                grad_norm=float(gn.detach()),
+                finite=bool(torch.isfinite(loss_d).item() and torch.isfinite(gn).item()),
             )
         )
     f5 = sum(s.loss for s in steps[:5]) / 5

@@ -33,10 +33,10 @@
       "artifact": ""
     },
     "G1-D3": {
-      "status": "todo",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "jitter 300 + multiq 100, regeneration byte-identical sha=adf315347de9",
+      "commit": "bfb3f3f3360302d103e8ca37b8cc7060d1d77e1d",
       "artifact": ""
     },
     "G1-M1": {

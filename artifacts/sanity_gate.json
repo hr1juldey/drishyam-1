@@ -1,0 +1,262 @@
+{
+  "torch.AdamW": {
+    "model_id": "google/t5gemma-2-270m-270m",
+    "optimizer": "torch.AdamW",
+    "device": "cuda",
+    "torch_version": "2.15.0+cu132",
+    "steps": [
+      {
+        "step": 1,
+        "loss": 15.566478729248047,
+        "grad_norm": 448.0,
+        "finite": true
+      },
+      {
+        "step": 2,
+        "loss": 16.520023345947266,
+        "grad_norm": 1536.0,
+        "finite": true
+      },
+      {
+        "step": 3,
+        "loss": 20.599037170410156,
+        "grad_norm": 3328.0,
+        "finite": true
+      },
+      {
+        "step": 4,
+        "loss": 13.788888931274414,
+        "grad_norm": 324.0,
+        "finite": true
+      },
+      {
+        "step": 5,
+        "loss": 10.448017120361328,
+        "grad_norm": 107.0,
+        "finite": true
+      },
+      {
+        "step": 6,
+        "loss": 7.425312042236328,
+        "grad_norm": 132.0,
+        "finite": true
+      },
+      {
+        "step": 7,
+        "loss": 3.6323301792144775,
+        "grad_norm": 253.0,
+        "finite": true
+      },
+      {
+        "step": 8,
+        "loss": 1.7654500007629395,
+        "grad_norm": 129.0,
+        "finite": true
+      },
+      {
+        "step": 9,
+        "loss": 0.6964108347892761,
+        "grad_norm": 89.0,
+        "finite": true
+      },
+      {
+        "step": 10,
+        "loss": 1.1217620372772217,
+        "grad_norm": 133.0,
+        "finite": true
+      },
+      {
+        "step": 11,
+        "loss": 0.7468490600585938,
+        "grad_norm": 65.5,
+        "finite": true
+      },
+      {
+        "step": 12,
+        "loss": 0.3208361566066742,
+        "grad_norm": 20.0,
+        "finite": true
+      },
+      {
+        "step": 13,
+        "loss": 0.3223036229610443,
+        "grad_norm": 22.75,
+        "finite": true
+      },
+      {
+        "step": 14,
+        "loss": 0.23343586921691895,
+        "grad_norm": 15.9375,
+        "finite": true
+      },
+      {
+        "step": 15,
+        "loss": 0.1704757958650589,
+        "grad_norm": 14.9375,
+        "finite": true
+      },
+      {
+        "step": 16,
+        "loss": 0.13321863114833832,
+        "grad_norm": 17.375,
+        "finite": true
+      },
+      {
+        "step": 17,
+        "loss": 0.11534345149993896,
+        "grad_norm": 17.125,
+        "finite": true
+      },
+      {
+        "step": 18,
+        "loss": 0.11576944589614868,
+        "grad_norm": 12.625,
+        "finite": true
+      },
+      {
+        "step": 19,
+        "loss": 0.10114369541406631,
+        "grad_norm": 12.25,
+        "finite": true
+      },
+      {
+        "step": 20,
+        "loss": 0.08630398660898209,
+        "grad_norm": 7.6875,
+        "finite": true
+      }
+    ],
+    "loss_decreased": true,
+    "all_finite": true
+  },
+  "ManualAdamW": {
+    "model_id": "google/t5gemma-2-270m-270m",
+    "optimizer": "ManualAdamW",
+    "device": "cuda",
+    "torch_version": "2.15.0+cu132",
+    "steps": [
+      {
+        "step": 1,
+        "loss": 15.566478729248047,
+        "grad_norm": 448.0,
+        "finite": true
+      },
+      {
+        "step": 2,
+        "loss": 16.530746459960938,
+        "grad_norm": 1528.0,
+        "finite": true
+      },
+      {
+        "step": 3,
+        "loss": 19.702392578125,
+        "grad_norm": 3152.0,
+        "finite": true
+      },
+      {
+        "step": 4,
+        "loss": 13.267306327819824,
+        "grad_norm": 258.0,
+        "finite": true
+      },
+      {
+        "step": 5,
+        "loss": 10.40470027923584,
+        "grad_norm": 109.0,
+        "finite": true
+      },
+      {
+        "step": 6,
+        "loss": 7.468691349029541,
+        "grad_norm": 150.0,
+        "finite": true
+      },
+      {
+        "step": 7,
+        "loss": 2.9434242248535156,
+        "grad_norm": 192.0,
+        "finite": true
+      },
+      {
+        "step": 8,
+        "loss": 1.0724079608917236,
+        "grad_norm": 77.5,
+        "finite": true
+      },
+      {
+        "step": 9,
+        "loss": 0.7888455390930176,
+        "grad_norm": 81.0,
+        "finite": true
+      },
+      {
+        "step": 10,
+        "loss": 0.7018392086029053,
+        "grad_norm": 60.25,
+        "finite": true
+      },
+      {
+        "step": 11,
+        "loss": 0.5465653538703918,
+        "grad_norm": 43.0,
+        "finite": true
+      },
+      {
+        "step": 12,
+        "loss": 0.3932165503501892,
+        "grad_norm": 36.75,
+        "finite": true
+      },
+      {
+        "step": 13,
+        "loss": 0.177327498793602,
+        "grad_norm": 14.0625,
+        "finite": true
+      },
+      {
+        "step": 14,
+        "loss": 0.2083340436220169,
+        "grad_norm": 19.375,
+        "finite": true
+      },
+      {
+        "step": 15,
+        "loss": 0.21419475972652435,
+        "grad_norm": 13.625,
+        "finite": true
+      },
+      {
+        "step": 16,
+        "loss": 0.20812027156352997,
+        "grad_norm": 17.875,
+        "finite": true
+      },
+      {
+        "step": 17,
+        "loss": 0.18641431629657745,
+        "grad_norm": 18.75,
+        "finite": true
+      },
+      {
+        "step": 18,
+        "loss": 0.13237833976745605,
+        "grad_norm": 13.25,
+        "finite": true
+      },
+      {
+        "step": 19,
+        "loss": 0.09344508498907089,
+        "grad_norm": 8.125,
+        "finite": true
+      },
+      {
+        "step": 20,
+        "loss": 0.15128715336322784,
+        "grad_norm": 21.375,
+        "finite": true
+      }
+    ],
+    "loss_decreased": true,
+    "all_finite": true
+  }
+}

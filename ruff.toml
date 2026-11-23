@@ -1,5 +1,6 @@
 line-length = 100
 target-version = "py312"
+exclude = ["artifacts"]  # evidence snapshots (e.g. bench_scorer_snapshot.py) stay byte-identical to upstream
 
 [lint]
 select = [
