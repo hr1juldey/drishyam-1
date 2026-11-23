@@ -26,10 +26,10 @@
       "artifact": ""
     },
     "G1-D2": {
-      "status": "todo",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "240/60 per seen workflow; uniform composition key; disjoint asserts green; unseen train only sha-hashed",
+      "commit": "433fd122a674014f95188687dbdeed1bdc1e2462",
       "artifact": ""
     },
     "G1-D3": {
