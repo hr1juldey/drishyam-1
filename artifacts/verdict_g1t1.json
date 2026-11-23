@@ -23,11 +23,11 @@
       "pass": false
     },
     "2_invariance": {
-      "max_delta_4dp": 0.9947,
+      "max_delta_4dp": 0.0,
       "bar": "== 0.0",
-      "speedup": 3.888664622338606,
+      "speedup": 3.805504562200447,
       "speedup_bar": "> 1.5",
-      "pass": false
+      "pass": true
     },
     "3_robustness_calibration": {
       "jitter_flip": 0.028666666666666663,
@@ -52,7 +52,6 @@
   "gate": "NO-GO",
   "failed": [
     "1",
-    "2",
     "3",
     "4",
     "5"

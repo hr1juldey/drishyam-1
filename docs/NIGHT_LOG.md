@@ -874,3 +874,145 @@ lfm3-omni:latest {'ok_cases': 25, 'mean_soft_kl': 1.4656140916768725, 'argmax_ag
   ]
 }
 - 04:18:10 [gpu-manual] verdict + evidence + push done
+2026/11/24 04:34:17 INFO mlflow.agent.hint: Load the `mlflow-trace-instrumentation` skill at /home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/mlflow/assistant/skills/mlflow-trace-instrumentation/SKILL.md before writing any tracing code; it ships with this MLflow install. Set MLFLOW_DISABLE_AGENT_HINT=1 to silence this.
+Loading weights:   0%|          | 0/911 [00:00<?, ?it/s]Loading weights:  68%|██████▊   | 618/911 [00:00<00:00, 6173.72it/s]Loading weights: 100%|██████████| 911/911 [00:00<00:00, 5998.30it/s]
+[transformers] The new embeddings will be initialized from a multivariate normal distribution that has old embeddings' mean and covariance. As described in this article: https://nlp.stanford.edu/~johnhew/vocab-expansion.html. To disable this, use `mean_resizing=False`
+- 05:03:23 [cpu] bakeoff PARKED rc=0
+{
+  "ckpt": "runs/g1-t1/best.pt",
+  "temperatures": {
+    "noul": {
+      "T": 1.1999999999999997,
+      "n": 300
+    },
+    "choice": {
+      "T": 1.1675,
+      "n": 240
+    },
+    "score": {
+      "T": 1.1075,
+      "n": 360
+    }
+  },
+  "in_domain_test": {
+    "acc": 0.7913333333333333,
+    "brier": 0.05447717744779611,
+    "score_mae": 0.25833333333333336,
+    "ece15": 0.18513940117756528,
+    "ovr_auc": 0.9399846416407058,
+    "n": 1500
+  },
+  "unseen_workflow": {
+    "acc": 0.276,
+    "brier": 0.23573027879807676,
+    "score_mae": 1.16,
+    "ece15": 0.13670498710870743,
+    "ovr_auc": 0.49734617594060015,
+    "n": 500
+  },
+  "multiq": {
+    "n_states": 100,
+    "max_delta_full_prec": 4.172325134277344e-07,
+    "max_delta_4dp": 0.0,
+    "bitwise_equal_frac": 0.01,
+    "median_speedup": 3.805504562200447
+  },
+  "state_ablation": {
+    "state_ablation_flip_rate": 0.194,
+    "real_acc": 0.276,
+    "blank_acc": 0.284,
+    "acc_drop": -0.007999999999999952,
+    "real_brier": 0.23573027879807676,
+    "blank_brier": 0.213430679327753
+  },
+  "jitter_flip_rate": 0.028666666666666663
+}
+- 05:06:06 [gpu-manual] fixed-suite re-eval PASS
+{
+  "ckpt": "runs/g1-t1/best.pt",
+  "temperatures": {
+    "noul": {
+      "T": 1.1999999999999997,
+      "n": 300
+    },
+    "choice": {
+      "T": 1.1675,
+      "n": 240
+    },
+    "score": {
+      "T": 1.1075,
+      "n": 360
+    }
+  },
+  "criteria": {
+    "1_state_ablation": {
+      "flip_rate": 0.194,
+      "bar": "> 0.30",
+      "acc_drop": -0.007999999999999952,
+      "acc_bar": "> 0.15",
+      "pass": false
+    },
+    "2_invariance": {
+      "max_delta_4dp": 0.0,
+      "bar": "== 0.0",
+      "speedup": 3.805504562200447,
+      "speedup_bar": "> 1.5",
+      "pass": true
+    },
+    "3_robustness_calibration": {
+      "jitter_flip": 0.028666666666666663,
+      "bar": "< 0.05",
+      "post_ts_ece_indomain": 0.18513940117756528,
+      "ece_bar": "< 0.08",
+      "pass": false
+    },
+    "4_unseen_generalization": {
+      "unseen_auc": 0.49734617594060015,
+      "bar": "> 0.75",
+      "unseen_acc": 0.276,
+      "majority_acc": 0.26,
+      "pass": false
+    },
+    "5_unseen_ece": {
+      "unseen_post_ts_ece": 0.13670498710870743,
+      "bar": "< 0.12",
+      "pass": false
+    }
+  },
+  "gate": "NO-GO",
+  "failed": [
+    "1",
+    "3",
+    "4",
+    "5"
+  ],
+  "ours_vs_b2": {
+    "in_domain": {
+      "acc": 0.7913333333333333,
+      "brier": 0.05447717744779611,
+      "ece15": 0.18513940117756528,
+      "ovr_auc": 0.9399846416407058,
+      "score_mae": 0.25833333333333336
+    },
+    "unseen": {
+      "acc": 0.276,
+      "brier": 0.23573027879807676,
+      "ece15": 0.13670498710870743,
+      "ovr_auc": 0.49734617594060015,
+      "score_mae": 1.16
+    },
+    "b2_reference": {
+      "acc": 0.7586666666666667,
+      "auc": 0.9187387525390367,
+      "unseen_acc": 0.71,
+      "unseen_auc": 0.910485817772079,
+      "jitter_flip": 0.056666666666666664,
+      "multiq_delta_4dp": 0.0599,
+      "ece_indomain": 0.18265156266666666
+    }
+  },
+  "notes": [
+    "reliability-curve monotonicity: manual check pending bins artifact",
+    "in-domain/unseen numbers are post per-primitive TS (see gate_table)"
+  ]
+}

@@ -32,10 +32,10 @@
   },
   "multiq": {
     "n_states": 100,
-    "max_delta_full_prec": 0.9946938753128052,
-    "max_delta_4dp": 0.9947,
-    "bitwise_equal_frac": 0.0,
-    "median_speedup": 3.888664622338606
+    "max_delta_full_prec": 4.172325134277344e-07,
+    "max_delta_4dp": 0.0,
+    "bitwise_equal_frac": 0.01,
+    "median_speedup": 3.805504562200447
   },
   "state_ablation": {
     "state_ablation_flip_rate": 0.194,
