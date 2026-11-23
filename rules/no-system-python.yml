@@ -1,0 +1,9 @@
+id: no-bare-python3
+message: Use `uv run python` — bare python3/system Python is banned in this repo.
+severity: error
+note: >
+  Project tooling law: all Python executes through the uv-managed venv.
+  Applies to shell scripts and docs code blocks under scripts/.
+language: Bash
+rule:
+  pattern: python3 $ARG

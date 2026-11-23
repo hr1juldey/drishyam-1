@@ -1,0 +1,21 @@
+line-length = 100
+target-version = "py312"
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "UP",  # pyupgrade
+    "B",   # bugbear
+    "SIM", # simplify
+    "C4",  # comprehensions
+    "RUF", # ruff-specific
+]
+
+[lint.isort]
+known-first-party = ["t5g2_decision"]
+
+[format]
+quote-style = "double"

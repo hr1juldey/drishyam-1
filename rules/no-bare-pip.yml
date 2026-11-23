@@ -1,0 +1,8 @@
+id: no-bare-pip
+message: Use `uv add` / `uv pip install` — bare pip is banned in this repo.
+severity: error
+note: >
+  Keeps every dependency inside the uv lockfile; bare pip silently escapes the venv.
+language: Bash
+rule:
+  pattern: pip install $PKG

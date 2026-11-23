@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "updated": "2026-11-23",
+  "project": "decoupled-t5g2 Gate 1 (CUDA)",
+  "roadmap": "docs/ROADMAP.md",
+  "sub_tasks": {
+    "G1-E0": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-S0": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-D1": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-D2": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-D3": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-M1": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-T1": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-C1": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-V1": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-B1": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-B2": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" },
+    "G1-G1": { "status": "todo", "attempts": 0, "note": "", "commit": "", "artifact": "" }
+  },
+  "parked": []
+}

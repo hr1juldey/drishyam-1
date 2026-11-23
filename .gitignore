@@ -1,7 +1,36 @@
-# Byte-compiled / optimized / DLL files
+######################
+# decoupled-t5g2 project
+######################
+
+# uv venv + lock artifacts of runs
+.venv/
+
+# experiment state (never commit weights, caches, trackers)
+runs/
+data/
+hf_cache/
+checkpoints/
+*.ckpt.pt
+mlflow.db
+mlflow.db-*
+
+# NOTE: results/t5g2_results.jsonl and artifacts/ ARE tracked (evidence trail).
+
+.env
+
 __pycache__/
-*.py[codz]
+*.py[cod]
 *$py.class
+
+# Jupyter
+.ipynb_checkpoints
+
+# OS
+.DS_Store
+
+# pytest
+.pytest_cache/
+
 
 # C extensions
 *.so
