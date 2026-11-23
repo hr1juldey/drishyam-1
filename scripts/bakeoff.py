@@ -15,7 +15,7 @@ from pathlib import Path
 import numpy as np
 import requests
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 OLLAMA = "http://127.0.0.1:11434/api/chat"
 
 

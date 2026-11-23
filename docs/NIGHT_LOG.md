@@ -153,3 +153,87 @@ torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 20.00 MiB. GPU 0 h
 Loading weights:   0%|          | 0/911 [00:00<?, ?it/s]Loading weights: 100%|██████████| 911/911 [00:00<00:00, 11338.01it/s]
 [transformers] The new embeddings will be initialized from a multivariate normal distribution that has old embeddings' mean and covariance. As described in this article: https://nlp.stanford.edu/~johnhew/vocab-expansion.html. To disable this, use `mean_resizing=False`
 NIGHT_QUEUE_EXIT=137
+- 00:18:49 [cpu] === NIGHT CPU LANE start (pid 650476) ===
+- 00:18:49 [cpu] bake-off start (lfm3-omni vs gemma4:31b, 50 cases x 3 samples)
+lfm3-omni:latest {'ok_cases': 38, 'mean_soft_kl': 1.5437404077785248, 'argmax_agree_frac': 0.0, 'cases_per_hour': 320.2995669573436, 'wall_min': 7.118336192766825}
+{
+  "ckpt": "runs/g1-t1/best.pt",
+  "temperatures": {
+    "noul": {
+      "T": 0.94,
+      "n": 300
+    },
+    "choice": {
+      "T": 0.955,
+      "n": 240
+    },
+    "score": {
+      "T": 0.9375,
+      "n": 360
+    }
+  },
+  "in_domain_test": {
+    "acc": 0.792,
+    "brier": 0.054116294843431535,
+    "score_mae": 0.25833333333333336,
+    "ece15": 0.14696889460086826,
+    "ovr_auc": 0.9405537096409438,
+    "n": 1500
+  },
+  "unseen_workflow": {
+    "acc": 0.274,
+    "brier": 0.24960353601485216,
+    "score_mae": 1.165,
+    "ece15": 0.16219686758518223,
+    "ovr_auc": 0.4987853697006382,
+    "n": 500
+  },
+  "multiq": {
+    "n_states": 100,
+    "max_delta_full_prec": 0.9946786165237427,
+    "max_delta_4dp": 0.9947,
+    "bitwise_equal_frac": 0.0,
+    "median_speedup": 4.424046744747157
+  },
+  "state_ablation": {
+    "state_ablation_flip_rate": 0.192,
+    "real_acc": 0.274,
+    "blank_acc": 0.268,
+    "acc_drop": 0.006000000000000005,
+    "real_brier": 0.24960353601485216,
+    "blank_brier": 0.2245711954469344
+  },
+  "jitter_flip_rate": 0.029333333333333333
+}
+- 00:48:07 STEP V1 PASS (rc=0)
+- 00:48:07 STEP VERDICT start: uv run python scripts/gate_verdict.py --gate artifacts/gate_table.json --out artifacts/verdict.json
+Traceback (most recent call last):
+  File "/home/riju279/Documents/code/drishyam-1/scripts/gate_verdict.py", line 77, in <module>
+    main()
+  File "/home/riju279/Documents/code/drishyam-1/scripts/gate_verdict.py", line 15, in main
+    gt = json.loads((ROOT / a.gate).read_text())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/riju279/Documents/code/artifacts/gate_table.json'
+- 00:48:07 STEP VERDICT fail#1 rc=1 — retrying
+Traceback (most recent call last):
+  File "/home/riju279/Documents/code/drishyam-1/scripts/gate_verdict.py", line 77, in <module>
+    main()
+  File "/home/riju279/Documents/code/drishyam-1/scripts/gate_verdict.py", line 15, in main
+    gt = json.loads((ROOT / a.gate).read_text())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1027, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/pathlib.py", line 1013, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/riju279/Documents/code/artifacts/gate_table.json'
+- 00:48:27 STEP VERDICT fail#2 rc=1 — retrying
+- 00:48:47 STEP VERDICT PARKED (3-strikes)
+- 00:48:47 verdict missing — lr screens withheld, queue end (watchdog may retry)
