@@ -237,3 +237,311 @@ FileNotFoundError: [Errno 2] No such file or directory: '/home/riju279/Documents
 - 00:48:27 STEP VERDICT fail#2 rc=1 — retrying
 - 00:48:47 STEP VERDICT PARKED (3-strikes)
 - 00:48:47 verdict missing — lr screens withheld, queue end (watchdog may retry)
+- 00:49:50 === NIGHT GPU QUEUE start (pid 712999) ===
+- 00:49:50 verdict chain already done — fast-forward to lr screens
+- 00:49:50 lr screen 3e-4 training (budget ok)
+- 00:49:50 STEP T1LR3 start: uv run python -m drishyam.train --lr 3e-4 --epochs 40 --seed 42 --out runs/g1-t1-lr3e4
+2026/11/24 00:50:00 INFO mlflow.agent.hint: Load the `mlflow-trace-instrumentation` skill at /home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/mlflow/assistant/skills/mlflow-trace-instrumentation/SKILL.md before writing any tracing code; it ships with this MLflow install. Set MLFLOW_DISABLE_AGENT_HINT=1 to silence this.
+fixed_len=116 train_cases=720 val_cases=180
+Loading weights:   0%|          | 0/911 [00:00<?, ?it/s]Loading weights:  66%|██████▋   | 605/911 [00:00<00:00, 6048.53it/s]Loading weights: 100%|██████████| 911/911 [00:00<00:00, 5801.09it/s]
+[transformers] The new embeddings will be initialized from a multivariate normal distribution that has old embeddings' mean and covariance. As described in this article: https://nlp.stanford.edu/~johnhew/vocab-expansion.html. To disable this, use `mean_resizing=False`
+vision offloaded to CPU: vision_tower
+/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py:3204: FutureWarning: `gradient_checkpointing_enable` is deprecated and will be removed in v6. Use `activation_checkpointing_enable` instead.
+  warnings.warn(
+gradient checkpointing: on
+[transformers] `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[W1124 00:50:25.563426913 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 88014848, total: 12470255616).
+[W1124 00:50:25.662057362 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 90112000, total: 12470255616).
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 270, in <module>
+    main()
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 215, in main
+    tr_loss, _ = run_epoch(model, tok, train_cases, device, fixed_len,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 92, in run_epoch
+    out = model(s_ids, s_mask, dec_ids, dec_mask, slot_pos, row_case=row_case)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/model.py", line 102, in forward
+    out = self.bb(
+          ^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/peft/peft_model.py", line 1053, in forward
+    return self.get_base_model()(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1036, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 173, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 1254, in forward
+    logits = self.lm_head(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 556, in forward
+    logits = self.out_proj(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.27 GiB. GPU 0 has a total capacity of 11.61 GiB of which 1.86 GiB is free. Process 2627 has 36.53 MiB memory in use. Process 2630 has 34.66 MiB memory in use. Process 3261 has 70.28 MiB memory in use. Process 372545 has 34.16 MiB memory in use. Process 486650 has 154.16 MiB memory in use. Process 3874839 has 232.00 MiB memory in use. Process 3506424 has 232.00 MiB memory in use. Process 667166 has 6.60 GiB memory in use. Including non-PyTorch memory, this process has 1.87 GiB memory in use. Of the allocated memory 1.70 GiB is allocated by PyTorch, and 37.56 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
+- 00:50:28 STEP T1LR3 fail#1 rc=1 — retrying
+2026/11/24 00:50:56 INFO mlflow.agent.hint: Load the `mlflow-trace-instrumentation` skill at /home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/mlflow/assistant/skills/mlflow-trace-instrumentation/SKILL.md before writing any tracing code; it ships with this MLflow install. Set MLFLOW_DISABLE_AGENT_HINT=1 to silence this.
+fixed_len=116 train_cases=720 val_cases=180
+Loading weights:   0%|          | 0/911 [00:00<?, ?it/s]Loading weights:  66%|██████▌   | 597/911 [00:00<00:00, 5962.20it/s]Loading weights: 100%|██████████| 911/911 [00:00<00:00, 5866.95it/s]
+[transformers] The new embeddings will be initialized from a multivariate normal distribution that has old embeddings' mean and covariance. As described in this article: https://nlp.stanford.edu/~johnhew/vocab-expansion.html. To disable this, use `mean_resizing=False`
+vision offloaded to CPU: vision_tower
+/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py:3204: FutureWarning: `gradient_checkpointing_enable` is deprecated and will be removed in v6. Use `activation_checkpointing_enable` instead.
+  warnings.warn(
+gradient checkpointing: on
+[transformers] `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[W1124 00:51:22.259863745 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 88014848, total: 12470255616).
+[W1124 00:51:22.361174895 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 90112000, total: 12470255616).
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 270, in <module>
+    main()
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 215, in main
+    tr_loss, _ = run_epoch(model, tok, train_cases, device, fixed_len,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 92, in run_epoch
+    out = model(s_ids, s_mask, dec_ids, dec_mask, slot_pos, row_case=row_case)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/model.py", line 102, in forward
+    out = self.bb(
+          ^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/peft/peft_model.py", line 1053, in forward
+    return self.get_base_model()(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1036, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 173, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 1254, in forward
+    logits = self.lm_head(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 556, in forward
+    logits = self.out_proj(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.27 GiB. GPU 0 has a total capacity of 11.61 GiB of which 1.86 GiB is free. Process 2627 has 36.53 MiB memory in use. Process 2630 has 34.66 MiB memory in use. Process 3261 has 70.28 MiB memory in use. Process 372545 has 34.16 MiB memory in use. Process 486650 has 154.16 MiB memory in use. Process 3874839 has 232.00 MiB memory in use. Process 3506424 has 232.00 MiB memory in use. Process 667166 has 6.60 GiB memory in use. Including non-PyTorch memory, this process has 1.87 GiB memory in use. Of the allocated memory 1.70 GiB is allocated by PyTorch, and 37.56 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
+- 00:51:27 STEP T1LR3 fail#2 rc=1 — retrying
+- 00:51:47 STEP T1LR3 PARKED (3-strikes)
+- 00:51:47 lr screen 5e-5 training
+- 00:51:47 STEP T1LR5 start: uv run python -m drishyam.train --lr 5e-5 --epochs 40 --seed 42 --out runs/g1-t1-lr5e5
+2026/11/24 00:51:55 INFO mlflow.agent.hint: Load the `mlflow-trace-instrumentation` skill at /home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/mlflow/assistant/skills/mlflow-trace-instrumentation/SKILL.md before writing any tracing code; it ships with this MLflow install. Set MLFLOW_DISABLE_AGENT_HINT=1 to silence this.
+fixed_len=116 train_cases=720 val_cases=180
+Loading weights:   0%|          | 0/911 [00:00<?, ?it/s]Loading weights:  64%|██████▍   | 585/911 [00:00<00:00, 5844.39it/s]Loading weights: 100%|██████████| 911/911 [00:00<00:00, 5536.22it/s]
+[transformers] The new embeddings will be initialized from a multivariate normal distribution that has old embeddings' mean and covariance. As described in this article: https://nlp.stanford.edu/~johnhew/vocab-expansion.html. To disable this, use `mean_resizing=False`
+vision offloaded to CPU: vision_tower
+/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py:3204: FutureWarning: `gradient_checkpointing_enable` is deprecated and will be removed in v6. Use `activation_checkpointing_enable` instead.
+  warnings.warn(
+gradient checkpointing: on
+[transformers] `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[W1124 00:52:20.468055781 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 86638592, total: 12470255616).
+[W1124 00:52:20.570437098 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 90112000, total: 12470255616).
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 270, in <module>
+    main()
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 215, in main
+    tr_loss, _ = run_epoch(model, tok, train_cases, device, fixed_len,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 92, in run_epoch
+    out = model(s_ids, s_mask, dec_ids, dec_mask, slot_pos, row_case=row_case)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/model.py", line 102, in forward
+    out = self.bb(
+          ^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/peft/peft_model.py", line 1053, in forward
+    return self.get_base_model()(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1036, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 173, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 1254, in forward
+    logits = self.lm_head(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 556, in forward
+    logits = self.out_proj(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.27 GiB. GPU 0 has a total capacity of 11.61 GiB of which 1.86 GiB is free. Process 2627 has 36.53 MiB memory in use. Process 2630 has 34.66 MiB memory in use. Process 3261 has 70.28 MiB memory in use. Process 372545 has 34.16 MiB memory in use. Process 486650 has 154.16 MiB memory in use. Process 3874839 has 232.00 MiB memory in use. Process 3506424 has 232.00 MiB memory in use. Process 667166 has 6.60 GiB memory in use. Including non-PyTorch memory, this process has 1.87 GiB memory in use. Of the allocated memory 1.70 GiB is allocated by PyTorch, and 37.56 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
+- 00:52:23 STEP T1LR5 fail#1 rc=1 — retrying
+2026/11/24 00:52:51 INFO mlflow.agent.hint: Load the `mlflow-trace-instrumentation` skill at /home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/mlflow/assistant/skills/mlflow-trace-instrumentation/SKILL.md before writing any tracing code; it ships with this MLflow install. Set MLFLOW_DISABLE_AGENT_HINT=1 to silence this.
+fixed_len=116 train_cases=720 val_cases=180
+Loading weights:   0%|          | 0/911 [00:00<?, ?it/s]Loading weights: 100%|██████████| 911/911 [00:00<00:00, 17240.18it/s]
+[transformers] The new embeddings will be initialized from a multivariate normal distribution that has old embeddings' mean and covariance. As described in this article: https://nlp.stanford.edu/~johnhew/vocab-expansion.html. To disable this, use `mean_resizing=False`
+vision offloaded to CPU: vision_tower
+/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/modeling_utils.py:3204: FutureWarning: `gradient_checkpointing_enable` is deprecated and will be removed in v6. Use `activation_checkpointing_enable` instead.
+  warnings.warn(
+gradient checkpointing: on
+[transformers] `use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`.
+[W1124 00:53:15.131824147 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 88014848, total: 12470255616).
+[W1124 00:53:15.221753357 CUDACachingAllocator.cpp:623] expandable_segments: memory mapping failed with OOM on device 0 while trying to map 20971520 bytes (free: 90112000, total: 12470255616).
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 270, in <module>
+    main()
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 215, in main
+    tr_loss, _ = run_epoch(model, tok, train_cases, device, fixed_len,
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/train.py", line 92, in run_epoch
+    out = model(s_ids, s_mask, dec_ids, dec_mask, slot_pos, row_case=row_case)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/src/drishyam/model.py", line 102, in forward
+    out = self.bb(
+          ^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/peft/peft_model.py", line 1053, in forward
+    return self.get_base_model()(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/generic.py", line 1036, in wrapper
+    output = func(self, *args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/utils/deprecation.py", line 173, in wrapped_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 1254, in forward
+    logits = self.lm_head(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/transformers/models/t5gemma2/modeling_t5gemma2.py", line 556, in forward
+    logits = self.out_proj(hidden_states)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1787, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1798, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/.venv/lib/python3.12/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.27 GiB. GPU 0 has a total capacity of 11.61 GiB of which 1.86 GiB is free. Process 2627 has 36.53 MiB memory in use. Process 2630 has 34.66 MiB memory in use. Process 3261 has 70.28 MiB memory in use. Process 372545 has 34.16 MiB memory in use. Process 486650 has 154.16 MiB memory in use. Process 3874839 has 232.00 MiB memory in use. Process 3506424 has 232.00 MiB memory in use. Process 667166 has 6.60 GiB memory in use. Including non-PyTorch memory, this process has 1.87 GiB memory in use. Of the allocated memory 1.70 GiB is allocated by PyTorch, and 37.56 MiB is reserved by PyTorch but unallocated. expandable_segments is enabled. If instead the process is running out of virtual address space (VSZ), expandable segments may be over-reserving VA (each segment reserves ~9/8 of device memory, times the number of streams); reduce it via PYTORCH_CUDA_ALLOC_CONF expandable_segments_reserve / expandable_segments_reserve_by_class.
+- 00:53:19 STEP T1LR5 fail#2 rc=1 — retrying
+- 00:53:39 STEP T1LR5 PARKED (3-strikes)
