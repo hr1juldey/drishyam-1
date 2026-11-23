@@ -8,8 +8,8 @@ Original spec was ROCm-worded; all deltas are recorded in `docs/DECISIONS.md`.
 (a missing ID here = plan corruption; stop and restore before executing).
 
 Workspace mapping (original spec names → this repo):
-`decoupled_t5g2` → `src/t5g2_decision/` · `t5g2_results.jsonl` →
-`results/t5g2_results.jsonl` · `t5g2_progress.md` → `docs/PROGRESS.md` +
+`decoupled_t5g2` → `src/drishyam/` · `t5g2_results.jsonl` (spec literal) →
+`results/drishyam_results.jsonl` · `t5g2_progress.md` → `docs/PROGRESS.md` +
 `docs/EXEC_STATE.json` (machine state, per `docs/EXEC_ENGINE.md`).
 
 ## Standing conventions (bind every sub-task)
@@ -18,7 +18,7 @@ Workspace mapping (original spec names → this repo):
    `python3`/system Python. Enforced by `ast-grep scan` (`rules/`).
 2. ruff must pass before any commit; ast-grep structural pre/post-check around
    every code edit; diff-based edits (`patch`), never blind whole-file rewrites.
-3. Every config and every results row is a pydantic model (`t5g2_decision.schemas`).
+3. Every config and every results row is a pydantic model (`drishyam.schemas`).
 4. Training: `num_workers=0` loaders (this box's worker IPC dies ENOMEM), MLflow
    tracking at `sqlite:///mlflow.db` (PRIMARY; runs/ JSON secondary), best
    checkpoint per epoch + resume-from-checkpoint, smoke run before any full run,
@@ -37,13 +37,13 @@ Workspace mapping (original spec names → this repo):
 
 G1-E0 Bootstrap exec engine + environment
 Goal: lockfile + venv, device probe, amnesia-proof loop engine.
-Files: `uv.lock`, `.venv/`, `src/t5g2_decision/__init__.py`,
-`src/t5g2_decision/probe.py`, `src/t5g2_decision/schemas.py` (pydantic models:
+Files: `uv.lock`, `.venv/`, `src/drishyam/__init__.py`,
+`src/drishyam/probe.py`, `src/drishyam/schemas.py` (pydantic models:
 RunConfig, DecisionRow, GateRow), `scripts/next_step.py` (modes: default/
 `--done/--fail/--verify/--init` per `docs/EXEC_ENGINE.md`), `tests/test_engine.py`
 (adversarial engine self-tests: stale-state, orphan IDs, parked-flap).
 Commands: `uv sync`; `ast-grep scan` (green + fires on fixture);
-`uv run python -m t5g2_decision.probe` (prints device name, SM 8.6, bf16 OK,
+`uv run python -m drishyam.probe` (prints device name, SM 8.6, bf16 OK,
 torch/CUDA versions); `uv run pytest tests/test_engine.py -q`.
 PASS: probe prints SM≥8.0 + bf16 supported; engine `--verify` green (V1–V5);
 ruff green; rules fire on `tests/fixtures/bad_shell.sh`.
@@ -52,7 +52,7 @@ ON-FAIL: fix import/lock issues (mechanical); 3 fails → PARK.
 G1-S0 ROCm→CUDA sanity gate (spec §0, CUDA edition)
 Goal: prove 20 training steps of `google/t5gemma-2-270m-270m` (text path, bf16,
 `torch.optim.AdamW`) are 100% finite with decreasing loss.
-Files: `src/t5g2_decision/sanity_gate.py`, `artifacts/sanity_gate.json`,
+Files: `src/drishyam/sanity_gate.py`, `artifacts/sanity_gate.json`,
 MLflow run `g1-s0`.
 Protocol: load model bf16 on cuda, synthetic batch (24 tokens, B=4), 20 AdamW
 steps (lr 1e-4, wd 0.01); assert per-step `torch.isfinite` on loss + every grad
@@ -68,7 +68,7 @@ continue; if both NaN → PARK (hardware/toolchain issue, human decides).
 G1-D1 Dataset inspection (spec §1.1)
 Goal: verify schema + counts against the dataset card; extract official scorer's
 metric definitions for comparability.
-Files: `src/t5g2_decision/data_inspect.py`, `artifacts/data_card.json`.
+Files: `src/drishyam/data_inspect.py`, `artifacts/data_card.json`.
 Protocol: `load_dataset("LocalLLaMA/typed-decisions", <config>)` per workflow +
 `all`; print + record: per-workflow train/test counts (card says 300/100, 5
 questions/case), per-primitive counts (`noul`/`choice`/`score`) per split, 3 full
@@ -82,7 +82,7 @@ ON-FAIL: count mismatch → STOP, dataset changed upstream → surface to user.
 
 G1-D2 Zero-leakage splits (spec §1.2)
 Goal: in-domain train/val/test + fully held-out unseen workflow.
-Files: `src/t5g2_decision/splits.py`, `splits/split_v1.json`.
+Files: `src/drishyam/splits.py`, `splits/split_v1.json`.
 Protocol: seed 42. In-domain = invoice_processing, security_incidents,
 customer_service: per workflow, stratified (by question primitive mix + gold
 argmax) carve train 240 / val 60 from the official `train` 300; test = official
@@ -97,7 +97,7 @@ stratified-by-workflow, record deviation in JSON.
 
 G1-D3 Stress suites (spec §1.3)
 Goal: deterministic case/whitespace jitter + multi-question invariance suite.
-Files: `src/t5g2_decision/stress.py`, `artifacts/jitter_suite.jsonl` (n=300),
+Files: `src/drishyam/stress.py`, `artifacts/jitter_suite.jsonl` (n=300),
 `artifacts/multiq_suite.jsonl` (n=100 states).
 Protocol: jitter — seed 1337, from in-domain test: capitalize 30% of words +
 append trailing newlines; case/whitespace-only transforms (meaning preserved by
@@ -111,7 +111,7 @@ ON-FAIL: n/a (pure construction).
 
 G1-M1 Decoupled model (spec §2)
 Goal: `DecoupledT5GemmaDecision` + slot token + head + LoRA attach.
-Files: `src/t5g2_decision/model.py`, `src/t5g2_decision/tokenize.py`,
+Files: `src/drishyam/model.py`, `src/drishyam/tokenize.py`,
 `tests/test_model_shapes.py`.
 Protocol:
 - Encoder: state text ONLY, prefix `[STATE]`; output cached `H_enc`
@@ -139,8 +139,8 @@ ON-FAIL: sdpa + added-token interaction bug → retry with `attn_implementation=
 
 G1-T1 Training (spec §3)
 Goal: LoRA training with proper-scoring losses + anti-shortcut augs.
-Files: `src/t5g2_decision/train.py`, `src/t5g2_decision/losses.py`
-(CE+0.5·Brier; CE+0.5·RPS per spec formulas), `src/t5g2_decision/augs.py`,
+Files: `src/drishyam/train.py`, `src/drishyam/losses.py`
+(CE+0.5·Brier; CE+0.5·RPS per spec formulas), `src/drishyam/augs.py`,
 `runs/` (MLflow sqlite + checkpoints).
 Protocol: smoke first (subset 64 cases, 2 epochs — GPU-box law), then full:
 batch 8 cases (questions of a batch packed as decoder-batch sharing H_enc), bf16
@@ -157,7 +157,7 @@ budget) → full-finetune ablation slot opens (DECISIONS.md §9); 3 fails → PA
 
 G1-C1 Calibration (spec §2.3)
 Goal: per-primitive temperature scaling fitted on val, frozen for unseen.
-Files: `src/t5g2_decision/calibrate.py`, `artifacts/temps.json`.
+Files: `src/drishyam/calibrate.py`, `artifacts/temps.json`.
 Protocol: fit `T_noul`, `T_choice`, `T_score` minimizing val NLL
 (L-BFGS on log T, grid+refine fallback); report val NLL before/after + post-TS
 val ECE. Temperatures are fitted ONLY on the 3 seen workflows' val and applied
@@ -167,7 +167,7 @@ ON-FAIL: n/a.
 
 G1-V1 Evaluation suites on OUR model (spec §4 diagnostics + §5 table inputs)
 Goal: every diagnostic, every number the gate table needs.
-Files: `src/t5g2_decision/evaluate.py`, `results/t5g2_results.jsonl`
+Files: `src/drishyam/evaluate.py`, `results/drishyam_results.jsonl`
 (one pydantic-validated row per decision), `artifacts/gate_inputs.json`.
 Suites (exact definitions in DECISIONS.md §4): in-domain test (300 cases × 5);
 unseen workflow (100 × 5; TS applied unchanged); case-jitter flip (n=300: argmax
@@ -187,10 +187,10 @@ ablation flip < 30% pre-gate → investigate decoder wiring BEFORE G1-G1 verdict
 G1-B1 Baseline 1 — trivial (spec §4.1)
 Goal: per-question majority class + TF-IDF + calibrated LogReg on identical
 splits.
-Files: `src/t5g2_decision/baseline_tfidf.py`.
+Files: `src/drishyam/baseline_tfidf.py`.
 Protocol: word(1-2)+char(2-5) TF-IDF on state+question text, `LogisticRegression`
 + CalibratedClassifierCV (isotonic on val), majority-class per question-id;
-same splits, same metrics, results appended to `results/t5g2_results.jsonl`.
+same splits, same metrics, results appended to `results/drishyam_results.jsonl`.
 PASS: rows present for in-domain + unseen; skill vs majority computed.
 ON-FAIL: n/a.
 
@@ -209,14 +209,16 @@ ON-FAIL: PARK after 2 attempts; fallback activates.
 
 G1-G1 Gate verdict (spec §5)
 Goal: render the gate table + GO/NO-GO, from artifacts only.
-Files: `src/t5g2_decision/render_gate.py`, `docs/RESULTS.md`.
+Files: `src/drishyam/render_gate.py`, `docs/RESULTS.md`.
 Protocol: render table rows: In-Domain Acc/Brier/ECE/Score-MAE; Unseen Acc/AUC/
 ECE; Case-Jitter Flip %; Cross-Question Max Δ; State-Ablation Flip %; Cached
-Multi-Q ms/query; then verdict against criteria 1–4 (criterion 5 pending user —
-DECISIONS.md §10): (1) state_ablation_flip_rate > 30% AND real−blank acc > +0.15;
-(2) max Δp == 0.0000 @4dp AND speedup > 1.5× at 5 questions; (3) jitter flip
-< 5% AND monotonic reliability (no top-bin inversion) AND post-TS in-domain
-ECE < 0.08; (4) unseen AUC > 0.75 AND positive skill over majority.
+Multi-Q ms/query; then verdict against criteria 1–5 (criterion 5 added by user 2026-11-23 —
+DECISIONS.md §10): (1) state_ablation_flip_rate > 30% AND real−blank acc >
++0.15; (2) max Δp == 0.0000 @4dp (padded fixed-shape inference mode) AND
+speedup > 1.5× at 5 questions; (3) jitter flip < 5% AND monotonic reliability
+(no top-bin inversion) AND post-TS in-domain ECE < 0.08; (4) unseen AUC > 0.75
+AND positive skill over majority; (5) unseen-workflow post-TS ECE < 0.12
+(temperatures fitted on seen workflows only, applied unchanged).
 Any MISSING artifact ⇒ verdict = NO-GO-INCOMPLETE (fail closed).
 PASS: RESULTS.md byte-reproducible from artifacts; verdict printed.
 ON-FAIL: n/a (verdict is computed, not argued).
@@ -234,3 +236,14 @@ cases × 5 questions) · V1+B* < 30 min · G1 instant.
 
 Full multi-dataset training · native 896×896 multimodal vision decisions ·
 Banking77 >70-option scaling. Requires G1-G1 verdict = GO.
+
+## Gate 2 preview sub-tasks (recorded 2026-11-23, NOT scheduled — outside the G1 engine)
+
+G2-TF1 Overnight teacher data factory: Gemma-431B offline batch generation,
+minimized-reasoning structured output, verify/filter gate, leakage guardrails
+per DECISIONS §20. Spec exists; no PASS criterion yet — specified at Gate 2 open.
+G2-V0 Browser image pipeline: Firefox capture → 896×896 vision states →
+teacher-labeled pairs, per DECISIONS §21. Spec exists; no PASS criterion yet.
+
+These IDs are NOT in the Gate-1 completeness index above and are never
+returned by `next_step.py` during Gate 1.

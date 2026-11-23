@@ -1,5 +1,5 @@
 ######################
-# decoupled-t5g2 project
+# drishyam-1 project
 ######################
 
 # uv venv + lock artifacts of runs
@@ -14,7 +14,7 @@ checkpoints/
 mlflow.db
 mlflow.db-*
 
-# NOTE: results/t5g2_results.jsonl and artifacts/ ARE tracked (evidence trail).
+# NOTE: results/drishyam_results.jsonl and artifacts/ ARE tracked (evidence trail).
 
 .env
 

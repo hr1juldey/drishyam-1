@@ -46,7 +46,7 @@ every open question: [`docs/DECISIONS.md`](docs/DECISIONS.md).
   then `uv run python ...`. `ast-grep scan` enforces this on shell scripts.
 - **ruff** gates every commit; **ast-grep** structural checks around every code
   edit (diff-based edits, no blind rewrites).
-- **pydantic** validates every config and every `results/t5g2_results.jsonl` row.
+- **pydantic** validates every config and every `results/drishyam_results.jsonl` row.
 - **Hugging Face libraries** (`transformers`, `datasets`, `peft`, `accelerate`,
   `hf-transfer`) do all model/data work.
 - Training runs are tracked in **MLflow** (`sqlite:///mlflow.db`), smoke-run
@@ -57,7 +57,7 @@ every open question: [`docs/DECISIONS.md`](docs/DECISIONS.md).
 
 ```bash
 uv sync
-uv run python -m t5g2_decision.probe        # GPU / bf16 capability check
+uv run python -m drishyam.probe        # GPU / bf16 capability check
 uv run python scripts/next_step.py          # prints the next sub-task to execute
 ```
 
