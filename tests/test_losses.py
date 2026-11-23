@@ -21,7 +21,7 @@ def test_ce_brier_hand_computed():
 def test_rps_hand_computed():
     logits = torch.zeros(1, 4)
     gold = torch.tensor([[0.1, 0.2, 0.3, 0.4]])
-    cp = torch.tensor([0.25, 0.5, 0.75]).cumsum(0)  # uniform softmax cumsum (first 3 steps)
+    cp = torch.tensor([0.25, 0.5, 0.75])  # uniform softmax cumsum, first K-1 steps
     cg = torch.tensor([0.1, 0.3, 0.6])
     rps_v = float((((cp - cg) ** 2).sum()) / 3)
     assert torch.allclose(rps(logits, gold), torch.tensor([rps_v]), atol=1e-5)
