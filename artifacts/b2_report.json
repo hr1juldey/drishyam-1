@@ -1,0 +1,32 @@
+{
+  "test": {
+    "acc": 0.7586666666666667,
+    "brier": 0.06788465662262495,
+    "score_mae": 0.31333333333333335,
+    "ece15": 0.18265156266666666,
+    "ovr_auc": 0.9187387525390367,
+    "n": 1500
+  },
+  "unseen_test": {
+    "acc": 0.71,
+    "brier": 0.0568511291794312,
+    "score_mae": 0.29,
+    "ece15": 0.20874517800000003,
+    "ovr_auc": 0.910485817772079,
+    "n": 500
+  },
+  "jitter_flip_rate": 0.056666666666666664,
+  "jitter_per_workflow": {
+    "invoice_processing": 0.02,
+    "security_incidents": 0.06,
+    "customer_service": 0.09
+  },
+  "multiq": {
+    "n_states": 25,
+    "max_delta_full_prec": 0.05993000000000001,
+    "max_delta_4dp": 0.0599,
+    "bitwise_equal_frac": 0.0,
+    "batched_vs_single_q1_wall_ratio": 2.251903429522663,
+    "note": "ratio>1 means batching is SLOWER for their engine at this sample"
+  }
+}
