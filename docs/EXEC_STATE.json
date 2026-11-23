@@ -47,10 +47,10 @@
       "artifact": ""
     },
     "G1-T1": {
-      "status": "in_progress",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "night queue: training EXIT marker seen",
+      "commit": "e9ae9b87c28d03f0a22541e49d659d3a1cdd9f5c",
       "artifact": ""
     },
     "G1-C1": {

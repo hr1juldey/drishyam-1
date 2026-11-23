@@ -19,15 +19,25 @@ def apply_temperature(probs: np.ndarray, t: float) -> np.ndarray:
     return _softmax(np.log(np.clip(probs, 1e-9, 1.0)) / t)
 
 
-def fit_temperature(probs: np.ndarray, golds: np.ndarray, primitive: str) -> float:
-    """Grid + parabolic refine on soft-gold NLL; primitive param keeps the table explicit."""
+def _rows(x) -> list[np.ndarray]:
+    """2D array -> list of rows; ragged/object/list input -> list of 1-D vectors."""
+    if isinstance(x, np.ndarray) and x.ndim == 2:
+        return list(x)
+    return [np.asarray(r, dtype=float) for r in x]
+
+
+def fit_temperature(probs, golds, primitive: str = "") -> float:
+    """Grid + parabolic refine on soft-gold NLL; ragged-safe (choice K varies)."""
     del primitive  # fitted per-primitive by the caller; asserted in fit_all
-    logits = np.log(np.clip(np.atleast_2d(probs), 1e-9, 1.0))
-    g = np.atleast_2d(golds)
+    pl, gl = _rows(probs), _rows(golds)
 
     def nll(t: float) -> float:
-        return float(-np.mean([gi @ np.log(_softmax(li / t))
-                               for li, gi in zip(logits, g, strict=False)]))
+        vals = []
+        for p, g in zip(pl, gl, strict=False):
+            z = np.log(np.clip(p, 1e-9, 1.0)) / t
+            z -= z.max()
+            vals.append(float(g @ (z - np.log(np.exp(z).sum()))))
+        return float(-np.mean(vals))
 
     grid = np.concatenate([np.linspace(0.2, 5.0, 97), [1.0]])
     ts = sorted(set(grid.tolist()))
@@ -48,9 +58,9 @@ def fit_all(npz_path: Path = ART / "val_logits.npz") -> dict:
         sel = prims == prim
         if not sel.any():
             continue
-        p = np.stack([np.asarray(x, dtype=float) for x in probs[sel]])
-        g = np.stack([np.asarray(x, dtype=float) for x in golds[sel]])
-        table[prim] = {"T": fit_temperature(p, g, prim), "n": int(sel.sum())}
+        p_sel = [np.asarray(x, dtype=float) for x in probs[sel]]
+        g_sel = [np.asarray(x, dtype=float) for x in golds[sel]]
+        table[prim] = {"T": fit_temperature(p_sel, g_sel, prim), "n": int(sel.sum())}
     return table
 
 
