@@ -85,3 +85,17 @@ TypeError: unsupported operand type(s) for +: 'NoneType' and 'NoneType'
 - 00:03:44 [cpu] night drafter end — drafts at drafts/seen3_drafts.jsonl (0 cases)
 - 00:03:44 [cpu] === NIGHT CPU LANE end ===
 NIGHT_CPU_EXIT=0
+Traceback (most recent call last):
+  File "/home/riju279/Documents/code/drishyam-1/scripts/bakeoff.py", line 184, in <module>
+    main()
+  File "/home/riju279/Documents/code/drishyam-1/scripts/bakeoff.py", line 176, in main
+    rep = bakeoff(a.model.split("+"), a.cases, a.samples, a.seed)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riju279/Documents/code/drishyam-1/scripts/bakeoff.py", line 112, in bakeoff
+    acc_p = {q: {k: float(np.mean([_num(p.get(q, {}).get(k)) for p in sample_ps]))
+                                        ^^^^^^^^^^^^^^^^
+AttributeError: 'float' object has no attribute 'get'
+- 00:10:34 [cpu] bakeoff PARKED rc=0
+drafted 0 cases (3 consecutive fails at stop)
+- 00:14:35 [cpu] drafter end (0 cases)
+- 00:14:35 [cpu] lane done
