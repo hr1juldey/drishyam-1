@@ -24,7 +24,7 @@ def call(model: str, prompt: str, temperature: float, seed: int, num_predict: in
         "model": model, "stream": False,
         "messages": [{"role": "user", "content": prompt}],
         "options": {"temperature": temperature, "num_predict": num_predict,
-                    "seed": seed, "num_thread": 8},
+                    "seed": seed, "num_thread": 8, "num_gpu": 0},
     }, timeout=600)
     r.raise_for_status()
     return r.json()["message"]["content"]
