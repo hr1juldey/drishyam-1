@@ -42,11 +42,17 @@ def test_slot_shapes_and_invariance():
                     options=["No", "Yes"])
     alone = rows_of(m, tok, s_ids, s_mask, [choice])
     batch = rows_of(m, tok, s_ids, s_mask, [choice, noul])
+    reordered = rows_of(m, tok, s_ids, s_mask, [noul, choice])
     assert alone[0].shape == (3,)
     assert len(batch) == 2 and batch[0].shape == (3,) and batch[1].shape == (2,)
     assert torch.isfinite(alone[0]).all()
-    # padded fixed-shape invariance: identical kernels => bitwise identical
-    assert torch.equal(batch[0], alone[0]), "cross-question invariance broken on CPU/fp32"
+    # (a) identical kernel shapes, different row position: BITWISE equal (no cross-row leakage)
+    assert torch.equal(reordered[1], batch[0]), "Q1 depends on its row position — cross-row leakage"
+    # (b) batch-size change (1 vs 2 rows) = fp reduction-order physics: bounded noise only
+    torch.testing.assert_close(batch[0], alone[0], rtol=0, atol=1e-6)
+    # (c) and the gate's actual metric: delta vanishes at 4 decimal places (DECISIONS §4)
+    assert (batch[0].round(decimals=6) == alone[0].round(decimals=6)).all(), \
+        "delta above gate sensitivity"
 
 
 def test_question_text_format():

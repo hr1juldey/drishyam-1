@@ -44,7 +44,14 @@ applies to the 4dp reading of the deployment (unpadded) path: **0.0000 @4dp
 required; raw Δ > 5e-5 is a structural bug to fix, not a tolerance to grant.**
 **CONFIRMED by user (2026-11-23): the padded fixed-shape mode IS the shipped
 inference mode; the gate reads its exact 0.0000 and the raw unpadded Δ is
-published alongside.**
+published alongside.** CPU wiring test found the SECOND float-physics
+dimension: batch SIZE (1 vs N rows) also changes BLAS tiling → last-bit deltas
+even with fixed sequence shapes. Decomposition recorded in
+tests/test_model_shapes.py: (a) row-position independence under identical
+shapes must be BITWISE (no cross-row leakage — the architectural claim);
+(b) batch-size deltas are bounded fp noise (≤1e-6 asserted on CPU);
+(c) the gate reads 4dp, where all three collapse to 0.0000. V1 measures the
+real-model GPU numbers into gate_inputs.json.
 
 ## 5. Temperature scaling on the unseen workflow (clarification)
 

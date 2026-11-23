@@ -5,10 +5,10 @@
   "roadmap": "docs/ROADMAP.md",
   "sub_tasks": {
     "G1-E0": {
-      "status": "in_progress",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "engine 6/6 tests, V1-V5 green; probe PROBE PASS sm86 bf16; ast-grep rules fire on fixture; ruff clean; torch 2.15.0+cu132/transformers 5.24.0/peft 0.22.0",
+      "commit": "67e5edd29f5f6c5b600337b9c35eb916ae56f9ca",
       "artifact": ""
     },
     "G1-S0": {
