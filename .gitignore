@@ -250,3 +250,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Hermes local plan/state - never committed (user directive 2026-11-23)
+.hermes/
