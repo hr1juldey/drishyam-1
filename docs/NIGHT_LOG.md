@@ -1020,3 +1020,9 @@ lfm3-omni:latest {'ok_cases': 25, 'mean_soft_kl': 1.4656140916768725, 'argmax_ag
 drafted 0 cases (3 consecutive fails at stop)
 - 05:07:39 [cpu] drafter end (0 cases)
 - 05:07:39 [cpu] lane v6 done
+- 05:09:05 [cpu] === NIGHT CPU LANE start (pid 1352405) ===
+- 05:09:05 [cpu] night drafter start (gemma4:31b, 3055s to 06:00, max 400 total, num_predict=900)
+drafted 0 cases (0 consecutive fails at stop)
+- 05:09:11 [cpu] night drafter end — drafts at drafts/seen3_drafts.jsonl (0 cases)
+- 05:09:11 [cpu] bake-off start (lfm3-omni vs gemma4:31b, 20 cases x 3 samples, 4849s window)
+lfm3-omni:latest {'ok_cases': 15, 'mean_soft_kl': 1.3802826484397388, 'argmax_agree_frac': 0.0, 'cases_per_hour': 628.8543164274483, 'wall_min': 1.4311740835507711}

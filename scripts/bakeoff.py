@@ -26,7 +26,7 @@ def call(model: str, prompt: str, temperature: float, seed: int, num_predict: in
     if num_gpu is not None:
         opts["num_gpu"] = num_gpu  # 0 = CPU-only by law on training nights
     r = requests.post(OLLAMA, json={
-        "model": model, "stream": False,
+        "model": model, "stream": False, "think": False,
         "messages": [{"role": "user", "content": prompt}],
         "options": opts,
     }, timeout=1800)
