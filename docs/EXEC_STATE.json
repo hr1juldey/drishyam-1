@@ -48,9 +48,9 @@
     },
     "G1-T1": {
       "status": "done",
-      "attempts": 2,
+      "attempts": 3,
       "note": "night queue: training EXIT marker seen",
-      "commit": "4dff4e1acfb062e440703babbc5b568f14b508dc",
+      "commit": "b42f02c90b2a10c0d4021cafc44cbe180402e619",
       "artifact": ""
     },
     "G1-C1": {

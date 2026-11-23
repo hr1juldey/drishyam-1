@@ -9,3 +9,4 @@
 2026-11-23 23:13:35 DONE G1-B2 5ae69db8 B2 as-shipped: unseen AUC .910 (bar achievable); fails jitter<5% (.0567), invariance==0 (.0599), ECE<.08 (.183)
 2026-11-23 23:57:42 DONE G1-T1 e9ae9b87 night queue: training EXIT marker seen
 2026-11-23 23:59:58 DONE G1-T1 4dff4e1a night queue: training EXIT marker seen
+2026-11-24 00:15:16 DONE G1-T1 b42f02c9 night queue: training EXIT marker seen

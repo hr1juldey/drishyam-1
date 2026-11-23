@@ -55,6 +55,22 @@ def _num(x) -> float:
     return float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else 0.0
 
 
+def answers_to_gold_keys(ans: dict, gold: dict) -> dict | None:
+    """Map teacher answers onto gold option keys. Accepts {qid: {key: p}} (dict)
+    or {qid: [p, ...]} (array in criteria order); nulls coerce to 0.0."""
+    out: dict = {}
+    for qid, g in gold.items():
+        keys = list(g.keys())
+        v = ans.get(qid)
+        if isinstance(v, dict):
+            out[qid] = {k: _num(v.get(k)) for k in keys}
+        elif isinstance(v, (list, tuple)) and len(v) == len(keys):
+            out[qid] = {k: _num(x) for k, x in zip(keys, v, strict=True)}
+        else:
+            return None
+    return out
+
+
 def mean_kl(draft: dict, gold: dict) -> float:
     """KL(gold || draft) averaged over questions with matching keys."""
     kls = []
@@ -104,13 +120,14 @@ def bakeoff(models: list[str], n_cases: int, samples: int, seed: int) -> dict:
                 txt = call(model, prompt, 0.7, seed * 100 + s)
                 j = extract_json(txt)
                 if j and "answers" in j:
-                    sample_ps.append(j["answers"])
+                    norm = answers_to_gold_keys(j["answers"], c["gold"])
+                    if norm is not None:
+                        sample_ps.append(norm)
             if not sample_ps:
                 continue
             ok += 1
-            keys = {q: list(g.keys()) for q, g in c["gold"].items()}
-            acc_p = {q: {k: float(np.mean([_num(p.get(q, {}).get(k)) for p in sample_ps]))
-                         for k in ks} for q, ks in keys.items()}
+            acc_p = {q: {k: float(np.mean([p[q][k] for p in sample_ps])) for k in ks}
+                     for q, ks in ((q, list(g.keys())) for q, g in c["gold"].items())}
             kls.append(mean_kl(acc_p, c["gold"]))
             agree.append(all(
                 max(acc_p[q], key=acc_p[q].get) == max(g, key=g.get)
