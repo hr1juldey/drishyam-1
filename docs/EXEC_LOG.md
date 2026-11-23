@@ -6,3 +6,4 @@
 2026-11-23 22:21:07 DONE G1-S0 d77a5033 PASS: torch.AdamW 20/20 finite 15.38->0.11; ManualAdamW 20/20 finite 15.09->0.15; artifacts/sanity_gate.json
 2026-11-23 22:24:16 DONE G1-M1 86ee3504 smoke: trainable=7800705, slot shapes [2][3][4], vram 2001MB, backward ok; CPU wiring 2/2
 2026-11-23 22:48:17 DONE G1-B1 1431fbce TF-IDF LogReg: test acc .633 Brier .161 AUC .826; unseen acc .260 AUC .491 = honest zero-shot floor
+2026-11-23 23:13:35 DONE G1-B2 5ae69db8 B2 as-shipped: unseen AUC .910 (bar achievable); fails jitter<5% (.0567), invariance==0 (.0599), ECE<.08 (.183)

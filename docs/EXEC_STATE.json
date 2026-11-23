@@ -75,10 +75,10 @@
       "artifact": ""
     },
     "G1-B2": {
-      "status": "todo",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "B2 as-shipped: unseen AUC .910 (bar achievable); fails jitter<5% (.0567), invariance==0 (.0599), ECE<.08 (.183)",
+      "commit": "5ae69db8fa4a56d87bff0fde411553b01ccb3f65",
       "artifact": ""
     },
     "G1-G1": {
