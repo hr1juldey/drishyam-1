@@ -76,8 +76,11 @@ class DecoupledDecision(nn.Module):
         enc = self.bb.get_encoder()(input_ids=state_ids, attention_mask=state_mask)
         return enc.last_hidden_state  # [B, L_state, d] — THE cache
 
-    def forward(self, state_ids, state_mask, dec_ids, dec_mask, slot_pos_list, row_case=None):
+    def forward(self, state_ids, state_mask, dec_ids, dec_mask, slot_pos_list,
+                row_case=None, blank_state=False):
         h_enc = self.encode_state(state_ids, state_mask)
+        if blank_state:
+            h_enc = torch.zeros_like(h_enc)  # anti-dead-weight ablation (spec §4.3)
         n_dec = dec_ids.size(0)
         # transformers 5 mask builders (create_bidirectional_mask) vmap-index the padding
         # mask by decoder batch — stride-0 expand() views die on device-side asserts, so
