@@ -40,10 +40,10 @@
       "artifact": ""
     },
     "G1-M1": {
-      "status": "todo",
-      "attempts": 0,
-      "note": "",
-      "commit": "",
+      "status": "done",
+      "attempts": 1,
+      "note": "smoke: trainable=7800705, slot shapes [2][3][4], vram 2001MB, backward ok; CPU wiring 2/2",
+      "commit": "86ee3504bf436f46258ef2bd2e186e3c4d20500e",
       "artifact": ""
     },
     "G1-T1": {
