@@ -19,10 +19,10 @@ def main():
 
     ckpt = a.ckpt
     if not ckpt:
-        runs = sorted(os.listdir(os.path.join(HERE, "..", "runs")),
-                      reverse=True) if os.path.isdir(os.path.join(HERE, "..", "runs")) else []
+        runs = sorted(os.listdir(os.path.join(HERE, "..", "..", "runs")),
+                      reverse=True) if os.path.isdir(os.path.join(HERE, "..", "..", "runs")) else []
         for r in runs:
-            cand = os.path.join(HERE, "..", "runs", r, "final")
+            cand = os.path.join(HERE, "..", "..", "runs", r, "final")
             if os.path.exists(os.path.join(cand, "config.json")):
                 ckpt = cand
                 break

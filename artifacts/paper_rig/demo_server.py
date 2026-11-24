@@ -65,7 +65,7 @@ def main():
     a = ap.parse_args()
     ckpt = a.ckpt
     if not ckpt:
-        cand = os.path.join(HERE, "..", "runs", "img-e2", "final")
+        cand = os.path.join(HERE, "..", "..", "runs", "img-e2", "final")
         ckpt = cand if os.path.exists(os.path.join(cand, "config.json")) else None
     if not ckpt:
         from pack_batch import _SNAP

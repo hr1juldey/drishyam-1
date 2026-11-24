@@ -54,11 +54,12 @@ def load_entries(dirs, exclude_holdout=True):
     return ents
 
 
-def build_model_and_freeze(cpu=False):
+def build_model_and_freeze(cpu=False, init_from=None):
     from transformers import T5Gemma2ForConditionalGeneration, AutoTokenizer
-    tok = AutoTokenizer.from_pretrained(SNAP)
+    src = init_from if init_from else SNAP
+    tok = AutoTokenizer.from_pretrained(src)
     model = T5Gemma2ForConditionalGeneration.from_pretrained(
-        SNAP, dtype=torch.bfloat16)
+        src, dtype=torch.bfloat16)
     if not cpu:
         model = model.cuda()
     model.gradient_checkpointing_enable()
@@ -135,6 +136,8 @@ def main():
     ap.add_argument("--log-every", type=int, default=25)
     ap.add_argument("--vram-pause-free-mb", type=int, default=1200)
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--init-from", type=str, default=None,
+                    help="warm-start decoder from this checkpoint instead of SNAP")
     ap.add_argument("--cpu", action="store_true", help="wiring smoke on CPU")
     ap.add_argument("--smoke", action="store_true", help="10-step wiring smoke on 200 rows")
     ap.add_argument("--max-steps", type=int, default=None)
@@ -150,7 +153,7 @@ def main():
     if len(ents) < 32:
         raise SystemExit(f"too few trainable rows: {len(ents)}")
 
-    model, tok = build_model_and_freeze(cpu=a.cpu)
+    model, tok = build_model_and_freeze(cpu=a.cpu, init_from=a.init_from)
     dev = "cpu" if a.cpu else "cuda"
     opt = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad],
                             lr=a.lr, weight_decay=0.01)

@@ -61,8 +61,7 @@ def main():
         with torch.no_grad():
             enc = model.model.encoder.text_model(
                 inputs_embeds=enc_embeds, attention_mask=attn)
-            dec_in = torch.full((1, 1), tok.pad_token_id
-                                if tok.pad_token_id is not None else 0,
+            dec_in = torch.full((1, 1), tok.bos_token_id if tok.bos_token_id is not None else 2,
                                 dtype=torch.long, device="cuda")
             out_ids = []
             past = None

@@ -126,8 +126,8 @@ uv run python artifacts/paper_rig/overnight_report.py \
   --eval-json runs/eval_embeds.json --eval-log "$LOGD/eval.log" \
   --verify-a "$LOGD/verify_A.json" --verify-b "$LOGD/verify_B.json" \
   --slice2-log "$LOGD/slice2.log" --smoke-log "$LOGD/smoke.log" \
-  --stage-A "${STAGE[A]:-NOT_RUN}" --stage-B "${STAGE[B]:-NOT_RUN}" \
-  --stage-C "${STAGE[C]:-NOT_RUN}" --stage-D "${STAGE[D]:-NOT_RUN}" \
-  --stage-E "${STAGE[E]:-NOT_RUN}" --out runs/overnight_report.md \
+  --stage-a "${STAGE[A]:-NOT_RUN}" --stage-b "${STAGE[B]:-NOT_RUN}" \
+  --stage-c "${STAGE[C]:-NOT_RUN}" --stage-d "${STAGE[D]:-NOT_RUN}" \
+  --stage-e "${STAGE[E]:-NOT_RUN}" --out runs/overnight_report.md \
   > "$LOGD/report_gen.log" 2>&1
 log "chain finished: A=${STAGE[A]:-?} B=${STAGE[B]:-?} C=${STAGE[C]:-?} D=${STAGE[D]:-?} E=${STAGE[E]:-?}"
