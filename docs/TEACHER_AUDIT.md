@@ -202,3 +202,30 @@ itself is trustworthy.
   failed); factory concurrency must stay <=4-5 workers with 90s backoff.
 - Also observed: 2/10 "completed" workers in the throttled 500-run claimed
   file writes that never landed on disk — ONLY disk counts as done.
+
+## FINAL: h500a n=500 exam (2026-11-24 ~12:10)
+
+Contract v2a (calibration guidance + 4 worked examples), GLM glm-5.3-flash leaves via Hermes
+harness, 50 batches x 10 cases, 4-worker waves, zero 429s, 500/500 VALID, zero rejects.
+
+| metric | v1 n=20 (seed42) | v2a n=500 (seed7) |
+|---|---|---|
+| mean soft KL | 0.1387 | 0.1567 |
+| case-level argmax agree | 20.0% | 26.2% |
+| choice agree | 73.1% | 71.0% (n=666) |
+| noul agree | 79.4% | 85.0% (n=834) |
+| score agree | 57.5% | 68.6% (n=1000) |
+
+By workflow (per-question): customer_service 79.5% (n=830), invoice 72.9% (n=835),
+security 71.7% (n=835). All three schemas label in the same band — no schema is a weak point.
+
+Same-set staircase inside h500a (@N cases, fixed seed-7 order): KL 0.209(@40) → 0.185(@240)
+→ 0.157(@500); choice 0.600→0.710; score 0.637→0.686; noul peaked 0.925 on the invoice-only
+prefix, settled 0.850 once customer_service entered (CS binaries are the hardest noul).
+
+Prompt-improvement verdict: v2a's calibration guidance is worth ~+11 pts on score and ~+6 pts
+on noul over v1 at scale; choice is unchanged (it was already saturated). KL converges ~0.16.
+Factory gate (KL<=0.3, per-question>=60%) passes with margin on every question type.
+
+Wave mechanics proven for the 2-lakh factory: 13 waves, 50 workers, ~3.5 min/wave, 100%
+on-disk verification, no lies, no rogue reads, no rate-limit hits at 4 parallel.

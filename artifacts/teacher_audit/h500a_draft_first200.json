@@ -1,0 +1,35 @@
+{
+  "n_cases": 500,
+  "scored_limit": 200,
+  "ok_cases": 200,
+  "draft_prefix": "draft_",
+  "contract": "v2a",
+  "mean_soft_kl": 0.19579224154406916,
+  "argmax_agree_frac": 0.245,
+  "by_question_type": {
+    "choice": {
+      "n": 200,
+      "agree_frac": 0.56
+    },
+    "noul": {
+      "n": 400,
+      "agree_frac": 0.8825
+    },
+    "score": {
+      "n": 400,
+      "agree_frac": 0.665
+    }
+  },
+  "by_workflow": {
+    "invoice_processing": {
+      "n": 835,
+      "agree_frac": 0.7293413173652694
+    },
+    "security_incidents": {
+      "n": 165,
+      "agree_frac": 0.7393939393939394
+    }
+  },
+  "labeler": "hermes-subagent (inherited provider)",
+  "harness": true
+}
