@@ -1,0 +1,6 @@
+{
+ "ssim_gpu_vs_cpu": 0.3475,
+ "psnr_gpu_vs_cpu": 12.05,
+ "ssim_gpu_vs_cycles_template": 0.1012,
+ "ssim_cpu_vs_cycles_template": 0.2366
+}

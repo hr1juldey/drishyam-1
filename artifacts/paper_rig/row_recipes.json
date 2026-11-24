@@ -1,0 +1,196 @@
+{
+ "savings": {
+  "content": {
+   "family": "icici_savings_statement",
+   "account_number": "984008321896",
+   "from_date": "15/01/2021",
+   "to_date": "15/01/2021",
+   "n_transactions": 13,
+   "transactions": [
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-06DEC23-79b2d1-PAYU FINA",
+     "amount": 589.99,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-10OCT23-0d055b96-22454",
+     "amount": 589.99,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-01DEC23-79bfd1-PAYU FINA",
+     "amount": 592.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-08DEC23-00669637-PAYU FINA",
+     "amount": 590.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-01DEC23-00654047-PAYU FINA",
+     "amount": 590.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-07DEC23-00626749-PAYU FINA",
+     "amount": 589.99,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-09DEC23-00658378-PAYU FINA",
+     "amount": 590.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-09OCT23-53ecad7b-22454",
+     "amount": 590.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-01DEC23-00686991-PAYU FINA",
+     "amount": 591.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-04OCT23-327b0a54-22454",
+     "amount": 591.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-02OCT23-32d72a05-22454",
+     "amount": 590.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-07OCT23-65a9bfd3-22454",
+     "amount": 590.0,
+     "type": "DR"
+    },
+    {
+     "date": "15/01/2021",
+     "description": "NACH_AD_RTN_CHRG-INGENOT-10DEC23-79b6d1-PAYU FINA",
+     "amount": 592.0,
+     "type": "DR"
+    }
+   ],
+   "page": 1
+  },
+  "paper": {
+   "family": "loose_a4_stack",
+   "azimuth": "light_left",
+   "seed_row": 1347863676,
+   "crumple": "medium",
+   "shadow": "soft_orbit"
+  },
+  "row_image": "paper_row_savings.png"
+ },
+ "card": {
+  "content": {
+   "family": "icici_card_estatement",
+   "customer_name": "MR SANJAY GUPTA",
+   "company": "HDFC BANK LTD",
+   "card_masked": "4825 XXXX XXXX 0226",
+   "card_number_row": "4825 XXXX XXXX 0226",
+   "statement_date": "14/09/2020",
+   "due_date": "14/08/2021",
+   "min_amount_due": 300.0,
+   "total_amount_due": 1091.4,
+   "credit_limit": 200000.0,
+   "available_credit": 198048.39,
+   "payback_account": "6399161751636116765",
+   "invoice_no": "7299157752357501061",
+   "previous_balance": 5774.16,
+   "purchases_charges": 8064.63,
+   "payments_credits": 5218.52,
+   "reward_points": 124,
+   "n_transactions": 8,
+   "transactions": [
+    {
+     "date": "17/08/2020",
+     "ref": "63334858826099581214",
+     "detail": "BANGALORE ONE -1 IN",
+     "reward_points": 2.0,
+     "amount": 455.7,
+     "credit": false
+    },
+    {
+     "date": "09/08/2020",
+     "ref": "44789072873091199560",
+     "detail": "RELANCE FRESH BANGALORE IN",
+     "reward_points": 0.0,
+     "amount": 1378.71,
+     "credit": true
+    },
+    {
+     "date": "27/08/2020",
+     "ref": "49856377927482572830",
+     "detail": "HOUSE OF SPIRIT BANGALORE IN",
+     "reward_points": 3.0,
+     "amount": 1358.51,
+     "credit": false
+    },
+    {
+     "date": "27/08/2020",
+     "ref": "00501442163007864553",
+     "detail": "HOUSE OF SPIRIT BANGALORE IN",
+     "reward_points": 0.0,
+     "amount": 919.65,
+     "credit": false
+    },
+    {
+     "date": "15/08/2020",
+     "ref": "59423199592438388055",
+     "detail": "RELANCE FRESH BANGALORE IN",
+     "reward_points": 2.0,
+     "amount": 151.28,
+     "credit": false
+    },
+    {
+     "date": "06/08/2020",
+     "ref": "92429659738058277690",
+     "detail": "HOUSE OF SPIRIT BANGALORE IN",
+     "reward_points": 0.0,
+     "amount": 1087.12,
+     "credit": false
+    },
+    {
+     "date": "21/08/2020",
+     "ref": "15122849122593985484",
+     "detail": "BIGCINEMAS BANGALORE IN",
+     "reward_points": 5.0,
+     "amount": 824.69,
+     "credit": false
+    },
+    {
+     "date": "18/08/2020",
+     "ref": "86451199698305595654",
+     "detail": "AMAR SERVICE STATION BANGALORE IN",
+     "reward_points": 0.0,
+     "amount": 1448.01,
+     "credit": false
+    }
+   ]
+  },
+  "paper": {
+   "family": "loose_a4_stack",
+   "azimuth": "light_right",
+   "seed_row": 444575459,
+   "crumple": "medium",
+   "shadow": "soft_orbit"
+  },
+  "row_image": "paper_row_card.png"
+ }
+}

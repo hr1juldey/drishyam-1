@@ -1,0 +1,94 @@
+{
+ "family": "icici_savings_statement",
+ "account_number": "901717280042",
+ "from_date": "11/02/2023",
+ "to_date": "11/02/2023",
+ "n_transactions": 14,
+ "transactions": [
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-07OCT23-b220df07-22454",
+   "amount": 590.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-01OCT23-b8f55723-22454",
+   "amount": 589.99,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-INGENOT-04DEC23-79b9d1-PAYU FINA",
+   "amount": 589.99,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-04OCT23-0422bd86-22454",
+   "amount": 592.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-INGENOT-11DEC23-79b5d1-PAYU FINA",
+   "amount": 590.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-06OCT23-5bdc2df5-22454",
+   "amount": 589.99,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-INGENOT-05DEC23-00690618-PAYU FINA",
+   "amount": 592.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-INGENOT-03DEC23-79b3d1-PAYU FINA",
+   "amount": 590.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-INGENOT-11DEC23-00670587-PAYU FINA",
+   "amount": 590.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-10OCT23-db349b45-22454",
+   "amount": 591.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "ECSRTNCHGS1023667545_SR9870136345GST",
+   "amount": 592.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "ECSRTNCHGS0423839819_SR9438410655GST",
+   "amount": 590.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-Of Bnk BFLo-10OCT23-fa3de14b-22454",
+   "amount": 590.0,
+   "type": "DR"
+  },
+  {
+   "date": "11/02/2023",
+   "description": "NACH_AD_RTN_CHRG-INGENOT-08DEC23-00644912-PAYU FINA",
+   "amount": 591.0,
+   "type": "DR"
+  }
+ ],
+ "page": 1
+}

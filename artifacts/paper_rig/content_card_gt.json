@@ -1,0 +1,86 @@
+{
+ "family": "icici_card_estatement",
+ "customer_name": "MR RAJESH KUMAR M",
+ "company": "FLIPKART INTERNET PVT LTD",
+ "card_masked": "4463 XXXX XXXX 5983",
+ "card_number_row": "4463 XXXX XXXX 5983",
+ "statement_date": "16/05/2019",
+ "due_date": "18/11/2020",
+ "min_amount_due": 450.0,
+ "total_amount_due": 4508.18,
+ "credit_limit": 53000.0,
+ "available_credit": 48151.63,
+ "payback_account": "2609395366142680561",
+ "invoice_no": "7944923874527264261",
+ "previous_balance": 2683.16,
+ "purchases_charges": 4794.54,
+ "payments_credits": 4693.96,
+ "reward_points": 187,
+ "n_transactions": 8,
+ "transactions": [
+  {
+   "date": "20/01/2021",
+   "ref": "25144626005767423043",
+   "detail": "AMAR SERVICE STATION BANGALORE IN",
+   "reward_points": 5.0,
+   "amount": 690.61,
+   "credit": false
+  },
+  {
+   "date": "09/08/2023",
+   "ref": "81461206594579665851",
+   "detail": "AMAR SERVICE STATION BANGALORE IN",
+   "reward_points": 3.0,
+   "amount": 777.23,
+   "credit": false
+  },
+  {
+   "date": "06/08/2021",
+   "ref": "55945695001820875842",
+   "detail": "HOUSE OF SPIRIT BANGALORE IN",
+   "reward_points": 3.0,
+   "amount": 369.01,
+   "credit": true
+  },
+  {
+   "date": "07/05/2019",
+   "ref": "76658946518552469371",
+   "detail": "SRI HARI CHANAKESAVA BANGALORE IN",
+   "reward_points": 5.0,
+   "amount": 1470.42,
+   "credit": false
+  },
+  {
+   "date": "08/04/2022",
+   "ref": "24932246137100038216",
+   "detail": "SWIGGY BANGALORE IN",
+   "reward_points": 5.0,
+   "amount": 573.51,
+   "credit": true
+  },
+  {
+   "date": "16/09/2023",
+   "ref": "37546346444962805524",
+   "detail": "RELANCE FRESH BANGALORE IN",
+   "reward_points": 2.0,
+   "amount": 1101.85,
+   "credit": false
+  },
+  {
+   "date": "27/03/2021",
+   "ref": "86487026885197315924",
+   "detail": "RELANCE FRESH BANGALORE IN",
+   "reward_points": 3.0,
+   "amount": 1018.91,
+   "credit": true
+  },
+  {
+   "date": "14/01/2022",
+   "ref": "39064163452788733451",
+   "detail": "UBER INDIA SYSTEMS ESHELL IN",
+   "reward_points": 3.0,
+   "amount": 1067.53,
+   "credit": true
+  }
+ ]
+}

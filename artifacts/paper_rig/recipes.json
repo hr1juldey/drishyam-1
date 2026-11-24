@@ -1,0 +1,14 @@
+{
+ "type": "2d_fast_pipeline_recipe_v2",
+ "note": "every render = f(recipe); no pixels stored",
+ "rows": [
+  {
+   "azimuth": "light_left",
+   "seed": 100,
+   "light_travel_xy": [
+    0.874,
+    0.486
+   ]
+  }
+ ]
+}
