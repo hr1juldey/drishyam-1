@@ -53,13 +53,13 @@ fi
 log "stage B: slice-2 precompute ($families)"
 B_OK=0
 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-  uv run python artifacts/paper_rig/precompute_embed.py --families "$families" \
+  timeout 14400 uv run python artifacts/paper_rig/precompute_embed.py --families "$families" \
   --out-dir "$E2" > "$LOGD/slice2.log" 2>&1
 grep -q "PRECOMPUTE COMPLETE" "$LOGD/slice2.log" && B_OK=1
 if [ "$B_OK" = 0 ]; then
-  log "stage B: died — resuming once (shard-skip)"
+  log "stage B: died or timed out — resuming once (shard-skip)"
   PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
-    uv run python artifacts/paper_rig/precompute_embed.py --families "$families" \
+    timeout 14400 uv run python artifacts/paper_rig/precompute_embed.py --families "$families" \
     --out-dir "$E2" >> "$LOGD/slice2.log" 2>&1
   grep -q "PRECOMPUTE COMPLETE" "$LOGD/slice2.log" && B_OK=1
 fi

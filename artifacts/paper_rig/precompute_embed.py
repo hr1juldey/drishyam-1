@@ -53,6 +53,8 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
     global OUT
     if out_dir:
         OUT = os.path.abspath(os.path.expanduser(out_dir))
+    import faulthandler
+    faulthandler.dump_traceback_later(240, repeat=True, file=sys.stderr)  # stall watchdog
     from jit_pipeline import build_manifest
     from transformers import AutoModelForImageTextToText
     os.makedirs(OUT, exist_ok=True)
@@ -98,12 +100,26 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
     class G:
         def seed_drawn(self, a, b): return 1
 
-    # resumable: count completed shard rows
+    # resumable: count completed shard rows; a PARTIAL last shard (labels < SHARD,
+    # or zero-husk from a crash) is deleted and rewritten from its start index
     done = 0
     shard_files = sorted(f for f in os.listdir(OUT) if f.startswith("emb_") and f.endswith(".npy"))
     if shard_files:
         last = int(shard_files[-1].split("_")[1].split(".")[0])
-        done = last + SHARD
+        lab_last = os.path.join(OUT, f"lab_{last:06d}.jsonl")
+        n_lab = 0
+        if os.path.exists(lab_last):
+            with open(lab_last) as f:
+                n_lab = sum(1 for line in f if line.strip())
+        if n_lab == SHARD:
+            done = last + SHARD
+        else:
+            print(f"partial shard {last:06d} ({n_lab}/{SHARD} labels) — deleting and rewriting",
+                  flush=True)
+            os.remove(os.path.join(OUT, f"emb_{last:06d}.npy"))
+            if os.path.exists(lab_last):
+                os.remove(lab_last)
+            done = last
     print(f"manifest {len(rows)} rows, resuming at {done}", flush=True)
 
     t_start = time.time()
@@ -113,15 +129,18 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
     worker = threading.Thread(target=_page_worker, args=(rows_q, pages_q), daemon=True)
     worker.start()
 
-    def feed(chunk):
-        """Enqueue same-family batches (bounded: worker stays <=3 batches ahead)."""
+    def feed_async(chunk, rq):
+        """Runs in its own thread: enqueue same-family batches so the consumer
+        loop below can start immediately. (Feeding inline deadlocked: rows_q
+        fills -> worker blocks on pages_q -> feed never returns -> consumer
+        never starts.)"""
         i = 0
         while i < len(chunk):
             fam = chunk[i]["family"]
             j = i
             while j < len(chunk) and chunk[j]["family"] == fam and j - i < BATCH:
                 j += 1
-            rows_q.put(chunk[i:j])
+            rq.put(chunk[i:j])
             i = j
 
     while done < len(rows):
@@ -131,11 +150,13 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
         emb_mm = np.lib.format.open_memmap(emb_path, mode="w+", dtype=np.float16,
                                            shape=(len(chunk), 256, 640))
         lf = open(lab_path, "w")
-        feed(chunk)
+        ft = threading.Thread(target=feed_async, args=(chunk, rows_q))
+        ft.start()
         n_shard = 0
         t_shard = time.time()
         got = 0
         while got < len(chunk):
+            t_b0 = time.time()
             item = pages_q.get()
             if isinstance(item, Exception):
                 raise item
@@ -157,6 +178,9 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
                 lf.write(json.dumps({"row_id": r["row_id"], "family": fam, "seed": r["seed"],
                                      "field": qa["field"], "q": qa["q"], "a": qa["a"]}) + "\n")
             got += len(sub); n_shard += len(sub); n_done += len(sub)
+            if n_done % 320 < BATCH:
+                print(f"batch done: {n_done}/{len(rows)} rows | this batch "
+                      f"{time.time()-t_b0:.1f}s", flush=True)
             if n_done % 640 < BATCH:
                 rate = n_done / (time.time() - t_start)
                 print(f"{n_done}/{len(rows)} rows | {rate:.1f} rows/s | "
@@ -164,6 +188,7 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
         emb_mm.flush(); lf.close()
         print(f"shard {done:06d} done ({n_shard} rows) in {(time.time()-t_shard)/60:.0f} min",
               flush=True)
+        ft.join()
         done += len(chunk)
     rows_q.put(None)
     worker.join(timeout=30)
