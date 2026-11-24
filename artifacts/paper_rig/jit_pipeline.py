@@ -54,16 +54,19 @@ def gen_page(family, seed):
     page, gt = (gen_statement if family == "savings" else gen_card)(rng)
     return page, gt            # statements: field-registry + degradation = next work item
 
-def build_manifest(n_rows=200_000, path=MANIFEST):
+def build_manifest(n_rows=200_000, path=None):
+    """deterministic rows in memory; file written ONLY when path is given
+    (tests call without path so they never clobber manifest_200k.jsonl)."""
     counts = {f: int(round(n_rows * w)) for f, w in MIX}
     counts[list(counts)[-1]] = n_rows - sum(list(counts.values())[:-1])
     rows = []
     for fam, c in counts.items():
         rows += [{"row_id": len(rows) + i, "family": fam, "seed": BASE_SEED + i * 7919}
                  for i in range(c)]
-    with open(path, "w") as f:
-        for r in rows:
-            f.write(json.dumps(r) + "\n")
+    if path:
+        with open(path, "w") as f:
+            for r in rows:
+                f.write(json.dumps(r) + "\n")
     return rows, counts
 
 class JITTloader:
@@ -109,7 +112,7 @@ class JITTloader:
 
 if __name__ == "__main__":
     N = int(os.environ.get("N_ROWS", "200000"))
-    rows, counts = build_manifest(N)
+    rows, counts = build_manifest(N, path=MANIFEST)
     size_mb = os.path.getsize(MANIFEST) / 1e6
     print(f"manifest: {len(rows)} rows, {size_mb:.1f} MB on disk, mix {counts}")
     print(f"pixels on disk: 0 bytes (JIT)")
