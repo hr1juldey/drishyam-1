@@ -1,0 +1,489 @@
+{
+ "family": "thermal_pharmacy_retail",
+ "page_size": [
+  384,
+  1150
+ ],
+ "seed": 777,
+ "shop": "SUBIKSHA PHARMA",
+ "gstin": "33TLCATPUR7841F1ZG",
+ "date": "Date : 22/07/2019, 20:22 PM",
+ "customer": "",
+ "bill_no": "SR578",
+ "payment_mode": "UPI",
+ "items": [
+  {
+   "item": "Moov Spray",
+   "qty": 3,
+   "amount": 555.0
+  },
+  {
+   "item": "Benadryl DR",
+   "qty": 3,
+   "amount": 354.0
+  },
+  {
+   "item": "Dolo 650",
+   "qty": 1,
+   "amount": 34.0
+  },
+  {
+   "item": "Eno Fruit Salt",
+   "qty": 2,
+   "amount": 116.0
+  },
+  {
+   "item": "Volini Spray",
+   "qty": 1,
+   "amount": 210.0
+  },
+  {
+   "item": "Zyrtec 10mg",
+   "qty": 2,
+   "amount": 192.0
+  }
+ ],
+ "subtotal": 1461.0,
+ "discount": 51.5,
+ "gst_slab_pct": 5.0,
+ "cgst": 35.24,
+ "sgst": 35.24,
+ "total": 1479.98,
+ "fields": {
+  "shop_name": {
+   "text": "SUBIKSHA PHARMA",
+   "bbox": [
+    92,
+    19,
+    291,
+    33
+   ]
+  },
+  "address": {
+   "text": "77, BAZULLAH ROAD,",
+   "bbox": [
+    105,
+    49,
+    278,
+    62
+   ]
+  },
+  "city": {
+   "text": "CHENNAI, TAMIL NADU.",
+   "bbox": [
+    95,
+    71,
+    287,
+    84
+   ]
+  },
+  "phone": {
+   "text": "PHONE : 044 28152233",
+   "bbox": [
+    95,
+    93,
+    287,
+    104
+   ]
+  },
+  "gstin": {
+   "text": "GSTIN : 33TLCATPUR7841F1ZG",
+   "bbox": [
+    67,
+    117,
+    317,
+    128
+   ]
+  },
+  "doc_type": {
+   "text": "Retail Invoice",
+   "bbox": [
+    99,
+    147,
+    284,
+    163
+   ]
+  },
+  "date": {
+   "text": "Date : 22/07/2019, 20:22 PM",
+   "bbox": [
+    14,
+    180,
+    273,
+    194
+   ]
+  },
+  "bill_no": {
+   "text": "Bill No: SR578",
+   "bbox": [
+    14,
+    214,
+    149,
+    226
+   ]
+  },
+  "payment_mode": {
+   "text": "Payment Mode: UPI",
+   "bbox": [
+    14,
+    238,
+    177,
+    253
+   ]
+  },
+  "dr_ref": {
+   "text": "DR Ref : 5",
+   "bbox": [
+    14,
+    262,
+    110,
+    274
+   ]
+  },
+  "th_item": {
+   "text": "Item",
+   "bbox": [
+    14,
+    295,
+    52,
+    306
+   ]
+  },
+  "th_qty": {
+   "text": "Qty",
+   "bbox": [
+    229,
+    295,
+    258,
+    309
+   ]
+  },
+  "th_amt": {
+   "text": "Amt",
+   "bbox": [
+    341,
+    295,
+    370,
+    306
+   ]
+  },
+  "item_0_name": {
+   "text": "Moov Spray",
+   "bbox": [
+    14,
+    331,
+    110,
+    345
+   ]
+  },
+  "item_0_qty": {
+   "text": "3",
+   "bbox": [
+    248,
+    331,
+    258,
+    342
+   ]
+  },
+  "item_0_amt": {
+   "text": "555.00",
+   "bbox": [
+    312,
+    331,
+    370,
+    342
+   ]
+  },
+  "item_1_name": {
+   "text": "Benadryl DR",
+   "bbox": [
+    14,
+    354,
+    120,
+    369
+   ]
+  },
+  "item_1_qty": {
+   "text": "3",
+   "bbox": [
+    248,
+    355,
+    258,
+    366
+   ]
+  },
+  "item_1_amt": {
+   "text": "354.00",
+   "bbox": [
+    312,
+    355,
+    370,
+    366
+   ]
+  },
+  "item_2_name": {
+   "text": "Dolo 650",
+   "bbox": [
+    14,
+    378,
+    91,
+    390
+   ]
+  },
+  "item_2_qty": {
+   "text": "1",
+   "bbox": [
+    248,
+    379,
+    258,
+    390
+   ]
+  },
+  "item_2_amt": {
+   "text": "34.00",
+   "bbox": [
+    321,
+    379,
+    369,
+    390
+   ]
+  },
+  "item_3_name": {
+   "text": "Eno Fruit Salt",
+   "bbox": [
+    14,
+    402,
+    149,
+    414
+   ]
+  },
+  "item_3_qty": {
+   "text": "2",
+   "bbox": [
+    248,
+    403,
+    258,
+    414
+   ]
+  },
+  "item_3_amt": {
+   "text": "116.00",
+   "bbox": [
+    312,
+    403,
+    370,
+    414
+   ]
+  },
+  "item_4_name": {
+   "text": "Volini Spray",
+   "bbox": [
+    14,
+    426,
+    130,
+    441
+   ]
+  },
+  "item_4_qty": {
+   "text": "1",
+   "bbox": [
+    248,
+    427,
+    258,
+    438
+   ]
+  },
+  "item_4_amt": {
+   "text": "210.00",
+   "bbox": [
+    312,
+    427,
+    370,
+    438
+   ]
+  },
+  "item_5_name": {
+   "text": "Zyrtec 10mg",
+   "bbox": [
+    14,
+    451,
+    120,
+    465
+   ]
+  },
+  "item_5_qty": {
+   "text": "2",
+   "bbox": [
+    248,
+    451,
+    258,
+    462
+   ]
+  },
+  "item_5_amt": {
+   "text": "192.00",
+   "bbox": [
+    312,
+    451,
+    370,
+    462
+   ]
+  },
+  "subtotal_label": {
+   "text": "Sub Total",
+   "bbox": [
+    14,
+    474,
+    100,
+    486
+   ]
+  },
+  "subtotal_qty": {
+   "text": "12",
+   "bbox": [
+    238,
+    475,
+    257,
+    486
+   ]
+  },
+  "subtotal_amt": {
+   "text": "1461.00",
+   "bbox": [
+    302,
+    475,
+    369,
+    486
+   ]
+  },
+  "discount_label": {
+   "text": "(-) Discount",
+   "bbox": [
+    198,
+    502,
+    313,
+    517
+   ]
+  },
+  "discount_amt": {
+   "text": "51.50",
+   "bbox": [
+    321,
+    503,
+    369,
+    514
+   ]
+  },
+  "cgst_label": {
+   "text": "CGST @ 5.00%",
+   "bbox": [
+    182,
+    526,
+    283,
+    538
+   ]
+  },
+  "cgst_amt": {
+   "text": "35.24",
+   "bbox": [
+    327,
+    527,
+    369,
+    536
+   ]
+  },
+  "sgst_label": {
+   "text": "SGST @ 5.00%",
+   "bbox": [
+    182,
+    548,
+    283,
+    560
+   ]
+  },
+  "sgst_amt": {
+   "text": "35.24",
+   "bbox": [
+    327,
+    549,
+    369,
+    558
+   ]
+  },
+  "total_label": {
+   "text": "TOTAL",
+   "bbox": [
+    14,
+    587,
+    62,
+    598
+   ]
+  },
+  "total_amt": {
+   "text": "Rs 1479.98",
+   "bbox": [
+    273,
+    587,
+    369,
+    598
+   ]
+  },
+  "cash_line": {
+   "text": "Cash :",
+   "bbox": [
+    14,
+    614,
+    72,
+    626
+   ]
+  },
+  "cash_amt": {
+   "text": "Rs 1479.98",
+   "bbox": [
+    273,
+    615,
+    369,
+    626
+   ]
+  },
+  "tendered_label": {
+   "text": "Cash tendered:",
+   "bbox": [
+    14,
+    638,
+    149,
+    650
+   ]
+  },
+  "tendered_amt": {
+   "text": "Rs 1479.98",
+   "bbox": [
+    273,
+    639,
+    369,
+    650
+   ]
+  },
+  "eoe": {
+   "text": "E & O.E",
+   "bbox": [
+    311,
+    669,
+    370,
+    678
+   ]
+  }
+ },
+ "degradation_plan": {
+  "total_amt": "smudge_heavy",
+  "date": "fade",
+  "item_1_name": "smudge_light",
+  "gstin": "thermal_band"
+ },
+ "legibility_applied": {
+  "total_amt": "smudge_heavy",
+  "date": "fade",
+  "item_1_name": "smudge_light",
+  "gstin": "thermal_band"
+ }
+}
