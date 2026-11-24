@@ -209,9 +209,9 @@ def score(manifest_path: Path, draft_prefix: str = "draft_",
             am_ok = max(norm[qid], key=norm[qid].get) == max(g, key=g.get)
             slot["n"] += 1
             slot["agree"] += int(am_ok)
+            wf_slot["n"] += 1
             wf_slot["agree"] += int(am_ok)
             all_am &= am_ok
-        wf_slot["n"] += 1
         agree.append(all_am)
     def frac(slot): return slot["agree"] / slot["n"] if slot["n"] else float("nan")
     rep = {"n_cases": manifest["n_cases"], "scored_limit": limit, "ok_cases": ok,

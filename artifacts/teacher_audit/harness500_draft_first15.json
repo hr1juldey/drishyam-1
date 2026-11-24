@@ -1,0 +1,31 @@
+{
+  "n_cases": 500,
+  "scored_limit": 15,
+  "ok_cases": 10,
+  "draft_prefix": "draft_",
+  "contract": "v2",
+  "mean_soft_kl": 0.22745656766799494,
+  "argmax_agree_frac": 0.2,
+  "by_question_type": {
+    "choice": {
+      "n": 10,
+      "agree_frac": 0.5
+    },
+    "noul": {
+      "n": 20,
+      "agree_frac": 0.9
+    },
+    "score": {
+      "n": 20,
+      "agree_frac": 0.6
+    }
+  },
+  "by_workflow": {
+    "invoice_processing": {
+      "n": 50,
+      "agree_frac": 0.7
+    }
+  },
+  "labeler": "hermes-subagent (inherited provider)",
+  "harness": true
+}
