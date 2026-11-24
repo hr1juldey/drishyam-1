@@ -1026,3 +1026,32 @@ drafted 0 cases (0 consecutive fails at stop)
 - 05:09:11 [cpu] night drafter end — drafts at drafts/seen3_drafts.jsonl (0 cases)
 - 05:09:11 [cpu] bake-off start (lfm3-omni vs gemma4:31b, 20 cases x 3 samples, 4849s window)
 lfm3-omni:latest {'ok_cases': 15, 'mean_soft_kl': 1.3802826484397388, 'argmax_agree_frac': 0.0, 'cases_per_hour': 628.8543164274483, 'wall_min': 1.4311740835507711}
+- 05:18:52 [cpu] === NIGHT CPU LANE start (pid 1372715) ===
+- 05:18:52 [cpu] night drafter start (gemma4:31b, 2468s to 06:00, max 400 total, num_predict=900)
+drafted 0 cases (0 consecutive fails at stop)
+- 05:18:59 [cpu] night drafter end — drafts at drafts/seen3_drafts.jsonl (0 cases)
+- 05:18:59 [cpu] bake-off start (lfm3-omni vs gemma4:31b, 20 cases x 3 samples, 4261s window)
+lfm3-omni:latest {'ok_cases': 15, 'mean_soft_kl': 1.3802826484397388, 'argmax_agree_frac': 0.0, 'cases_per_hour': 646.0050137257987, 'wall_min': 1.3931780417760213}
+gemma4:31b {'ok_cases': 19, 'mean_soft_kl': 1.2199574976824146, 'argmax_agree_frac': 0.10526315789473684, 'cases_per_hour': 23.724178187631605, 'wall_min': 48.05224404335022}
+{
+  "n_cases": 20,
+  "samples": 3,
+  "models": {
+    "lfm3-omni:latest": {
+      "ok_cases": 15,
+      "mean_soft_kl": 1.3802826484397388,
+      "argmax_agree_frac": 0.0,
+      "cases_per_hour": 646.0050137257987,
+      "wall_min": 1.3931780417760213
+    },
+    "gemma4:31b": {
+      "ok_cases": 19,
+      "mean_soft_kl": 1.2199574976824146,
+      "argmax_agree_frac": 0.10526315789473684,
+      "cases_per_hour": 23.724178187631605,
+      "wall_min": 48.05224404335022
+    }
+  }
+}
+- 06:08:33 [cpu] bake-off PASS
+- 06:08:33 [cpu] === NIGHT CPU LANE end ===

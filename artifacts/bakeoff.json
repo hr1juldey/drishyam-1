@@ -1,0 +1,20 @@
+{
+  "n_cases": 20,
+  "samples": 3,
+  "models": {
+    "lfm3-omni:latest": {
+      "ok_cases": 15,
+      "mean_soft_kl": 1.3802826484397388,
+      "argmax_agree_frac": 0.0,
+      "cases_per_hour": 646.0050137257987,
+      "wall_min": 1.3931780417760213
+    },
+    "gemma4:31b": {
+      "ok_cases": 19,
+      "mean_soft_kl": 1.2199574976824146,
+      "argmax_agree_frac": 0.10526315789473684,
+      "cases_per_hour": 23.724178187631605,
+      "wall_min": 48.05224404335022
+    }
+  }
+}
