@@ -22,16 +22,22 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from thermal_generator import gen_thermal, apply_degradation, choose_plan    # noqa: E402
 from content_generator import gen_statement, gen_card                        # noqa: E402
+import fin_docs                                                              # noqa: E402
 _gpu = importlib.import_module("2d_gpu")
 _gpu.TD = torch.float32                    # text-carrying textures: fp32 only
 GPURenderer = _gpu.GPURenderer
 
 MANIFEST = os.path.join(HERE, "manifest_200k.jsonl")
 BASE_SEED = 1_000_000
-MIX = [("thermal", 0.40), ("savings", 0.30), ("card", 0.30)]   # kyc slots in later
+# diversity mix v2 (user directive): not one institution, not bills-only.
+# thermal = retail receipts (6 shop types), savings/card = 10 banks each,
+# electricity/telecom/salary = discom/telco/employer pools, table = CSV-style renders.
+MIX = [("thermal", 0.28), ("savings", 0.16), ("card", 0.16), ("electricity", 0.12),
+       ("telecom", 0.10), ("salary", 0.10), ("table", 0.08)]
 AZ = ["light_left", "light_right", "light_top"]
-GEOM = {"thermal": dict(ph=1000, pw=334), "savings": dict(ph=1000, pw=707),
-        "card": dict(ph=1000, pw=707)}
+A4 = dict(ph=1000, pw=707)                       # 1241x1754 -> h=1000
+GEOM = {"thermal": dict(ph=1000, pw=334), "savings": A4, "card": A4,
+        "electricity": A4, "telecom": A4, "salary": A4, "table": A4}
 DOC = dict(n_lo=2, n_hi=3, amp_lo=0.3, amp_hi=0.8, drift_sigma=0.6,
            cdepth_lo=1, cdepth_hi=2, field_strength=0.07, br_lo=0.94, br_hi=0.97,
            noise_sigma=1.0)
@@ -51,8 +57,13 @@ def gen_page(family, seed):
         deg, applied = apply_degradation(page, gt, np.random.RandomState(seed + 2))
         gt["legibility_applied"] = applied
         return deg, gt
-    page, gt = (gen_statement if family == "savings" else gen_card)(rng)
-    return page, gt            # statements: field-registry + degradation = next work item
+    if family == "savings":
+        page, gt = gen_statement(rng, seed)
+    elif family == "card":
+        page, gt = gen_card(rng, seed)
+    else:
+        page, gt = getattr(fin_docs, f"gen_{family}")(rng, seed)
+    return page, gt            # new families: field-registry + degradation = next work item
 
 def build_manifest(n_rows=200_000, path=None):
     """deterministic rows in memory; file written ONLY when path is given

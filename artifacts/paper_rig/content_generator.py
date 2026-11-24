@@ -8,6 +8,7 @@ generative. Page size 1241x1754 = A4 @150dpi (the rig's Document_color texture s
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import json, random, string
+from institutions import BANKS, ACC_LABELS, draw_date, inr_group, fmt_amount
 
 W, H = 1241, 1754
 FD = "/usr/share/fonts/truetype/liberation"
@@ -45,6 +46,7 @@ NAMES = ["MR SURYANARAYANA G", "MRS LAKSHMI DEVI R", "MR RAJESH KUMAR M", "MRS A
 COMPANIES = ["THOMSON REUTERS INTERNATIONAL SERVICES PVT LTD", "INFOSYS LIMITED",
              "WIPRO TECHNOLOGIES LTD", "TATA CONSULTANCY SERVICES", "FLIPKART INTERNET PVT LTD",
              "AXIS BANK LTD", "HDFC BANK LTD"]
+MONTHS3 = [m.upper() for m in ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]]
 CITY_LINES = ["124 AND 125 36 /2 DIVYA SREE TEHN POLIS YEMLUR OFF HALL OLD AIRPORT ROAD ,",
               "PLOT 44, KIADB INDUSTRIAL AREA, HOSUR ROAD,",
               "3RD FLOOR, TECHNOPOLIS, BANNERGHATTA ROAD,", "SECTOR 22, OUTER RING ROAD,"]
@@ -74,47 +76,76 @@ def ddmmyyyy(rng, y0=2019, y1=2024):
     y = rng.randint(y0, y1); m = rng.randint(1, 12); d = rng.randint(1, 28)
     return f"{d:02d}/{m:02d}/{y}"
 
-def draw_icici_logo(d, x, y, f, credit=False):
-    d.ellipse([x, y, x + 52, y + 52], fill=ICICI_RED)
-    d.ellipse([x + 14, y + 8, x + 38, y + 30], fill=(255, 255, 255))
-    d.text((x + 60, y + 2), "ICICI Bank", font=f["logo"], fill=NAVY)
+def draw_bank_logo(d, x, y, f, bank, credit=False):
+    """bank = (name, brand_color, logo_style, tagline). Style varies by institution."""
+    name, color, style, tag = bank
+    if style == "oval_mark":
+        d.ellipse([x, y, x + 52, y + 52], fill=color)
+        d.ellipse([x + 14, y + 8, x + 38, y + 30], fill=(255, 255, 255))
+    elif style == "square_mark":
+        d.rectangle([x, y, x + 52, y + 52], fill=color)
+        d.rectangle([x + 12, y + 12, x + 40, y + 40], fill=(255, 255, 255))
+    elif style == "circle_mark":
+        d.ellipse([x, y, x + 52, y + 52], outline=color, width=6)
+        d.line([x + 8, y + 44, x + 44, y + 8], fill=color, width=5)
+    else:                                            # wordmark: no glyph, colored bar
+        d.rectangle([x, y, x + 14, y + 52], fill=color)
+    d.text((x + 60, y + 2), name, font=f["logo"], fill=(25, 45, 80))
     if credit:
-        d.text((x + 60, y + 56), "Credit Cards", font=f["chip"], fill=NAVY)
+        d.text((x + 60, y + 56), tag, font=f["chip"], fill=(25, 45, 80))
 
 # ---------------- Family A: savings account statement ----------------
-def gen_statement(rng):
+def gen_statement(rng, seed=0):
     f = fonts()
+    bank = BANKS[seed % len(BANKS)]                  # LOIO-derivable: seed % len(POOL)
+    acc_label = ACC_LABELS[rng.randint(0, len(ACC_LABELS))]
     img = Image.new("RGB", (W, H), (255, 255, 255))
     d = ImageDraw.Draw(img)
-    draw_icici_logo(d, 80, 100, f)
+    draw_bank_logo(d, 80, 100, f, bank)
     acct = _digits(rng, 12)
-    d1 = ddmmyyyy(rng); d2 = d1
-    d.text((150, 330), "Account Number:", font=f["label"], fill=(0, 0, 0))
+    d1, y1, m1, dd1 = draw_date(rng)
+    d2 = d1
+    d.text((150, 330), acc_label, font=f["label"], fill=(0, 0, 0))
     d.text((375, 330), acct, font=f["value"], fill=(0, 0, 0))
-    d.text((150, 385), "Transaction date :", font=f["label"], fill=(0, 0, 0))
+    txn_label = ["Transaction date :", "Statement Period:", "Period :"][rng.randint(0, 3)]
+    d.text((150, 385), txn_label, font=f["label"], fill=(0, 0, 0))
     d.text((375, 385), f"From {d1} To {d2}", font=f["value"], fill=(0, 0, 0))
     # table
     x0, x1 = 110, 1130
     cols = [x0, 260, 705, 985, 1105, x1]
     ty = 510
     d.rectangle([x0, ty, x1, ty + 34], outline=BORDER, width=1)
-    for i, h in enumerate(["Date", "Description", "Amount", "Type"]):
+    head_opts = [["Date", "Description", "Amount", "Type"],
+                 ["Txn Date", "Narration", "Amount(INR)", "Dr/Cr"],
+                 ["Date", "Particulars", "Amount", "Indicator"]]
+    heads = head_opts[rng.randint(0, len(head_opts))]
+    for i, h in enumerate(heads):
         d.text((cols[i] + 8, ty + 7), h, font=f["th"], fill=(0, 0, 0))
         if i > 0:
             d.line([cols[i], ty, cols[i], ty + 34], fill=BORDER, width=1)
     rows = []
     y = ty + 34
     n = rng.randint(9, 15)
+    bank_slug = bank[0][:3].upper()                  # brand-flavored ref prefix
     for i in range(n):
         desc_pool = [
             f"ECSRTNCHGS{rng.randint(1, 12):02d}{rng.randint(22, 24)}{rng.randint(100000, 999999)}_SR{rng.randint(9000000, 9999999)}{rng.randint(100, 999)}GST",
             f"NACH_AD_RTN_CHRG-INGENOT-{rng.randint(1, 12):02d}DEC23-00{rng.randint(600000, 699999)}-PAYU FINA",
-            f"NACH_AD_RTN_CHRG-INGENOT-{rng.randint(1, 12):02d}DEC23-79b{'0123456789abcdef'[rng.randint(0, 16)]}d1-PAYU FINA",
-            f"NACH_AD_RTN_CHRG-Of Bnk BFLo-{rng.randint(1, 12):02d}OCT23-{ ''.join('0123456789abcdef'[rng.randint(0, 16)] for _ in range(8))}-22454",
+            f"UPI/{rng.choice(['PAY','RCV'])}/{rng.randint(1000000000, 9999999999)}/{rng.choice(['SWIGGY','AMAZON','BLINKIT','ZOMATO','JIO','AMUL'])}",
+            f"IMPS/P2A/{rng.randint(200000000000, 599999999999)}-{bank_slug}-{rng.randint(10, 99)}",
+            f"POS {rng.randint(1000, 9999)}{rng.choice(['MYJIO','RELIANCE DIGITAL','DMART','MORE'])}/{rng.randint(1, 28):02d}{rng.choice(MONTHS3)}",
+            f"ACH/D-{rng.choice(['BBDL','TNEB','BSNL','AIRTEL','LICI','HDFCL'])}/{rng.randint(1000000, 9999999)}",
+            f"SALARY-{rng.randint(100000, 999999)}-{rng.choice(['CREDIT','NEFT'])}",
+            f"ATM-WDL/{rng.randint(100000, 999999)}/-",
         ]
         desc = rng.choice(desc_pool)
-        amt = rng.choice([589.99, 590.00, 590.0 + rng.randint(0, 3)])
-        rows.append({"date": d1, "description": desc, "amount": amt, "type": "DR"})
+        # realistic mixed magnitudes + occasional credits
+        mag = rng.rand()
+        amt = (round(rng.uniform(50, 500), 2) if mag < .45 else
+               round(rng.uniform(500, 5000), 2) if mag < .85 else
+               round(rng.uniform(5000, 40000), 2))
+        typ = rng.choice(["DR", "DR", "DR", "DR", "CR", "DR"])
+        rows.append({"date": d1, "description": desc, "amount": amt, "type": typ})
         hcell = 62 if len(desc) > 30 else 34
         d.rectangle([x0, y, x1, y + hcell], outline=BORDER, width=1)
         for ci in range(1, 4):
@@ -127,29 +158,40 @@ def gen_statement(rng):
         else:
             d.text((cols[1] + 8, y + 7), desc, font=f["cell"], fill=(0, 0, 0))
         d.text((cols[2] + 8, y + 7), f"{amt:.2f}", font=f["cell"], fill=(0, 0, 0))
-        d.text((cols[3] + 8, y + 7), "DR", font=f["cell"], fill=(0, 0, 0))
+        d.text((cols[3] + 8, y + 7), typ, font=f["cell"], fill=(0, 0, 0))
         y += hcell
     d.text((80, y + 130), "This is a system-generated statement. Hence, it does not require any signature.",
            font=f["small"], fill=(0, 0, 0))
     d.text((1040, y + 130), "Page 1", font=f["small"], fill=(0, 0, 0))
-    gt = {"family": "icici_savings_statement", "account_number": acct,
+    gt = {"family": "bank_savings_statement", "bank": bank[0], "bank_index": seed % len(BANKS),
+          "account_number": acct,
           "from_date": d1, "to_date": d2, "n_transactions": n,
           "transactions": rows, "page": 1}
     return np.asarray(img, float), gt
 
 # ---------------- Family B: credit card e-statement ----------------
-def gen_card(rng):
+def gen_card(rng, seed=0):
     f = fonts()
+    bank = BANKS[seed % len(BANKS)]                  # LOIO-derivable
+    _, color, _, tag = bank
+    title = rng.choice(["CREDIT CARD E-STATEMENT", "Credit Card Statement",
+                        "CARD E-STATEMENT"])
     img = Image.new("RGB", (W, H), (255, 255, 255))
     d = ImageDraw.Draw(img)
-    d.text((110, 55), "CREDIT CARD E-STATEMENT", font=f["title"], fill=MAROON)
-    d.text((760, 60), "ICICI Bank", font=f["logo"], fill=NAVY)
-    d.text((975, 112), "Credit Cards", font=f["chip"], fill=NAVY)
+    d.text((110, 55), title, font=f["title"], fill=MAROON)
+    d.text((760, 60), bank[0], font=f["logo"], fill=(25, 45, 80))
+    d.text((975, 112), tag, font=f["chip"], fill=(25, 45, 80))
     # banner
     bx0, by, bx1, bh = 30, 140, 1210, 130
-    d.rectangle([bx0, by, bx1, by + bh], fill=ORANGE)
-    d.text((bx0 + 240, by + 28), "Instant & easy Credit Card payments,", font=f["banner"], fill=(255, 255, 255))
-    d.text((bx0 + 240, by + 66), "now through secured UPI system", font=f["banner"], fill=(255, 255, 255))
+    d.rectangle([bx0, by, bx1, by + bh], fill=color)
+    banner_l1 = rng.choice(["Instant & easy Credit Card payments,",
+                            "Pay your card bills instantly,",
+                            "Manage your card on the go,"])
+    banner_l2 = rng.choice(["now through secured UPI system",
+                            "from anywhere, anytime",
+                            "with one-tap payment options"])
+    d.text((bx0 + 240, by + 28), banner_l1, font=f["banner"], fill=(255, 255, 255))
+    d.text((bx0 + 240, by + 66), banner_l2, font=f["banner"], fill=(255, 255, 255))
     name = rng.choice(NAMES); company = rng.choice(COMPANIES)
     card = mask_card(rng)
     # customer box
@@ -182,12 +224,13 @@ def gen_card(rng):
         d.text((lx + 12, 484), lab, font=f["chip"], fill=(40, 40, 40))
         (d.text((lx + 12, 508), "₹ " + str(val), font=_rup(20), fill=(0, 0, 0))
          if "Due" in lab else d.text((lx + 12, 508), str(val), font=f["value"], fill=(0, 0, 0)))
-    d.rectangle([900, 480, 1210, 590], fill=ORANGE)
-    d.text((915, 486), "Your Total Amount Due", font=f["chip"], fill=(255, 255, 255))
+    total_label = rng.choice(["Your Total Amount Due", "Total Amount Due", "Total Dues"])
+    d.rectangle([900, 480, 1210, 590], fill=color)
+    d.text((915, 486), total_label, font=f["chip"], fill=(255, 255, 255))
     d.text((915, 520), "₹ " + inr(total_due), font=_rup(34), fill=(255, 255, 255))
     # statement summary
     d.rectangle([40, 545, 860, 600], outline=BORDER, width=1)
-    d.rectangle([40, 545, 150, 600], fill=ORANGE)
+    d.rectangle([40, 545, 150, 600], fill=color)
     d.text((50, 558), "Statement", font=f["chip"], fill=(255, 255, 255))
     d.text((50, 578), "Summary", font=f["chip"], fill=(255, 255, 255))
     prev = round(rng.uniform(2000, 6000), 2); purch = round(rng.uniform(3000, 9000), 2)
@@ -198,7 +241,7 @@ def gen_card(rng):
         d.text((lx, 552), lab, font=f["small"], fill=(40, 40, 40))
         d.text((lx, 575), val, font=f["value"], fill=(0, 0, 0))
     # credit summary
-    d.rectangle([40, 610, 150, 660], fill=ORANGE)
+    d.rectangle([40, 610, 150, 660], fill=color)
     d.text((50, 622), "Credit", font=f["chip"], fill=(255, 255, 255))
     d.text((50, 642), "Summary", font=f["chip"], fill=(255, 255, 255))
     d.rectangle([150, 610, 860, 660], outline=BORDER, width=1)
@@ -211,7 +254,7 @@ def gen_card(rng):
     d.text((882, 632), "Interest will be levied if Total Amount", font=f["small"], fill=(0, 0, 0))
     # rewards
     d.rectangle([40, 675, 150, 775], outline=BORDER, width=1)
-    d.text((52, 690), "ICICI Bank", font=f["small"], fill=(0, 0, 0))
+    d.text((52, 690), bank[0].replace(" Bank", "")[:12], font=f["small"], fill=(0, 0, 0))
     d.text((52, 712), "Rewards", font=f["small"], fill=(0, 0, 0))
     pts = rng.randint(0, 300)
     d.rectangle([150, 675, 1210, 725], outline=BORDER, width=1)
@@ -227,11 +270,11 @@ def gen_card(rng):
     d.text((700, 731), "Points Transferred to PAYBACK (Acc:" + payback + ")", font=f["small"], fill=(40, 40, 40))
     d.text((700, 752), str(pts), font=f["value"], fill=(0, 0, 0))
     d.text((40, 792), "For detailed summary of Reward Points, please click here", font=f["small"], fill=(30, 60, 160))
-    d.text((40, 815), "Convert your Big shopping bills into small, manageable EMI's! If any of the below transaction is highlighted, you may login to ICICI Bank",
+    d.text((40, 815), f"Convert your Big shopping bills into small, manageable EMI's! If any of the below transaction is highlighted, you may login to {bank[0]}",
            font=f["small"], fill=(170, 30, 30))
     d.text((40, 835), "Infinity and convert to EMI now ! TnC apply, visit www.icicibank.com/emoncall  for details.", font=f["small"], fill=(170, 30, 30))
     invoice = _digits(rng, 19)
-    d.rectangle([40, 860, 1210, 900], fill=ORANGE)
+    d.rectangle([40, 860, 1210, 900], fill=color)
     d.text((330, 868), "TRANSACTION DETAILS", font=f["banner"], fill=(255, 255, 255))
     d.text((850, 872), f"INVOICE_NO :  {invoice}", font=f["small"], fill=(255, 255, 255))
     card4 = card.split()[0] + " XXXX XXXX " + card.split()[-1]
@@ -268,7 +311,8 @@ def gen_card(rng):
         d.text((cols[5] + 6, y + 13), intl, font=f["small"], fill=(0, 0, 0))
         d.text((cols[6] + 6, y + 13), f"{amt:.2f}{cr}", font=f["small"], fill=(0, 0, 0))
         y += hcell
-    gt = {"family": "icici_card_estatement", "customer_name": name, "company": company,
+    gt = {"family": "bank_card_estatement", "issuer": bank[0], "issuer_index": seed % len(BANKS),
+          "customer_name": name, "company": company,
           "card_masked": card, "card_number_row": card4, "statement_date": stmt_date,
           "due_date": due_date, "min_amount_due": min_due, "total_amount_due": total_due,
           "credit_limit": credit_limit, "available_credit": avail, "payback_account": payback,

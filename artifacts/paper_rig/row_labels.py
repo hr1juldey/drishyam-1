@@ -31,7 +31,7 @@ def _savings_pairs(gt):
         ("from_date", "What is the from-date on this statement?", gt["from_date"]),
         ("n_transactions", "How many transactions are listed on this statement?",
          str(gt["n_transactions"])),
-        ("bank", "What is the bank name?", "ICICI Bank"),
+        ("bank", "What is the bank name?", gt["bank"]),
     ]
 
 def _card_pairs(gt):
@@ -44,9 +44,47 @@ def _card_pairs(gt):
         ("card_masked", "What is the masked card number on this statement?", gt["card_masked"]),
         ("customer_name", "Who is the customer on this statement?", gt["customer_name"]),
         ("invoice_no", "What is the invoice number on this statement?", gt["invoice_no"]),
+        ("issuer", "Which bank issued this card statement?", gt["issuer"]),
     ]
 
-TABLES = {"thermal": _thermal_pairs, "savings": _savings_pairs, "card": _card_pairs}
+def _electricity_pairs(gt):
+    return [
+        ("total_amount", "What is the total amount payable on this electricity bill?",
+         gt["printed_total"]),
+        ("units_consumed", "How many units were consumed on this electricity bill?",
+         str(gt["units_consumed"])),
+        ("due_date", "What is the due date on this electricity bill?", gt["due_date"]),
+        ("consumer_no", "What is the consumer number on this bill?", gt["consumer_no"]),
+        ("provider", "Which electricity board issued this bill?", gt["provider"]),
+    ]
+
+def _telecom_pairs(gt):
+    return [
+        ("total_amount", "What is the total amount payable on this telecom invoice?",
+         gt["printed_total"]),
+        ("due_date", "What is the due date on this telecom invoice?", gt["due_date"]),
+        ("invoice_no", "What is the invoice number on this telecom invoice?", gt["invoice_no"]),
+        ("mobile", "What is the mobile number on this invoice?", gt["mobile"]),
+        ("provider", "Which telecom operator issued this invoice?", gt["provider"]),
+    ]
+
+def _salary_pairs(gt):
+    return [
+        ("net_pay", "What is the net pay on this salary slip?", gt["printed_net"]),
+        ("gross_earnings", "What are the gross earnings on this salary slip?",
+         _inr(gt["gross_earnings"])),
+        ("employee_name", "Who is the employee on this salary slip?", gt["employee_name"]),
+        ("employer", "Which company issued this salary slip?", gt["employer"]),
+        ("period", "Which salary period does this slip cover?", gt["period"]),
+    ]
+
+def _table_pairs(gt):
+    qa = gt["qa"]
+    return [(qa["col"], qa["q"], qa["a"])]
+
+TABLES = {"thermal": _thermal_pairs, "savings": _savings_pairs, "card": _card_pairs,
+          "electricity": _electricity_pairs, "telecom": _telecom_pairs,
+          "salary": _salary_pairs, "table": _table_pairs}
 
 def build_qa(family, gt, seed):
     """One (field, question, answer) dict per call. Field rotates deterministically by seed."""

@@ -29,11 +29,48 @@ MONO, MONO_B = "LiberationMono-Regular.ttf", "LiberationMono-Bold.ttf"
 PAPER = (252, 252, 250)               # thermal paper, near-white
 INK = (28, 28, 30)
 
-SHOPS = [("RAGA PVT LTD", "S USMAN ROAD, T. NAGAR,", "CHENNAI, TAMIL NADU.", "044 25863222"),
-         ("MEDPLUS PHARMACY", "12, GN CHETTY ROAD,", "CHENNAI, TAMIL NADU.", "044 28141555"),
-         ("APOLLO PHARMACY", "45, KILPAUK GARDEN ROAD,", "CHENNAI, TAMIL NADU.", "044 26431122"),
-         ("LIFELINE MEDICALS", "3, BLUMENTHALIT STREET,", "CHENNAI, TAMIL NADU.", "044 25224418"),
-         ("SUBIKSHA PHARMA", "77, BAZULLAH ROAD,", "CHENNAI, TAMIL NADU.", "044 28152233")]
+SHOP_TYPES = {
+    "pharmacy": [("RAGA PVT LTD", "S USMAN ROAD, T. NAGAR,", "CHENNAI, TAMIL NADU.", "044 25863222"),
+                 ("MEDPLUS PHARMACY", "12, GN CHETTY ROAD,", "CHENNAI, TAMIL NADU.", "044 28141555"),
+                 ("APOLLO PHARMACY", "45, KILPAUK GARDEN ROAD,", "CHENNAI, TAMIL NADU.", "044 26431122"),
+                 ("LIFELINE MEDICALS", "3, BLUMENTHALIT STREET,", "CHENNAI, TAMIL NADU.", "044 25224418"),
+                 ("SUBIKSHA PHARMA", "77, BAZULLAH ROAD,", "CHENNAI, TAMIL NADU.", "044 28152233"),
+                 ("WELLNESS FOREVER", "SGM ROAD, NANPURA,", "SURAT, GUJARAT.", "0261 2465521"),
+                 ("NIKO PHARMACY", "MG ROAD, CAMP,", "PUNE, MAHARASHTRA.", "020 26133192")],
+    "grocery": [("SRI KRISHNA SUPER MARKET", "4, PILLAIYAR KOIL ST,", "CHENNAI, TAMIL NADU.", "044 28471190"),
+                ("DMART READY", "SURVEY 112, PALGHAR ROAD,", "MUMBAI, MAHARASHTRA.", "022 67991234"),
+                ("ANNAPOORNA GROCERS", "12, KOMMADI JUNCTION,", "VISAKHAPATNAM, ANDHRA PRADESH.", "0891 2718899")],
+    "hardware": [("SREE BALAJI HARDWARE", "9, WASHERMANPET,", "CHENNAI, TAMIL NADU.", "044 25951122"),
+                 ("MAHALAXMI TOOLS & PAINTS", "SHOP 6, MARKET YARD,", "PUNE, MAHARASHTRA.", "020 24273340")],
+    "mobile": [("SHREE MOBILE POINT", "22, RATHA CHOWK,", "RAJKOT, GUJARAT.", "0281 2245566"),
+               ("MOBILE POINT INDIA", "45, CHOWK BAZAAR,", "JAIPUR, RAJASTHAN.", "0141 2568877")],
+    "stationery": [("NEW ARUN STATIONERY", "3, USMAN ROAD,", "CHENNAI, TAMIL NADU.", "044 28341187"),
+                   ("SHREE SARASWATI BOOK DEPOT", "55, ASHAR", "AHMEDABAD, GUJARAT.", "079 25356622")],
+    "restaurant": [("SREE ANNAPOORNA GUEST", "121, TRICHY ROAD,", "COIMBATORE, TAMIL NADU.", "0422 2233441"),
+                   ("HOTEL Anand VEG", "PLOT 9, C G ROAD,", "AHMEDABAD, GUJARAT.", "079 26401177")]}
+# flat LOIO pool: shop choice = seed % len(SHOPS) (leave-one-shop-out derivable)
+SHOPS = [(n, a, c, p, t) for t, ss in SHOP_TYPES.items() for (n, a, c, p) in ss]
+ITEM_POOLS = {
+    "pharmacy": [("Alternagel", 200.0), ("Bepanthen", 560.0), ("Crocin 500", 32.0), ("Dolo 650", 34.0),
+                 ("Benadryl DR", 118.0), ("Digene Gel", 92.0), ("Eno Fruit Salt", 58.0),
+                 ("Volini Spray", 210.0), ("Betadine 100ml", 148.0), ("ORS Sachet", 22.0),
+                 ("Calpol Syrup", 68.0), ("Zyrtec 10mg", 96.0), ("Soframycin", 76.0)],
+    "grocery": [("Aashirvaad Atta 5kg", 245.0), ("Tata Salt 1kg", 28.0), ("Fortune Oil 1L", 165.0),
+                ("Sugar 1kg", 46.0), ("Toor Dal 1kg", 138.0), ("Milk 500ml", 27.0),
+                ("Biscuits Parle-G", 10.0), ("Surf Excel 500g", 112.0), ("Colgate 100g", 58.0),
+                ("Onion 1kg", 34.0), ("Tomato 1kg", 28.0), ("Eggs (6)", 42.0)],
+    "hardware": [("PVC Pipe 1in", 88.0), ("Hammer", 165.0), ("Screwdriver Set", 240.0),
+                 ("Wall Putty 1kg", 95.0), ("Paint Brush 2in", 68.0), ("Wire 10m", 310.0),
+                 ("Nails 100g", 32.0), ("Hacksaw Blade", 45.0), ("Fevicol SH 100g", 82.0)],
+    "mobile": [("Tempered Glass", 120.0), ("Back Cover", 180.0), ("USB-C Cable", 149.0),
+               ("Screen Wipe", 40.0), ("Earphones wired", 249.0), ("Charger 20W", 450.0),
+               ("SIM Tray Pin", 15.0), ("Ring Holder", 60.0)],
+    "stationery": [("A4 Paper Ream", 275.0), ("Pen Pack (10)", 50.0), ("Notebook 200pg", 65.0),
+                   ("Stapler", 110.0), ("Glue Stick", 25.0), ("Marker Set", 85.0),
+                   ("File Folder", 35.0), ("Scissors", 70.0)],
+    "restaurant": [("Masala Dosa", 90.0), ("Idli (2pc)", 50.0), ("Puri Bhaji", 80.0),
+                   ("Filter Coffee", 35.0), ("Veg Thali", 140.0), ("Paneer Butter Masala", 190.0),
+                   ("Roti (2pc)", 40.0), ("Gulab Jamun (2pc)", 60.0)]}
 ITEMS = [("Alternagel", 200.0), ("Bepanthen", 560.0), ("Crocin 500", 32.0), ("Dolo 650", 34.0),
          ("Benadryl DR", 118.0), ("Digene Gel", 92.0), ("Eno Fruit Salt", 58.0),
          ("Volini Spray", 210.0), ("Betadine 100ml", 148.0), ("ORS Sachet", 22.0),
@@ -42,7 +79,9 @@ ITEMS = [("Alternagel", 200.0), ("Bepanthen", 560.0), ("Crocin 500", 32.0), ("Do
 CUSTOMERS = ["David Stores", "Walk-in", "Mr Ramesh", "Mrs Sujatha", "Sri Medical Stores", ""]
 
 def _gst(rng):
-    return "33" + "".join(chr(65 + rng.randint(0, 26)) for _ in range(5)) + \
+    from institutions import STATES
+    state = STATES[rng.randint(0, len(STATES))][0]   # real GSTIN state pool
+    return state + "".join(chr(65 + rng.randint(0, 26)) for _ in range(5)) + \
            "P" + "".join(chr(65 + rng.randint(0, 26)) for _ in range(2)) + \
            f"{rng.randint(1, 9999):04d}" + "F" + "1Z" + chr(65 + rng.randint(0, 26))
 
@@ -69,7 +108,7 @@ def gen_thermal(rng, seed):
         fields[fid] = {"text": text, "bbox": [int(v) for v in bb]}
         return bb[3]
 
-    name, addr, city, phone = SHOPS[rng.randint(0, len(SHOPS))]
+    name, addr, city, phone, stype = SHOPS[seed % len(SHOPS)]   # LOIO: seed % len(POOL)
     gstin = _gst(rng)
     y = 14
     field("shop_name", name, (W // 2, y), f_head, "center"); y += 32
@@ -101,7 +140,7 @@ def gen_thermal(rng, seed):
     y += 26
     dotted(y); y += 10
     n = rng.randint(3, 7)
-    picks = [ITEMS[i] for i in rng.choice(len(ITEMS), size=n, replace=False)]
+    picks = [ITEM_POOLS[stype][i] for i in rng.choice(len(ITEM_POOLS[stype]), size=n, replace=False)]
     subtotal, items = 0.0, []
     for i, (iname, base_p) in enumerate(picks):
         qty = int(rng.randint(1, 4))
@@ -138,8 +177,8 @@ def gen_thermal(rng, seed):
     field("tendered_amt", f"Rs {total:.2f}", (col_amt, y), f_body, "right"); y += 30
     field("eoe", "E & O.E", (370, y), f_small, "right")
 
-    gt = {"family": "thermal_pharmacy_retail", "page_size": [W, H], "seed": int(seed),
-          "shop": name, "gstin": gstin, "date": date_s, "customer": cust,
+    gt = {"family": "retail_receipt", "shop_type": stype, "shop": name, "gstin": gstin,
+          "date": date_s, "customer": cust,
           "bill_no": bill_no, "payment_mode": pay,
           "items": items, "subtotal": round(subtotal, 2), "discount": discount,
           "gst_slab_pct": slab, "cgst": cgst, "sgst": sgst, "total": total,

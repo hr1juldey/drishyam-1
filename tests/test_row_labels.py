@@ -30,10 +30,30 @@ def test_one_question_per_call_and_rotation_changes_field():
 def test_savings_and_card_answer_from_scalar_gt():
     from content_generator import gen_statement, gen_card
     rng = np.random.RandomState(3)
-    page, gt = gen_statement(rng)
+    page, gt = gen_statement(rng, seed=1)
     qa = build_qa("savings", gt, seed=4)  # 4%4==0 -> account_number
+    assert qa[0]["field"] == "account_number"
     assert qa[0]["a"] == gt["account_number"]
+    qb = build_qa("savings", gt, seed=3)  # 3%4==3 -> bank (now variable, not hardcoded)
+    assert qb[0]["a"] == gt["bank"]
     rng = np.random.RandomState(4)
-    page, gt = gen_card(rng)
-    qa = build_qa("card", gt, seed=6)  # 6%6==0 -> total_due
+    page, gt = gen_card(rng, seed=2)
+    qa = build_qa("card", gt, seed=0)  # 0%7==0 -> total_due
+    assert qa[0]["field"] == "total_due"
     assert qa[0]["a"] == f"Rs {gt['total_amount_due']:.2f}"
+
+def test_new_families_answer_from_gt():
+    from fin_docs import gen_electricity, gen_telecom, gen_salary, gen_table
+    for fam, fn in (("electricity", gen_electricity), ("telecom", gen_telecom),
+                    ("salary", gen_salary), ("table", gen_table)):
+        rng = np.random.RandomState(9)
+        page, gt = fn(rng, seed=5)
+        qa = build_qa(fam, gt, seed=0)
+        assert len(qa) == 1 and qa[0]["a"] is not None and str(qa[0]["a"]) != ""
+        assert qa[0]["field"] != ""
+
+def test_loio_holdout_bucket():
+    from institutions import holdout
+    seeds = [1000001 + i * 7919 for i in range(200)]
+    held = [s for s in seeds if holdout(s)]
+    assert 0 < len(held) < len(seeds) // 3    # a real minority bucket, not everything

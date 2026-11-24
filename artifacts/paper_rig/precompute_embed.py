@@ -22,12 +22,25 @@ OUT = os.path.join(HERE, "embeddings")
 SHARD = 10000
 BATCH = 32
 
-def main(limit_rows=None):
+def main(limit_rows=None, balanced=None):
+    """balanced=N -> per-family quota slice (40/30/30), NOT a prefix — a prefix
+    of the family-blocked manifest would be single-family."""
     from jit_pipeline import build_manifest
     from transformers import AutoModelForImageTextToText
     os.makedirs(OUT, exist_ok=True)
     rows, _ = build_manifest(200000)
-    if limit_rows:
+    if balanced:
+        q = {"thermal": int(balanced * 0.4), "savings": int(balanced * 0.3),
+             "card": balanced - int(balanced * 0.4) - int(balanced * 0.3)}
+        byfam = {}
+        for r in rows:
+            byfam.setdefault(r["family"], []).append(r)
+        rows = []
+        for fam in ("thermal", "savings", "card"):
+            rows += byfam[fam][:q[fam]]
+        print(f"balanced slice: { {f: len([r for r in rows if r['family']==f]) for f in q} }",
+              flush=True)
+    elif limit_rows:
         rows = rows[:limit_rows]
     proc = get_processor()
     model = AutoModelForImageTextToText.from_pretrained(_SNAP, dtype=torch.bfloat16).to("cuda").eval()
@@ -96,5 +109,9 @@ def main(limit_rows=None):
     print("PRECOMPUTE COMPLETE", flush=True)
 
 if __name__ == "__main__":
-    lim = int(sys.argv[1]) if len(sys.argv) > 1 else None
-    main(lim)
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--rows", type=int, default=None, help="prefix limit (unbalanced)")
+    ap.add_argument("--balanced", type=int, default=None, help="per-family quota slice")
+    a = ap.parse_args()
+    main(a.rows, a.balanced)
