@@ -60,12 +60,29 @@ One JSON object per case, all cases collected in one file:
    EXAMPLES' level of strictness, not a stricter or laxer reading.
 6. Do not consult anything outside the contract and the work order. Label from
    the case itself.
-
-## Worked examples (style + strictness anchors; do NOT copy their answers)
 """
 
-CONTRACT_V2_EXTRA = """
-## Calibration rules (match the dataset's graders, evidence-first)
+CALIBRATION_SECTIONS = """
+## CALIBRATION (how confident to be)
+In this dataset the reference answers are typically SPREAD distributions, not
+one-hot: a confident call is roughly 0.6-0.8 on your best option with the
+remainder on the adjacent plausible options; only airtight evidence deserves
+0.85+. If the evidence is genuinely mixed, say so (0.5-0.6 leading).
+
+## RANKED (score) QUESTIONS — keys '0'..'4'
+Pick the rank whose description best fits the evidence, checking your read of
+the state against EACH rank's description before committing. If genuinely torn
+between ADJACENT ranks, split the mass between them (e.g. 0.55/0.30/0.15)
+instead of committing to one; never jump to a NON-adjacent rank without
+decisive evidence.
+
+## NAMED (choice) QUESTIONS
+Choose the option whose description best matches the evidence; spread the
+remaining mass on the runner-up options in proportion to their plausibility.
+"""
+
+EVIDENCE_RULES = """
+## Evidence-first rules (match the dataset's graders)
 1. The criteria descriptions are AUTHORITATIVE: interpret the state THROUGH
    them. For score/rank questions read EVERY level's description and pick the
    level whose description matches the OBSERVED facts — never the worst case
@@ -74,29 +91,32 @@ CONTRACT_V2_EXTRA = """
    outcome (approve / close_benign / answer_directly) — the worked examples
    show this house style. Escalate (hold / manual_review / investigate /
    contain) only when a SPECIFIC fact violates policy or cannot be verified.
-   Do not add caution beyond what the evidence supports.
-3. Distribution shape: when evidence points one way, lead with 0.55-0.8 and
-   put the remainder on the single most plausible alternative (a small tail on
-   other keys is fine). Reserve >0.9 for conclusive evidence (IDs verbatim in
-   prior lists, policy explicitly broken). Use near-uniform only when the case
-   is truly undecidable, not when you merely lack one detail.
-4. Yes/no questions: answer what the evidence SHOWS, not what would be safer.
-   Genuinely close calls stay 0.5-0.65; never 0.9+ against the evidence.
-5. Multi-option choices: weigh ALL named options before distributing — the
-   examples show approve/hold/manual_review/reject and
-   close_benign/investigate/contain/escalate usage patterns.
+3. Reserve >0.9 for conclusive evidence (IDs verbatim in prior lists, policy
+   explicitly broken). Use near-uniform only when the case is truly
+   undecidable, not when you merely lack one detail.
+"""
+
+RECHECK_RULES = """
+## RE-CHECK BEFORE WRITING
+Before finalizing each case, re-read the STATE once against your draft
+answers: if any option's description fits the evidence better than your
+leading choice, move mass accordingly — small honest corrections beat
+committed first impressions.
 """
 
 
 def contract_text(version: str, examples: list[dict]) -> str:
-    parts = [CONTRACT_PREAMBLE]
+    body = CONTRACT_PREAMBLE
+    if version in ("v2a", "v2b"):
+        body += CALIBRATION_SECTIONS
+    if version == "v2b":
+        body += EVIDENCE_RULES + RECHECK_RULES
+    parts = [body, "\n## Worked examples (style + strictness anchors; do NOT copy their answers)\n"]
     for i, e in enumerate(examples, 1):
         parts.append(f"EXAMPLE {i} STATE:\n{e['state']}\n")
         parts.append(f"EXAMPLE {i} QUESTIONS:\n{json.dumps(e['questions'], ensure_ascii=False)}\n")
         ans_json = json.dumps({"answers": e["answers"]}, ensure_ascii=False)
         parts.append(f"EXAMPLE {i} ANSWERS (style anchor):\n{ans_json}\n")
-    if version == "v2":
-        parts.append(CONTRACT_V2_EXTRA)
     return "\n".join(parts)
 
 
@@ -127,7 +147,8 @@ def prepare(n_cases: int, batch_size: int, seed: int, out_dir: Path,
             contract: str = "v1") -> Path:
     cases = sample_cases(n_cases, seed)
     out_dir.mkdir(parents=True, exist_ok=True)
-    ex = (few_shot_examples_v2(seed) if contract == "v2" else few_shot_examples(seed))
+    ex = (few_shot_examples_v2(seed) if contract in ("v2a", "v2b")
+          else few_shot_examples(seed))
     contract_path = out_dir / f"CONTRACT_{contract.upper()}.md"
     contract_path.write_text(contract_text(contract, ex))
 
@@ -219,7 +240,7 @@ def main() -> None:
     ap.add_argument("--cases", type=int, default=20)
     ap.add_argument("--batch-size", type=int, default=5)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--contract", choices=["v1", "v2"], default="v1")
+    ap.add_argument("--contract", choices=["v1", "v2a", "v2b"], default="v1")
     ap.add_argument("--out-dir", default=str(ROOT / "drafts" / "harness"))
     ap.add_argument("--manifest", default=None)
     ap.add_argument("--draft-prefix", default="draft_")

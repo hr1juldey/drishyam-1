@@ -67,16 +67,17 @@ def label_prompt(state: str, questions: dict, examples: list[dict] | None = None
     return head + mid + now
 
 
-def few_shot_examples(seed: int = 42) -> list[dict]:
-    """Two worked gold examples from TEST rows of seen workflows — the bake-off
+def few_shot_examples(seed: int = 42, count: int = 2) -> list[dict]:
+    """Worked gold examples from TEST rows of seen workflows — the bake-off
     samples from TRAIN, so these can never leak into the measurement."""
     from datasets import load_dataset
 
     from drishyam.data_inspect import REPO
     from drishyam.splits import SEEN
 
+    rows = [(SEEN[0], 1), (SEEN[1], 2), (SEEN[2], 3), (SEEN[0], 4), (SEEN[1], 5)][:count]
     out = []
-    for wf, i in ((SEEN[0], 1), (SEEN[1], 2)):
+    for wf, i in rows:
         r = load_dataset(REPO, wf, split="test")[i]
         gold = json.loads(r["gold"])
         answers = {q: g["probabilities"] for q, g in gold.items()}
