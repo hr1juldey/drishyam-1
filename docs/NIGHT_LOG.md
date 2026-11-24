@@ -1056,3 +1056,33 @@ gemma4:31b {'ok_cases': 19, 'mean_soft_kl': 1.2199574976824146, 'argmax_agree_fr
 - 06:08:33 [cpu] bake-off PASS
 - 06:08:33 [cpu] === NIGHT CPU LANE end ===
 - 07:22:54 [audit] PHASE B re-run: fixed referee (fail-closed keys) + bare-key prompt; gemma4 20 cases x 1 sample
+- 07:32:11 [audit] PHASE C: few-shot anchor (2 test-row examples) + same fixed referee; gemma4 20 cases x 1 sample
+gemma4:31b {'ok_cases': 1, 'mean_soft_kl': 2.23726811128732, 'argmax_agree_frac': 0.0, 'by_question_type': {'choice': {'n': 2, 'agree_frac': 1.0}, 'noul': {'n': 1, 'agree_frac': 0.0}, 'score': {'n': 2, 'agree_frac': 1.0}}, 'cases_per_hour': 3.5790557947128057, 'wall_min': 16.76419800122579}
+{
+  "n_cases": 20,
+  "samples": 1,
+  "models": {
+    "gemma4:31b": {
+      "ok_cases": 1,
+      "mean_soft_kl": 2.23726811128732,
+      "argmax_agree_frac": 0.0,
+      "by_question_type": {
+        "choice": {
+          "n": 2,
+          "agree_frac": 1.0
+        },
+        "noul": {
+          "n": 1,
+          "agree_frac": 0.0
+        },
+        "score": {
+          "n": 2,
+          "agree_frac": 1.0
+        }
+      },
+      "cases_per_hour": 3.5790557947128057,
+      "wall_min": 16.76419800122579
+    }
+  }
+}
+- 07:39:46 [audit] PHASE B done rc=0

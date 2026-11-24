@@ -1,0 +1,27 @@
+{
+  "n_cases": 20,
+  "samples": 1,
+  "models": {
+    "gemma4:31b": {
+      "ok_cases": 1,
+      "mean_soft_kl": 2.23726811128732,
+      "argmax_agree_frac": 0.0,
+      "by_question_type": {
+        "choice": {
+          "n": 2,
+          "agree_frac": 1.0
+        },
+        "noul": {
+          "n": 1,
+          "agree_frac": 0.0
+        },
+        "score": {
+          "n": 2,
+          "agree_frac": 1.0
+        }
+      },
+      "cases_per_hour": 3.5790557947128057,
+      "wall_min": 16.76419800122579
+    }
+  }
+}

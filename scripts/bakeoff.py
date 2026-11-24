@@ -44,17 +44,50 @@ def extract_json(text: str) -> dict | None:
         return None
 
 
-def label_prompt(state: str, questions: dict) -> str:
-    return (
+def label_prompt(state: str, questions: dict, examples: list[dict] | None = None) -> str:
+    head = (
         "You are labeling operational decision cases. Output ONLY JSON, no explanation.\n"
         "For EACH question output a probability distribution over its option keys,\n"
         "summing to 1.\n"
         "ANSWER KEYS MUST BE EXACTLY THE BARE OPTION KEY — the part BEFORE the ':' of the\n"
         "option string, e.g. option 'approve: Matches the order...' gets key 'approve'.\n"
-        "Never include the description text in the key.\n\n"
-        f"STATE:\n{state}\n\nQUESTIONS:\n{json.dumps(questions, ensure_ascii=False)}\n\n"
-        'OUTPUT: {"answers": {"<qid>": {"<option_key>": p, ...}}}'
+        "Never include the description text in the key.\n"
     )
+    mid = ""
+    if examples:
+        mid = "Here are two worked examples showing the expected style and strictness:\n\n"
+        for i, ex in enumerate(examples, 1):
+            expected = json.dumps({"answers": ex["answers"]}, ensure_ascii=False)
+            mid += (f"EXAMPLE {i}:\nSTATE:\n{ex['state']}\nQUESTIONS:\n"
+                    f"{json.dumps(ex['questions'], ensure_ascii=False)}\n"
+                    f"EXPECTED OUTPUT:\n{expected}\n\n")
+    now = (f"NOW LABEL THIS CASE:\nSTATE:\n{state}\n\nQUESTIONS:\n"
+           f"{json.dumps(questions, ensure_ascii=False)}\n\n"
+           'OUTPUT: {"answers": {"<qid>": {"<option_key>": p, ...}}}')
+    return head + mid + now
+
+
+def few_shot_examples(seed: int = 42) -> list[dict]:
+    """Two worked gold examples from TEST rows of seen workflows — the bake-off
+    samples from TRAIN, so these can never leak into the measurement."""
+    from datasets import load_dataset
+
+    from drishyam.data_inspect import REPO
+    from drishyam.splits import SEEN
+
+    out = []
+    for wf, i in ((SEEN[0], 1), (SEEN[1], 2)):
+        r = load_dataset(REPO, wf, split="test")[i]
+        gold = json.loads(r["gold"])
+        answers = {q: g["probabilities"] for q, g in gold.items()}
+        questions = json.loads(r["questions"])
+        questions = {
+            qid: {k: v for k, v in q.items() if k != "criteria"}
+            | {"options": q.get("criteria", {})}
+            for qid, q in questions.items()
+        }
+        out.append({"state": r["state"], "questions": questions, "answers": answers})
+    return out
 
 
 def _num(x) -> float:
@@ -62,28 +95,75 @@ def _num(x) -> float:
     return float(x) if isinstance(x, (int, float)) and not isinstance(x, bool) else 0.0
 
 
-def answers_to_gold_keys(ans: dict, gold: dict) -> dict | None:
+def build_alias_map(questions: dict) -> dict:
+    """qid -> {alias_lower: gold_key}, built from the dataset's own option strings.
+
+    Options appear either as {key: description} (choice/noul) or as a LIST of
+    'rank: Name: description' strings (score). Aliases per gold key: the key
+    itself, the full option string, the name segment, and the description's
+    first word — all lower-cased, period-stripped.
+    """
+    table: dict = {}
+
+    def add(qid: str, key: str, *aliases) -> None:
+        slot = table.setdefault(qid, {})
+        for a in aliases:
+            if not a:
+                continue
+            a = str(a).strip().rstrip(".,;:").lower()
+            if a and slot.setdefault(a, key) != key:
+                pass  # first alias wins; collisions leave the earliest mapping
+
+    for qid, q in questions.items():
+        crit = q.get("criteria", q.get("options", {}))
+        if isinstance(crit, dict):
+            for key, desc in crit.items():
+                add(qid, key, key, desc, str(desc).split(";")[0].split(":")[0])
+        elif isinstance(crit, list):
+            for entry in crit:
+                parts = str(entry).split(":", 2)
+                key = parts[0].strip()
+                name = parts[1].strip() if len(parts) > 1 else ""
+                desc = parts[2].strip() if len(parts) > 2 else ""
+                name_head = name.split(";")[0].strip()
+                add(qid, key, key, entry, name, name.split()[0] if name.split() else "",
+                    name_head, name_head.split()[0] if name_head.split() else "",
+                    desc.split()[0] if desc.split() else "")
+    return table
+
+
+def answers_to_gold_keys(ans: dict, gold: dict,
+                         alias: dict | None = None) -> dict | None:
     """Map teacher answers onto gold option keys. Accepts {qid: {key: p}} or {qid: [p,...]}.
 
-    Teacher keys may be bare ('approve') or full ('approve: Matches the order...');
-    gold keys are ALWAYS bare (dataset convention). A full string is stripped to its
-    prefix before matching. Any unmatchable teacher key FAILS the whole question
-    (fail-closed) — silent zero-fill manufactured the below-random bake-off artifact.
+    Resolution order per teacher key: exact gold key -> alias table (built from the
+    dataset's option strings, e.g. 'Routine' -> '1' for option '1: Routine; ...') ->
+    prefix before ':'. Anything unresolvable FAILS the question (fail-closed) —
+    silent zero-fill manufactured the below-random bake-off artifact.
     """
     out: dict = {}
     for qid, g in gold.items():
         keys = list(g.keys())
+        amap = (alias or {}).get(qid, {})
         v = ans.get(qid)
         if isinstance(v, dict):
             resolved = {}
             for tk, tv in v.items():
-                bare = tk.split(":", 1)[0].strip()
-                if bare in keys:
-                    resolved[bare] = _num(tv)
-                elif tk in keys:
-                    resolved[tk] = _num(tv)
+                tk_clean = str(tk).strip().rstrip(".").lower()
+                gk = None
+                if tk in keys:
+                    gk = tk
+                elif tk_clean in amap:
+                    gk = amap[tk_clean]
                 else:
-                    return None  # unknown key — reject, never invent
+                    bare = str(tk).split(":", 1)[0].strip().lower()
+                    if bare in amap:
+                        gk = amap[bare]
+                    elif bare in [k.lower() for k in keys]:
+                        gk = next(k for k in keys if k.lower() == bare)
+                if gk is None:
+                    return None  # untranslatable — reject, never invent
+                resolved[gk] = resolved.get(gk, 0.0) + _num(tv)
             out[qid] = {k: resolved.get(k, 0.0) for k in keys}
         elif isinstance(v, (list, tuple)) and len(v) == len(keys):
             out[qid] = {k: _num(x) for k, x in zip(keys, v, strict=True)}
@@ -129,21 +209,23 @@ def sample_cases(n: int, seed: int) -> list[dict]:
 
 
 def bakeoff(models: list[str], n_cases: int, samples: int, seed: int,
-            num_gpu: int | None = None) -> dict:
+            num_gpu: int | None = None, few_shot: bool = False) -> dict:
     cases = sample_cases(n_cases, seed)
-    out = {"n_cases": len(cases), "samples": samples, "models": {}}
+    ex = few_shot_examples(seed) if few_shot else None
+    out = {"n_cases": len(cases), "samples": samples, "few_shot": few_shot, "models": {}}
     for model in models:
         t0 = time.time()
         kls, agree, ok = [], [], 0
         by_type: dict = {}
         for c in cases:
-            prompt = label_prompt(c["state"], c["questions"])
+            prompt = label_prompt(c["state"], c["questions"], examples=ex)
+            amap = build_alias_map(c["questions"]) if isinstance(c["questions"], dict) else {}
             sample_ps = []
             for s in range(samples):
                 txt = call(model, prompt, 0.7, seed * 100 + s, num_gpu=num_gpu)
                 j = extract_json(txt)
                 if j and "answers" in j:
-                    norm = answers_to_gold_keys(j["answers"], c["gold"])
+                    norm = answers_to_gold_keys(j["answers"], c["gold"], alias=amap)
                     if norm is not None:
                         sample_ps.append(norm)
             if not sample_ps:
@@ -228,12 +310,15 @@ def main() -> None:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--budget-hours", type=float, default=4.0)
     ap.add_argument("--max-cases", type=int, default=400)
+    ap.add_argument("--few-shot", action="store_true",
+                    help="prepend 2 worked gold examples (test rows, no leakage)")
     ap.add_argument("--num-gpu", type=int, default=None,
                     help="ollama num_gpu layers; omit = server default, 0 = CPU-only")
     ap.add_argument("--out", default="artifacts/bakeoff.json")
     a = ap.parse_args()
     if a.mode == "bakeoff":
-        rep = bakeoff(a.model.split("+"), a.cases, a.samples, a.seed, num_gpu=a.num_gpu)
+        rep = bakeoff(a.model.split("+"), a.cases, a.samples, a.seed,
+                      num_gpu=a.num_gpu, few_shot=a.few_shot)
         (ROOT / a.out).write_text(json.dumps(rep, indent=2))
         print(json.dumps(rep, indent=2))
     else:
