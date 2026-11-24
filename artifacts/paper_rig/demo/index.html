@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Reader — 270M offline document model</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font-family: system-ui, sans-serif; background:#101418; color:#e6e6e6;
+         margin:0 auto; max-width:680px; padding:16px; }
+  h1 { font-size:1.15rem; } .sub { color:#9ab; font-size:.85rem; }
+  video, canvas { width:100%; border-radius:10px; background:#000; }
+  button { background:#2563eb; color:#fff; border:0; border-radius:8px;
+           padding:10px 16px; font-size:1rem; margin:8px 4px 0 0; }
+  button:disabled { background:#374151; }
+  select, input { padding:8px; border-radius:8px; border:1px solid #374151;
+                  background:#1a2028; color:#e6e6e6; font-size:.95rem; }
+  .answer { background:#141a22; border:1px solid #2c3947; border-radius:10px;
+            padding:12px; margin-top:12px; white-space:pre-wrap; }
+  .meta { color:#789; font-size:.78rem; margin-top:6px; }
+  .err { color:#f87171; }
+</style>
+</head>
+<body>
+<h1>📄 Paper Reader</h1>
+<p class="sub">A 270M-parameter document model. Photograph printed paper — receipts, bills,
+statements — and ask a question. Runs on a single gaming GPU. Nothing is stored.</p>
+
+<video id="cam" autoplay playsinline muted></video>
+<div>
+  <select id="qsel">
+    <option value="What is the total amount?">Total amount</option>
+    <option value="What is the date on this document?">Date</option>
+    <option value="Who is the merchant or issuer?">Merchant / issuer</option>
+    <option value="What is the invoice or bill number?">Invoice / bill number</option>
+    <option value="What is the tax amount?">Tax amount</option>
+    <option value="Who is this salary slip for and what is the net pay?">Salary slip: who + net pay</option>
+  </select>
+  <input id="qcustom" placeholder="…or type your own question" size="24">
+  <button id="snap">Capture &amp; Read</button>
+  <button id="start">Start camera</button>
+</div>
+<div id="out" class="answer" hidden></div>
+<p class="meta" id="meta"></p>
+
+<script>
+const API = location.port ? location.origin : (localStorage.getItem('backend') || 'http://127.0.0.1:8300');
+if (localStorage.getItem('backend')) console.log('backend:', localStorage.getItem('backend'));
+const vid = document.getElementById('cam'), out = document.getElementById('out');
+const meta = document.getElementById('meta');
+let stream = null;
+
+document.getElementById('start').onclick = async () => {
+  stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment', width:{ideal:1920}}});
+  vid.srcObject = stream;
+};
+
+function grab() {
+  const c = document.createElement('canvas');
+  c.width = vid.videoWidth; c.height = vid.videoHeight;
+  c.getContext('2d').drawImage(vid, 0, 0);
+  return c.toDataURL('image/jpeg', 0.92);
+}
+
+document.getElementById('snap').onclick = async (e) => {
+  e.target.disabled = true;
+  out.hidden = false; out.className = 'answer'; out.textContent = 'Capturing burst…';
+  // burst: 8 frames over ~600ms; server keeps the sharpest (motion-safe capture)
+  const frames = [];
+  for (let i = 0; i < 8; i++) { frames.push(grab()); await new Promise(r=>setTimeout(r,75)); }
+  const q = document.getElementById('qcustom').value.trim() ||
+            document.getElementById('qsel').value;
+  out.textContent = 'Reading…';
+  try {
+    const r = await fetch(API + '/read', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({image: frames[0], frames, q})});
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || r.statusText);
+    out.textContent = 'Q: ' + q + '\n\nA: ' + (j.answer || '(empty)');
+    meta.textContent = `latency ${j.latency_ms} ms · model ${j.ckpt}`;
+  } catch (err) {
+    out.className = 'answer err';
+    out.textContent = 'Backend not reachable: ' + err.message +
+      '\nStart it on the GPU machine:  uv run python artifacts/paper_rig/demo_server.py --port 8300';
+  }
+  e.target.disabled = false;
+};
+</script>
+</body>
+</html>
