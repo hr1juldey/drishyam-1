@@ -104,20 +104,24 @@ class GPURenderer:
 
     def render_batch(self, B, azimuth, gen, n_lo=14, n_hi=20, content_idx=None,
                      amp_lo=5.0, amp_hi=7.5, drift_sigma=3.2, cdepth_lo=4, cdepth_hi=7,
-                     field_strength=0.14, br_lo=0.86, br_hi=0.91, noise_sigma=2.0):
+                     field_strength=0.14, br_lo=0.86, br_hi=0.91, noise_sigma=2.0, seed=None):
         th, tw, ph, pw, dev = self.th, self.tw, self.ph, self.pw, self.dev
+        if seed is not None:
+            g = torch.Generator(device=dev); g.manual_seed(int(seed))
+        else:
+            g = None
         Lx, Ly = TRAV[azimuth]
         Ln = math.hypot(Lx, Ly); Lx, Ly = Lx / Ln, Ly / Ln
         out = torch.zeros(B, 3, th, tw, device=dev, dtype=TD)
         alpha_acc = torch.zeros(B, 1, th, tw, device=dev, dtype=TD)
-        n = torch.randint(n_lo, n_hi, (B,), device=dev)
+        n = torch.randint(n_lo, n_hi, (B,), device=dev, generator=g)
         S = int(n.max())
-        drift = torch.randn(B, S, 2, device=dev, dtype=TD) * drift_sigma
+        drift = torch.randn(B, S, 2, device=dev, dtype=TD, generator=g) * drift_sigma
         drift = drift.cumsum(1)
-        rot = (torch.randn(B, S, device=dev, dtype=TD) * 2.2) * math.pi / 180
-        amp = amp_lo + (amp_hi - amp_lo) * torch.rand(B, S, device=dev, dtype=TD)
-        br = br_lo + (br_hi - br_lo) * torch.rand(B, S, device=dev, dtype=TD)
-        cdepth = torch.randint(cdepth_lo, cdepth_hi, (B,), device=dev).clamp_(1, S)
+        rot = (torch.randn(B, S, device=dev, dtype=TD, generator=g) * 2.2) * math.pi / 180
+        amp = amp_lo + (amp_hi - amp_lo) * torch.rand(B, S, device=dev, dtype=TD, generator=g)
+        br = br_lo + (br_hi - br_lo) * torch.rand(B, S, device=dev, dtype=TD, generator=g)
+        cdepth = torch.randint(cdepth_lo, cdepth_hi, (B,), device=dev, generator=g).clamp_(1, S)
         base = self.base.unsqueeze(0)                              # (1,th,tw,2)
         # shadow: analytic gaussian distance field, offset along light travel
         sx = (base[..., 0] * tw / 2 - 110 * Lx)
@@ -137,8 +141,8 @@ class GPURenderer:
             xs_r = xr * ca.view(B, 1, 1) + yr * sa.view(B, 1, 1)
             ys_r = -xr * sa.view(B, 1, 1) + yr * ca.view(B, 1, 1)
             A = amp[:, s].view(B, 1, 1)
-            p1 = torch.rand(B, 1, 1, device=dev, dtype=TD) * 6.283
-            p2 = torch.rand(B, 1, 1, device=dev, dtype=TD) * 6.283
+            p1 = torch.rand(B, 1, 1, device=dev, dtype=TD, generator=g) * 6.283
+            p2 = torch.rand(B, 1, 1, device=dev, dtype=TD, generator=g) * 6.283
             dx = A * torch.sin(xs_r / pw * 2 * math.pi * 1.3 + p1) * torch.sin(ys_r / ph * 2 * math.pi * 0.9 + p2)
             dy = A * 0.5 * torch.sin(ys_r / ph * 2 * math.pi * 1.1 + p2) * torch.sin(xs_r / pw * 2 * math.pi * 0.7 + p1)
             dy = dy + A * 0.3 * torch.sin((xs_r + ys_r) / (pw + ph) * 2 * math.pi * 2.0 + p2)
@@ -149,7 +153,7 @@ class GPURenderer:
             grid = torch.stack([u * 2 - 1, v * 2 - 1], -1)   # NO clamp: out-of-page -> zeros (padding_mode)
             is_content = (s >= S - cdepth)                         # (B,) bool
             if content_idx is None:
-                idx = torch.randint(0, self.content.shape[0], (B,), device=dev)
+                idx = torch.randint(0, self.content.shape[0], (B,), device=dev, generator=g)
             else:
                 idx = torch.tensor(content_idx, device=dev)
             flat_idx = torch.where(is_content, idx, torch.full_like(idx, self.all_src.shape[0] - 1))
@@ -170,7 +174,7 @@ class GPURenderer:
         gy_ = torch.linspace(-1, 1, th, device=dev, dtype=TD)
         field = 1.0 - field_strength * ((gx_.view(1, 1, -1) * Lx + gy_.view(-1, 1) * Ly))
         out = out * field.view(1, 1, th, tw)
-        out = out + torch.randn(out.shape, device=dev, dtype=TD) * noise_sigma
+        out = out + torch.randn(out.shape, device=dev, dtype=TD, generator=g) * noise_sigma
         return out, alpha_acc
 
 def _gauss_window(k=11, dev="cuda", dtype=torch.float32):

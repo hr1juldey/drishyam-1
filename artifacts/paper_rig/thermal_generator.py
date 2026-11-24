@@ -41,10 +41,10 @@ ITEMS = [("Alternagel", 200.0), ("Bepanthen", 560.0), ("Crocin 500", 32.0), ("Do
          ("Electral Powder", 24.0), ("Moov Spray", 185.0), ("Hansaplast", 45.0)]
 CUSTOMERS = ["David Stores", "Walk-in", "Mr Ramesh", "Mrs Sujatha", "Sri Medical Stores", ""]
 
-def _gst():
-    return "33" + "".join(chr(65 + np.random.randint(0, 26)) for _ in range(5)) + \
-           "P" + "".join(chr(65 + np.random.randint(0, 26)) for _ in range(2)) + \
-           f"{np.random.randint(1, 9999):04d}" + "F" + "1Z" + chr(65 + np.random.randint(0, 26))
+def _gst(rng):
+    return "33" + "".join(chr(65 + rng.randint(0, 26)) for _ in range(5)) + \
+           "P" + "".join(chr(65 + rng.randint(0, 26)) for _ in range(2)) + \
+           f"{rng.randint(1, 9999):04d}" + "F" + "1Z" + chr(65 + rng.randint(0, 26))
 
 def gen_thermal(rng, seed):
     img = Image.new("RGB", (W, H), PAPER)
@@ -70,7 +70,7 @@ def gen_thermal(rng, seed):
         return bb[3]
 
     name, addr, city, phone = SHOPS[rng.randint(0, len(SHOPS))]
-    gstin = _gst()
+    gstin = _gst(rng)
     y = 14
     field("shop_name", name, (W // 2, y), f_head, "center"); y += 32
     field("address", addr, (W // 2, y), f_body, "center"); y += 22
