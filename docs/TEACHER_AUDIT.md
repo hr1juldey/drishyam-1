@@ -183,3 +183,22 @@ The 2-lakh factory: Hermes subagent supervisor over batched API calls, with
 per-batch quality gates (schema + sum-to-1 + spot-check vs gold where gold
 exists + failure ledger). Designed only after Phases B–E say the measurement
 itself is trustworthy.
+
+## Prompt-variant race (2026-11-24 ~11:15, same seed-42 20 cases, same referee)
+
+| variant | KL | case agree | choice | noul | score |
+|---|---|---|---|---|---|
+| v1 (2 examples) | 0.1387 | 20% | 73.1% | 79.4% | 57.5% |
+| **v2a (calibration + 4 gold examples)** | 0.158 | **30%** | 69.2% | **85.3%** | **72.5%** |
+| v2b (v2a + evidence rules + recheck) | 0.1394 | 15% | 69.2% | 79.4% | 65.0% |
+
+- v2a's calibration sections lifted score-type +15pts and noul +6pts; KL
+  differences across variants (0.139-0.158) are likely at the gold's own
+  noise floor (answer key carries 1/60-granularity jitter).
+- v2b REJECTED: its re-check + evidence-rule stack doubled worker wall time
+  (277s vs 148s) with no KL/agreement benefit.
+- FACTORY CONTRACT = v2a.
+- Rate-limit finding: 10 parallel GLM subagents tripped HTTP 429 (6/10
+  failed); factory concurrency must stay <=4-5 workers with 90s backoff.
+- Also observed: 2/10 "completed" workers in the throttled 500-run claimed
+  file writes that never landed on disk — ONLY disk counts as done.
