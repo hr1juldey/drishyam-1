@@ -68,6 +68,7 @@ def main():
     need = cfg["total_steps"] * cfg["grad_accum"] * cfg["micro_batch"] + 64
     from producer import JITProducer
     prod = JITProducer(rows[:min(need, len(rows))], micro=cfg["micro_batch"])
+    prod.start()
 
     model = build_model(cfg)
     opt = build_opt(model, cfg)                     # AFTER freeze
@@ -103,11 +104,19 @@ def main():
         s_loss = 0.0
         for _ in range(cfg["grad_accum"]):
             b = prod.get(timeout=180)
+            t_got = time.time()
+            if "ev" in b:
+                torch.cuda.current_stream().wait_event(b["ev"])
+            t_v = time.time()
             out = model(input_ids=b["input_ids"], attention_mask=b["attention_mask"],
                         pixel_values=b["pixel_values"],
                         decoder_input_ids=b["dec_in"], decoder_attention_mask=b["dmask"],
                         labels=b["labels"])
             (out.loss / cfg["grad_accum"]).backward()
+            torch.cuda.synchronize()
+            if step < 2:
+                print(f"  micro: get-wait {(t_got):.1f}s-> {(t_v - t_got)*1000:.0f}ms ev-wait, "
+                      f"fwd+bwd+sync {(time.time() - t_v)*1000:.0f}ms", flush=True)
             s_loss += float(out.loss)
         gn = torch.nn.utils.clip_grad_norm_(
             [p for p in model.parameters() if p.requires_grad], cfg["max_grad_norm"])

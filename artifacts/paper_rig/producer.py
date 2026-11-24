@@ -23,6 +23,7 @@ class JITProducer(threading.Thread):
         self.renders, self.i = {}, 0
         self.stop = threading.Event()
         self.queue, self.cv = [], threading.Condition()
+        self.maxq = 3                      # bounded: producer must not outrun the trainer
         self.gen_ms, self.pack_ms, self.render_ms = [], [], []
         from transformers import AutoProcessor
         self.proc = AutoProcessor.from_pretrained(_SNAP)
@@ -39,7 +40,9 @@ class JITProducer(threading.Thread):
         with self.cv:
             if not self.cv.wait_for(lambda: len(self.queue) > 0, timeout):
                 raise TimeoutError("producer starved")
-            return self.queue.pop(0)
+            slot = self.queue.pop(0)
+            self.cv.notify_all()               # wake bounded-wait: queue len dropped
+            return slot
 
     def run(self):
         img_tok = json_image_token()
@@ -76,18 +79,23 @@ class JITProducer(threading.Thread):
                 dmask[j, :1 + len(seq)] = 1
             t_pack = (time.time() - t0) * 1000
 
+            with self.cv:
+                self.cv.wait_for(lambda: len(self.queue) < self.maxq or self.stop.is_set())
+                if self.stop.is_set():
+                    break
             t0 = time.time()
             rend = self._renderer(fam)
+            ev = torch.cuda.Event()
             with torch.cuda.stream(stream):
                 rend.set_atlas(pages)
                 out, _a = rend.render_batch(len(chunk), AZ[chunk[0]["seed"] % 3], None,
                                             content_idx=[0] * len(chunk), **DOC)
                 px = F.interpolate(out, size=(896, 896), mode="bilinear",
                                    antialias=True).to(torch.bfloat16)
-            torch.cuda.synchronize()
+                ev.record(stream)
             t_render = (time.time() - t0) * 1000
 
-            slot = {"family": fam, "pixel_values": px.to("cuda"),
+            slot = {"family": fam, "pixel_values": px, "ev": ev,
                     "input_ids": enc["input_ids"].to("cuda"),
                     "attention_mask": enc["attention_mask"].to("cuda"),
                     "dec_in": dec_in.to("cuda"), "dmask": dmask.to("cuda"),
