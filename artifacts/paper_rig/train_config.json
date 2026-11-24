@@ -1,0 +1,18 @@
+{
+  "model_snapshot": "~/.cache/huggingface/hub/models--google--t5gemma-2-270m-270m/snapshots/7c38f16641f455ef0685b18431faf1b17722d5a1",
+  "manifest_rows": 200000,
+  "run_dir": "runs/img-e1",
+  "micro_batch": 8,
+  "grad_accum": 4,
+  "lr_decoder": 5e-5,
+  "lr_projector": 3e-4,
+  "weight_decay": 0.01,
+  "max_grad_norm": 1.0,
+  "warmup_steps": 200,
+  "total_steps": 6250,
+  "checkpoint_every_steps": 1500,
+  "keep_checkpoints": 2,
+  "log_every_steps": 25,
+  "vram_pause_free_mb": 1200,
+  "holdout_rows_per_family": 100
+}
