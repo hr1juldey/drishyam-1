@@ -1086,3 +1086,61 @@ gemma4:31b {'ok_cases': 1, 'mean_soft_kl': 2.23726811128732, 'argmax_agree_frac'
   }
 }
 - 07:39:46 [audit] PHASE B done rc=0
+gemma4:31b {'ok_cases': 16, 'mean_soft_kl': 1.5815405839527106, 'argmax_agree_frac': 0.0, 'by_question_type': {'choice': {'n': 22, 'agree_frac': 0.7272727272727273}, 'noul': {'n': 26, 'agree_frac': 0.7307692307692307}, 'score': {'n': 32, 'agree_frac': 0.1875}}, 'cases_per_hour': 75.95056301098202, 'wall_min': 12.639800969759623}
+{
+  "n_cases": 20,
+  "samples": 1,
+  "few_shot": false,
+  "models": {
+    "gemma4:31b": {
+      "ok_cases": 16,
+      "mean_soft_kl": 1.5815405839527106,
+      "argmax_agree_frac": 0.0,
+      "by_question_type": {
+        "choice": {
+          "n": 22,
+          "agree_frac": 0.7272727272727273
+        },
+        "noul": {
+          "n": 26,
+          "agree_frac": 0.7307692307692307
+        },
+        "score": {
+          "n": 32,
+          "agree_frac": 0.1875
+        }
+      },
+      "cases_per_hour": 75.95056301098202,
+      "wall_min": 12.639800969759623
+    }
+  }
+}
+gemma4:31b {'ok_cases': 20, 'mean_soft_kl': 0.22332041187887636, 'argmax_agree_frac': 0.35, 'by_question_type': {'choice': {'n': 26, 'agree_frac': 0.8076923076923077}, 'noul': {'n': 34, 'agree_frac': 0.7352941176470589}, 'score': {'n': 40, 'agree_frac': 0.65}}, 'cases_per_hour': 91.134321948568, 'wall_min': 13.167377277215321}
+{
+  "n_cases": 20,
+  "samples": 1,
+  "few_shot": true,
+  "models": {
+    "gemma4:31b": {
+      "ok_cases": 20,
+      "mean_soft_kl": 0.22332041187887636,
+      "argmax_agree_frac": 0.35,
+      "by_question_type": {
+        "choice": {
+          "n": 26,
+          "agree_frac": 0.8076923076923077
+        },
+        "noul": {
+          "n": 34,
+          "agree_frac": 0.7352941176470589
+        },
+        "score": {
+          "n": 40,
+          "agree_frac": 0.65
+        }
+      },
+      "cases_per_hour": 91.134321948568,
+      "wall_min": 13.167377277215321
+    }
+  }
+}

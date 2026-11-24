@@ -64,24 +64,65 @@ Fixes applied (committed):
 
 Result: pending (running).
 
-## Phase C — few-shot anchor (pending)
+## Phase B/C/D — RESULTS (bake-off, 20 gold cases × 1 sample, gemma4:31b)
 
-Two worked examples from held-out train rows (not the test 20) prepended to the
-prompt. Measures Suspect 2: if agreement jumps again, the gap is house-style,
-not model quality.
+| Configuration | case agreement | mean KL | valid cases | wall |
+|---|---|---|---|---|
+| broken referee (last night) | 10.5% (below random) | 1.220 | 20/20 — a lie | 75 min |
+| v2b: alias referee, no few-shot | 0% case / 72.7% choice, 73.1% noul, **18.8% score** | 1.582 | 16/20 | 13 min |
+| v3: alias referee + few-shot | **35.0% case** / **80.8% choice, 73.5% noul, 65.0% score** | **0.223** | 20/20 | 13 min |
 
-## Phase D — polarity map (pending, falls out of Phase B/C output)
+Random case-level agreement on 5 questions ≈ 0.2%. We measure **35%**.
+Per-question random floor is 25–33%; we measure **65–81%**.
 
-Per-question-type agreement. Reading guide: if yes/no (noul) agrees well but
-score/choice do not, the gap lives in rubric nuance; if everything is low after
-the referee fix, it is interpretation; if all are high, suspects 1+2 explained
-everything and the teacher is fine.
+**Suspect 1 — CONFIRMED, two layers.**
+(a) The old scorer silently zero-filled unmatched keys — any format mismatch
+became an all-zero distribution with a biased argmax. (b) The teacher keys by
+the human-readable rank NAME (`Routine`, `Material`, `Critical`) while gold
+keys are numeric ranks (`1`, `3`, `4`) — same level, different naming. Fixed by
+a deterministic alias table built from the dataset's own option strings
+('1: Routine; handle...' ⇒ Routine→1); fail-closed kept for truly unknown keys.
 
-## Phase E — human eyeball (pending)
+**Suspect 2 — CONFIRMED, localized to score-type questions.**
+Without few-shot the score rubric agreed only 18.8% (and 4/20 cases were
+rejected outright); two worked gold examples moved score to 65.0% and
+choice 72.7→80.8% (noul flat 73%). The dataset's graders have a strictness
+house-style that a bare rubric does not convey; examples do.
 
-3 side-by-side cases (teacher reasoning-free answers vs gold) read by the
-agent, judged for defensibility. Whatever disagreement remains after B+C gets
-classified here: defensible gray vs wrong.
+**Suspect 3 — PARTIALLY REAL, and it is character, not defect.**
+Phase E eyeball of residual disagreements (evidence: NIGHT_LOG 08:15 run):
+- `urgency` gold 1@0.35 vs teacher 2@0.40 — gold itself is nearly FLAT
+  (0.35/0.32/0.30): genuinely ambiguous case, disagreement is honest gray.
+- `discrepancy_severity` gold 0@0.64 vs teacher 2@0.70 — but gold puts 27% on
+  '2' itself; the teacher leans further into the gold's own second choice.
+- `disposition` gold approve@0.65 vs teacher hold@0.40 + manual_review@0.40 —
+  a SYSTEMATIC CAUTION SHIFT: the teacher is more conservative than the gold
+  annotators (holds more, escalates more, scores severity higher).
+- `matches_order` gold true@0.68 vs teacher false@0.90 — the one concerning
+  pattern: occasional CONFIDENT flips on yes/no questions (~25% of noul).
+
+## Final verdicts
+
+1. **The teacher was never broken — the referee was.** With translation +
+   house-style anchor: KL 0.223 (was 1.220), per-question agreement 65–81%.
+2. The residual is a **cautious annotator**, not a wrong one. For soft-label
+   distillation this is usable as-is (KL 0.22 is close), and a conservative
+   auto-approver is arguably the safer failure mode. WATCH ITEM: confident
+   yes/no flips (~25% of noul) — if Gate-2's decisions are binary-heavy,
+   add a "when unsure between false/true, reflect uncertainty, do not flip"
+   instruction and re-measure.
+3. **Factory math (measured, warm model): 20 cases / 13 min ≈ 92 cases/h.**
+   2 lakh rows on gemma4 alone ≈ 90 days — not viable locally; the API teacher
+   (GLM flash) must pass THIS SAME 20-case bake-off (the rig is now the quality
+   gate) before factory use. Provenance per row stays mandatory.
+
+## Gate-2 (Banking77) implication
+
+The same rig gates Banking77 labels: bake 20 gold cases → require KL ≤ ~0.3
+and per-question agreement ≥ ~60% before any mass labeling. If the banking
+rubric disagrees structurally, it will show here FIRST, at 20-case cost,
+not after 2 lakh rows.
+
 
 ## Morning proposal (after verdicts)
 

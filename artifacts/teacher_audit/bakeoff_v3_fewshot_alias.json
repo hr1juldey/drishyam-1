@@ -1,0 +1,28 @@
+{
+  "n_cases": 20,
+  "samples": 1,
+  "few_shot": true,
+  "models": {
+    "gemma4:31b": {
+      "ok_cases": 20,
+      "mean_soft_kl": 0.22332041187887636,
+      "argmax_agree_frac": 0.35,
+      "by_question_type": {
+        "choice": {
+          "n": 26,
+          "agree_frac": 0.8076923076923077
+        },
+        "noul": {
+          "n": 34,
+          "agree_frac": 0.7352941176470589
+        },
+        "score": {
+          "n": 40,
+          "agree_frac": 0.65
+        }
+      },
+      "cases_per_hour": 91.134321948568,
+      "wall_min": 13.167377277215321
+    }
+  }
+}
