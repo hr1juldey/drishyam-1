@@ -20,11 +20,11 @@ def main():
     L.append("")
     L.append("| stage | what | result |")
     L.append("|---|---|---|")
-    L.append(f"| A | slice-1 embeddings 50k (thermal/savings/card) | **{a.stage_A}** |")
-    L.append(f"| B | slice-2 embeddings 24k (electricity/telecom/salary/table) | **{a.stage_B}** |")
-    L.append(f"| C | trainer GPU smoke | **{a.stage_C}** |")
-    L.append(f"| D | decoder training (projector+SigLIP frozen) | **{a.stage_D}** |")
-    L.append(f"| E | LOIO eval (holdout seed%10==7) | **{a.stage_E}** |")
+    L.append(f"| A | slice-1 embeddings 50k (thermal/savings/card) | **{a.stage_a}** |")
+    L.append(f"| B | slice-2 embeddings 24k (electricity/telecom/salary/table) | **{a.stage_b}** |")
+    L.append(f"| C | trainer GPU smoke | **{a.stage_c}** |")
+    L.append(f"| D | decoder training (projector+SigLIP frozen) | **{a.stage_d}** |")
+    L.append(f"| E | LOIO eval (holdout seed%10==7) | **{a.stage_e}** |")
     L.append("")
 
     # data state
@@ -72,18 +72,18 @@ def main():
         L.append("")
 
     nxt = []
-    if a.stage_D in ("PASS",):
+    if a.stage_d in ("PASS",):
         nxt.append("Model trained end-to-end. Run the full-pipeline spot check on a "
                    "freshly rendered page (render_896 -> infer_docs) — embedding-space "
                    "eval passing does not prove the pixel path; render 5 pages and check answers.")
-    if a.stage_D == "HALTED_DIVERGENCE":
+    if a.stage_d == "HALTED_DIVERGENCE":
         nxt.append("Training halted by divergence guard. Inspect runs/overnight/train.log; "
                    "do NOT trust the final checkpoint before rerunning shorter LR.")
-    if a.stage_D == "FAIL":
+    if a.stage_d == "FAIL":
         nxt.append("Training failed. Checkpoint may not exist; check runs/overnight/train.log.")
-    if a.stage_E == "FAIL":
+    if a.stage_e == "FAIL":
         nxt.append("Eval failed but training may be fine — rerun eval_embeds manually.")
-    if a.stage_C == "FAIL":
+    if a.stage_c == "FAIL":
         nxt.append("Trainer smoke failed — training never started; embeddings are intact "
                    "and still the night's deliverable. Debug the trainer in daylight.")
     if nxt:
