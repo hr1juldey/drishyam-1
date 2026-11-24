@@ -1055,3 +1055,4 @@ gemma4:31b {'ok_cases': 19, 'mean_soft_kl': 1.2199574976824146, 'argmax_agree_fr
 }
 - 06:08:33 [cpu] bake-off PASS
 - 06:08:33 [cpu] === NIGHT CPU LANE end ===
+- 07:22:54 [audit] PHASE B re-run: fixed referee (fail-closed keys) + bare-key prompt; gemma4 20 cases x 1 sample

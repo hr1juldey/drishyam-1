@@ -48,7 +48,10 @@ def label_prompt(state: str, questions: dict) -> str:
     return (
         "You are labeling operational decision cases. Output ONLY JSON, no explanation.\n"
         "For EACH question output a probability distribution over its option keys,\n"
-        "summing to 1.\n\n"
+        "summing to 1.\n"
+        "ANSWER KEYS MUST BE EXACTLY THE BARE OPTION KEY — the part BEFORE the ':' of the\n"
+        "option string, e.g. option 'approve: Matches the order...' gets key 'approve'.\n"
+        "Never include the description text in the key.\n\n"
         f"STATE:\n{state}\n\nQUESTIONS:\n{json.dumps(questions, ensure_ascii=False)}\n\n"
         'OUTPUT: {"answers": {"<qid>": {"<option_key>": p, ...}}}'
     )
@@ -60,14 +63,28 @@ def _num(x) -> float:
 
 
 def answers_to_gold_keys(ans: dict, gold: dict) -> dict | None:
-    """Map teacher answers onto gold option keys. Accepts {qid: {key: p}} (dict)
-    or {qid: [p, ...]} (array in criteria order); nulls coerce to 0.0."""
+    """Map teacher answers onto gold option keys. Accepts {qid: {key: p}} or {qid: [p,...]}.
+
+    Teacher keys may be bare ('approve') or full ('approve: Matches the order...');
+    gold keys are ALWAYS bare (dataset convention). A full string is stripped to its
+    prefix before matching. Any unmatchable teacher key FAILS the whole question
+    (fail-closed) — silent zero-fill manufactured the below-random bake-off artifact.
+    """
     out: dict = {}
     for qid, g in gold.items():
         keys = list(g.keys())
         v = ans.get(qid)
         if isinstance(v, dict):
-            out[qid] = {k: _num(v.get(k)) for k in keys}
+            resolved = {}
+            for tk, tv in v.items():
+                bare = tk.split(":", 1)[0].strip()
+                if bare in keys:
+                    resolved[bare] = _num(tv)
+                elif tk in keys:
+                    resolved[tk] = _num(tv)
+                else:
+                    return None  # unknown key — reject, never invent
+            out[qid] = {k: resolved.get(k, 0.0) for k in keys}
         elif isinstance(v, (list, tuple)) and len(v) == len(keys):
             out[qid] = {k: _num(x) for k, x in zip(keys, v, strict=True)}
         else:
@@ -118,6 +135,7 @@ def bakeoff(models: list[str], n_cases: int, samples: int, seed: int,
     for model in models:
         t0 = time.time()
         kls, agree, ok = [], [], 0
+        by_type: dict = {}
         for c in cases:
             prompt = label_prompt(c["state"], c["questions"])
             sample_ps = []
@@ -134,6 +152,19 @@ def bakeoff(models: list[str], n_cases: int, samples: int, seed: int,
             acc_p = {q: {k: float(np.mean([p[q][k] for p in sample_ps])) for k in ks}
                      for q, ks in ((q, list(g.keys())) for q, g in c["gold"].items())}
             kls.append(mean_kl(acc_p, c["gold"]))
+            if isinstance(c["questions"], dict):
+                qtypes = {qid: q.get("type", "?") for qid, q in c["questions"].items()}
+            else:
+                qtypes = {q.get("qid", q.get("id", i)): q.get("type", "?")
+                          for i, q in enumerate(c["questions"])}
+            for q, g in c["gold"].items():
+                if q not in acc_p:
+                    continue
+                am_ok = max(acc_p[q], key=acc_p[q].get) == max(g, key=g.get)
+                qtype = qtypes.get(q, "?")
+                slot = by_type.setdefault(qtype, {"n": 0, "agree": 0})
+                slot["n"] += 1
+                slot["agree"] += int(am_ok)
             agree.append(all(
                 max(acc_p[q], key=acc_p[q].get) == max(g, key=g.get)
                 for q, g in c["gold"].items() if q in acc_p))
@@ -141,6 +172,8 @@ def bakeoff(models: list[str], n_cases: int, samples: int, seed: int,
         out["models"][model] = {
             "ok_cases": ok, "mean_soft_kl": float(np.nanmean(kls)),
             "argmax_agree_frac": float(np.mean(agree)) if agree else float("nan"),
+            "by_question_type": {k: {"n": v["n"], "agree_frac": v["agree"] / v["n"]}
+                                 for k, v in sorted(by_type.items())},
             "cases_per_hour": ok / (wall / 3600), "wall_min": wall / 60,
         }
         print(model, out["models"][model], flush=True)

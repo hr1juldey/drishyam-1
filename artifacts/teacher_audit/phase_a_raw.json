@@ -1,0 +1,219 @@
+[
+  {
+    "tag": "c0",
+    "workflow": "invoice_processing",
+    "state_head": "{\"delivery\": {\"condition\": \"accepted\", \"date\": \"2026-03-01\", \"received_qty\": 5}, \"invoice\": {\"currency\": \"USD\", \"id\": \"INV-2026-2424\", \"lines\": [{\"qty\": 5, \"sku\": \"SKU-532\", \"total_usd\": 1670.45, \"uni",
+    "gold_keys": {
+      "discrepancy_severity": [
+        "0: None: everything reconciles.",
+        "1: Trivial: rounding or a cosmetic difference.",
+        "2: Moderate: a real difference worth confirming.",
+        "3: Material: a large or unexplained difference."
+      ],
+      "disposition": [
+        "approve: Matches the order and delivery; approve for payment.",
+        "hold: Something needs confirming before payment; hold pending clarification.",
+        "manual_review: A human in finance must review the discrepancy.",
+        "reject: Should not be paid: duplicate, unauthorised or materially wrong."
+      ],
+      "duplicate": [
+        "false",
+        "true"
+      ],
+      "matches_order": [
+        "false: There is a discrepancy against the order or the delivery.",
+        "true: Line items, quantities and amounts reconcile."
+      ],
+      "urgency": [
+        "0: No time pressure; can wait indefinitely.",
+        "1: Routine; handle within the normal queue.",
+        "2: Elevated; should be handled within the same week.",
+        "3: Critical; requires action within the same day."
+      ]
+    },
+    "teacher_keys": {
+      "discrepancy_severity": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "disposition": [
+        "approve",
+        "hold",
+        "manual_review",
+        "reject"
+      ],
+      "duplicate": [
+        "false",
+        "true"
+      ],
+      "matches_order": [
+        "false: There is a discrepancy against the order or the delivery.",
+        "true: Line items, quantities and amounts reconcile."
+      ],
+      "urgency": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    "key_exact_match": {
+      "discrepancy_severity": false,
+      "disposition": false,
+      "duplicate": true,
+      "matches_order": true,
+      "urgency": false
+    },
+    "raw_response": "```json\n{\n  \"answers\": {\n    \"discrepancy_severity\": {\n      \"0\": 0.0,\n      \"1\": 0.0,\n      \"2\": 0.8,\n      \"3\": 0.2\n    },\n    \"disposition\": {\n      \"approve\": 0.0,\n      \"hold\": 0.7,\n      \"manual_review\": 0.3,\n      \"reject\": 0.0\n    },\n    \"duplicate\": {\n      \"false\": 1.0,\n      \"true\": 0.0\n    },\n    \"matches_order\": {\n      \"false: There is a discrepancy against the order or the delivery.\": 1.0,\n      \"true: Line items, quantities and amounts reconcile.\": 0.0\n    },\n    \"urgency\": {\n      \"0\": 0.0,\n      \"1\": 0.1,\n      \"2\": 0.6,\n      \"3\": 0.3\n    }\n  }\n}\n```"
+  },
+  {
+    "tag": "c1",
+    "workflow": "customer_service",
+    "state_head": "{\"account\": {\"lifetime_value_usd\": 243, \"prior_tickets_90d\": 0, \"seats\": 1, \"tenure_months\": 5, \"tier\": \"free\"}, \"thread\": [{\"role\": \"customer\", \"text\": \"Hi there, I just opened the package from my re",
+    "gold_keys": {
+      "action": [
+        "answer_directly: The assistant can resolve this itself with information it already has.",
+        "close_no_action: No further action is warranted; the matter is settled.",
+        "escalate_to_human: Hand off to a human agent with the appropriate authority.",
+        "execute_refund: Issue the refund or credit the customer is owed.",
+        "request_information: More detail is needed from the customer before anything can be done."
+      ],
+      "category": [
+        "account: Login, plan changes, profile or access management.",
+        "billing: A charge, invoice, subscription or payment problem.",
+        "delivery: Shipping, fulfilment or delivery of a physical item.",
+        "refund: The customer is explicitly asking for money back.",
+        "technical: The product or service is not working as expected."
+      ],
+      "churn_risk": [
+        "0: No sign of dissatisfaction.",
+        "1: Mild frustration, but the relationship is intact.",
+        "2: Clearly unhappy; repeat problems or explicit complaints.",
+        "3: Imminent: threatening to cancel, dispute or leave."
+      ],
+      "needs_human": [
+        "false: Automation can carry this to resolution.",
+        "true: A human must take over: judgement, authority or empathy is required."
+      ],
+      "urgency": [
+        "0: No time pressure; can wait indefinitely.",
+        "1: Routine; handle within the normal queue.",
+        "2: Elevated; should be handled within the same week.",
+        "3: Critical; requires action within the same day."
+      ]
+    },
+    "teacher_keys": {
+      "action": [
+        "answer_directly",
+        "close_no_action",
+        "escalate_to_human",
+        "execute_refund",
+        "request_information"
+      ],
+      "category": [
+        "account",
+        "billing",
+        "delivery",
+        "refund",
+        "technical"
+      ],
+      "churn_risk": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "needs_human": [
+        "false",
+        "true"
+      ],
+      "urgency": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ]
+    },
+    "key_exact_match": {
+      "action": false,
+      "category": false,
+      "churn_risk": false,
+      "needs_human": false,
+      "urgency": false
+    },
+    "raw_response": "```json\n{\n  \"answers\": {\n    \"action\": {\n      \"answer_directly\": 0.0,\n      \"close_no_action\": 0.0,\n      \"escalate_to_human\": 0.8,\n      \"execute_refund\": 0.1,\n      \"request_information\": 0.1\n    },\n    \"category\": {\n      \"account\": 0.0,\n      \"billing\": 0.0,\n      \"delivery\": 1.0,\n      \"refund\": 0.0,\n      \"technical\": 0.0\n    },\n    \"churn_risk\": {\n      \"0\": 0.2,\n      \"1\": 0.7,\n      \"2\": 0.1,\n      \"3\": 0.0\n    },\n    \"needs_human\": {\n      \"false\": 0.2,\n      \"true\": 0.8\n    },\n    \"urgency\": {\n      \"0\": 0.0,\n      \"1\": 0.7,\n      \"2\": 0.3,\n      \"3\": 0.0\n    }\n  }\n}\n```"
+  },
+  {
+    "tag": "c2",
+    "workflow": "security_incidents",
+    "state_head": "{\"alert\": {\"description\": \"an endpoint agent matched a known signature\", \"evidence\": \"At 2026-09-15 02:17:44 UTC the endpoint agent on host WIN-01 flagged the file C:\\\\Program Files\\\\Backup\\\\backup.ex",
+    "gold_keys": {
+      "credential_compromise": [
+        "false",
+        "true"
+      ],
+      "disposition": [
+        "close_benign: Expected, explainable activity; close without analyst time.",
+        "contain: Contain the host or account immediately; do not wait for triage.",
+        "investigate: Warrants an analyst opening an investigation.",
+        "monitor: Not clearly malicious, but worth watching for recurrence."
+      ],
+      "severity": [
+        "0: Negligible: no access to anything sensitive.",
+        "1: Low: limited access, easily reversed.",
+        "2: Moderate: access to internal systems or non-public data.",
+        "3: High: access to production, secrets or customer data.",
+        "4: Critical: active compromise of crown-jewel systems."
+      ],
+      "true_positive": [
+        "false: Benign activity, a misconfiguration, or a known false positive.",
+        "true: The underlying behaviour is malicious or unauthorised."
+      ],
+      "urgency": [
+        "0: No time pressure; can wait indefinitely.",
+        "1: Routine; handle within the normal queue.",
+        "2: Elevated; should be handled within the same week.",
+        "3: Critical; requires action within the same day."
+      ]
+    },
+    "teacher_keys": {
+      "credential_compromise": [
+        "false",
+        "true"
+      ],
+      "disposition": [
+        "close_benign: Expected, explainable activity; close without analyst time.",
+        "contain: Contain the host or account immediately; do not wait for triage.",
+        "investigate: Warrants an analyst opening an investigation.",
+        "monitor: Not clearly malicious, but worth watching for recurrence."
+      ],
+      "severity": [
+        "0: Negligible: no access to anything sensitive.",
+        "1: Low: limited access, easily reversed.",
+        "2: Moderate: access to internal systems or non-public data.",
+        "3: High: access to production, secrets or customer data.",
+        "4: Critical: active compromise of crown-jewel systems."
+      ],
+      "true_positive": [
+        "false: Benign activity, a misconfiguration, or a known false positive.",
+        "true: The underlying behaviour is malicious or unauthorised."
+      ],
+      "urgency": [
+        "0: No time pressure; can wait indefinitely.",
+        "1: Routine; handle within the normal queue.",
+        "2: Elevated; should be handled within the same week.",
+        "3: Critical; requires action within the same day."
+      ]
+    },
+    "key_exact_match": {
+      "credential_compromise": true,
+      "disposition": true,
+      "severity": true,
+      "true_positive": true,
+      "urgency": true
+    },
+    "raw_response": "```json\n{\n  \"answers\": {\n    \"credential_compromise\": {\n      \"false\": 0.3,\n      \"true\": 0.7\n    },\n    \"disposition\": {\n      \"close_benign: Expected, explainable activity; close without analyst time.\": 0.05,\n      \"contain: Contain the host or account immediately; do not wait for triage.\": 0.2,\n      \"investigate: Warrants an analyst opening an investigation.\": 0.7,\n      \"monitor: Not clearly malicious, but worth watching for recurrence.\": 0.05\n    },\n    \"severity\": {\n      \"0: Negligible: no access to anything sensitive.\": 0.0,\n      \"1: Low: limited access, easily reversed.\": 0.1,\n      \"2: Moderate: access to internal systems or non-public data.\": 0.3,\n      \"3: High: access to production, secrets or customer data.\": 0.5,\n      \"4: Critical: active compromise of crown-jewel systems.\": 0.1\n    },\n    \"true_positive\": {\n      \"false: Benign activity, a misconfiguration, or a known false positive.\": 0.2,\n      \"true: The underlying behaviour is malicious or unauthorised.\": 0.8\n    },\n    \"urgency\": {\n      \"0: No time pressure; can wait indefinitely.\": 0.0,\n      \"1: Routine; handle within the normal queue.\": 0.1,\n      \"2: Elevated; should be handled within the same week.\": 0.2,\n      \"3: Critical; requires action within the same day.\": 0.7\n    }\n  }\n}\n```"
+  }
+]
