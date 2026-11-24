@@ -1,0 +1,22 @@
+{
+  "n_cases": 20,
+  "ok_cases": 20,
+  "mean_soft_kl": 0.1386848458964689,
+  "argmax_agree_frac": 0.2,
+  "by_question_type": {
+    "choice": {
+      "n": 26,
+      "agree_frac": 0.7307692307692307
+    },
+    "noul": {
+      "n": 34,
+      "agree_frac": 0.7941176470588235
+    },
+    "score": {
+      "n": 40,
+      "agree_frac": 0.575
+    }
+  },
+  "labeler": "hermes-subagent (inherited provider)",
+  "harness": true
+}

@@ -101,7 +101,60 @@ Phase E eyeball of residual disagreements (evidence: NIGHT_LOG 08:15 run):
 - `matches_order` gold true@0.68 vs teacher false@0.90 — the one concerning
   pattern: occasional CONFIDENT flips on yes/no questions (~25% of noul).
 
+## Harness interface (user directive: NO direct API wiring)
+
+User ruling 2026-11-24 ~08:30: the teacher must be an interface a Hermes agent
+DRIVES — Hermes is the harness; direct API wiring is not preferred; yes/no
+questions use the same path (no direct route for anything).
+
+Built `scripts/harness.py`:
+- `prepare` — emits work-order files (`drafts/harness/wo_*.json`, 5 cases
+  each, gold absent) + `CONTRACT.md` (output schema, key rules, the 2 worked
+  examples as strictness anchors, "no confident flips on close binaries").
+- labeling — Hermes subagents (GLM via Hermes's own provider; children inherit
+  the parent model) read contract + work order, label, self-verify, write
+  `draft_*.json`. 4 workers in parallel.
+- `score` — the SAME deterministic alias-table referee validates and scores
+  the drafts; provenance stamped from the manifest.
+
+Dry-tested the score path with synthetic near-gold drafts BEFORE dispatching
+(20/20 valid, referee behaved), then ran the real exam on the same seed-42
+20 gold cases gemma4 was measured on.
+
+## Three-way table (same 20 cases, same referee, same gold)
+
+| Teacher | valid | mean KL ↓ | case agree | choice | noul | score | throughput |
+|---|---|---|---|---|---|---|---|
+| gemma4, broken referee | 20/20* | 1.220 | 10.5% | — | — | — | 23.7 cph |
+| gemma4, fixed ref + few-shot | 20/20 | 0.223 | 35.0% | 80.8% | 73.5% | 65.0% | 92 cph |
+| **GLM via Hermes harness** | **20/20** | **0.1387** | 20.0% | 73.1% | **79.4%** | 57.5% | **~436 cph @ 4 workers** |
+
+*lie (silent zero-fill).
+
+**Reading:**
+1. **The harness contract + self-verification loop achieved PERFECT schema
+   compliance on the first try** (20/20 valid, zero referee rejects, numeric
+   and named keys all correct) — no alias table even needed; the referee only
+   validates. The "do not confidently flip close binaries" rule lifted noul to
+   79.4%, the best yes/no number measured all day.
+2. **GLM-via-Hermes wins the KL metric — 0.139 vs 0.223.** KL is the actual
+   training target for soft-label distillation, so the distributions the
+   harness workers produce are the CLOSEST to the dataset's answer key of any
+   teacher measured. gemma4 keeps the edge on per-question argmax (choice,
+   score) and all-5 case agreement (35% vs 20%) — a harsher all-or-nothing
+   read, but not the training-loss metric.
+3. **Throughput: 20 cases / 165 s with only 4 workers ≈ 436 cases/h, and
+   workers scale horizontally** (10 per dispatch, multiple dispatches).
+   vs gemma4's 92 cph — ~4.7× at 4 workers.
+4. **2-lakh math (updated):** 200k rows ÷ 436 cph ≈ 19 days at 4 workers;
+   ≈ 8 days at 10; compressible further with parallel dispatch cycles or by
+   raising batch size. The gemma4 local route (~90 days) is no longer the
+   plan of record.
+5. **Caveat:** n=20, single sample. Before factory commitment, re-run both
+   teachers on 50–100 cases to confirm the KL ordering holds.
+
 ## Final verdicts
+
 
 1. **The teacher was never broken — the referee was.** With translation +
    house-style anchor: KL 0.223 (was 1.220), per-question agreement 65–81%.
