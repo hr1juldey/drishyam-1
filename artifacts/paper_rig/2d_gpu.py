@@ -91,6 +91,17 @@ class GPURenderer:
                                 torch.linspace(-1, 1, tw, device=device, dtype=TD), indexing="ij")
         self.base = torch.stack([xs, ys], -1)                     # (th,tw,2)
 
+    def set_atlas(self, pages):
+        """swap the content atlas for a new batch of pages (factory JIT streaming)."""
+        from PIL import Image as _I
+        atlas = np.stack([np.asarray(_I.fromarray(np.clip(p, 0, 255).astype(np.uint8)).resize(
+            (self.pw, self.ph)), np.float32) for p in pages])
+        K = len(pages)
+        t = torch.from_numpy(atlas).to(self.dev, TD).permute(0, 3, 1, 2) / 255.0
+        alpha = torch.ones(1, 1, self.ph, self.pw, device=self.dev, dtype=TD)
+        self.content = torch.cat([t, alpha.expand(K, 1, self.ph, self.pw)], 1)
+        self.all_src = torch.cat([self.content, self.plain], 0)
+
     def render_batch(self, B, azimuth, gen, n_lo=14, n_hi=20, content_idx=None,
                      amp_lo=5.0, amp_hi=7.5, drift_sigma=3.2, cdepth_lo=4, cdepth_hi=7,
                      field_strength=0.14, br_lo=0.86, br_hi=0.91, noise_sigma=2.0):
