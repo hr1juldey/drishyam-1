@@ -100,27 +100,34 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
     class G:
         def seed_drawn(self, a, b): return 1
 
-    # resumable: count completed shard rows; a PARTIAL last shard (labels < SHARD,
-    # or zero-husk from a crash) is deleted and rewritten from its start index
+    # resumable + gap-aware: keep shards whose label count is FULL, delete
+    # husk/partial ones (a crashed memmap is all zeros — never trust it),
+    # resume at the first gap; complete shards after a gap are kept and skipped
+    import math
     done = 0
+    n_shards_total = math.ceil(len(rows) / SHARD)
     shard_files = sorted(f for f in os.listdir(OUT) if f.startswith("emb_") and f.endswith(".npy"))
-    if shard_files:
-        last = int(shard_files[-1].split("_")[1].split(".")[0])
-        lab_last = os.path.join(OUT, f"lab_{last:06d}.jsonl")
+    complete = set()
+    for f in shard_files:
+        idx = int(f.split("_")[1].split(".")[0])
+        lab = os.path.join(OUT, f"lab_{idx:06d}.jsonl")
         n_lab = 0
-        if os.path.exists(lab_last):
-            with open(lab_last) as f:
-                n_lab = sum(1 for line in f if line.strip())
-        if n_lab == SHARD:
-            done = last + SHARD
+        if os.path.exists(lab):
+            with open(lab) as lf:
+                n_lab = sum(1 for line in lf if line.strip())
+        expect = min(SHARD, len(rows) - idx * SHARD)
+        if n_lab == expect and expect > 0:
+            complete.add(idx)
         else:
-            print(f"partial shard {last:06d} ({n_lab}/{SHARD} labels) — deleting and rewriting",
+            print(f"husk/partial shard {idx:06d} ({n_lab}/{expect} labels) — deleting",
                   flush=True)
-            os.remove(os.path.join(OUT, f"emb_{last:06d}.npy"))
-            if os.path.exists(lab_last):
-                os.remove(lab_last)
-            done = last
-    print(f"manifest {len(rows)} rows, resuming at {done}", flush=True)
+            os.remove(os.path.join(OUT, f"emb_{idx:06d}.npy"))
+            if os.path.exists(lab):
+                os.remove(lab)
+    while (done // SHARD) in complete and done < len(rows):
+        done += SHARD
+    print(f"manifest {len(rows)} rows, complete shards {sorted(complete)}, "
+          f"resuming at {done}", flush=True)
 
     t_start = time.time()
     n_done = 0
@@ -145,6 +152,9 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
 
     while done < len(rows):
         chunk = rows[done:done + SHARD]
+        if (done // SHARD) in complete:   # complete-on-disk: keep, skip regen
+            done += len(chunk)
+            continue
         emb_path = os.path.join(OUT, f"emb_{done:06d}.npy")
         lab_path = os.path.join(OUT, f"lab_{done:06d}.jsonl")
         emb_mm = np.lib.format.open_memmap(emb_path, mode="w+", dtype=np.float16,

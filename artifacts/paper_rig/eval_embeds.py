@@ -72,7 +72,12 @@ def main():
                     encoder_attention_mask=attn,
                     past_key_values=past, use_cache=True)
                 past = dec_out.past_key_values
-                nxt = int(dec_out.logits[0, -1].argmax())
+                # decoder returns hidden states; logits = lm_head + softcapping
+                logits = model.lm_head(dec_out.last_hidden_state[:, -1])
+                sc = getattr(model.config.decoder, "final_logit_softcapping", None)
+                if sc is not None:
+                    logits = torch.tanh(logits / sc) * sc
+                nxt = int(logits.argmax())
                 if nxt == (tok.eos_token_id or 1):
                     break
                 out_ids.append(nxt)
