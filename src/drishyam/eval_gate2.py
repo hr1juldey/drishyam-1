@@ -15,7 +15,6 @@ import argparse
 import hashlib
 import json
 import random
-import time
 from pathlib import Path
 
 import numpy as np
@@ -94,17 +93,17 @@ def multiq_embeds(model, tok, cases, fixed_len, cache, device="cuda", n_max=50):
             device=device, dtype=torch.bfloat16)
         page_mask = torch.ones(pages.size(0), IMG_TOKENS, dtype=torch.long, device=device)
 
-        def q1_alone(qs=qs):
+        def q1_alone(qs=qs, pages=pages, page_mask=page_mask):
             di, dm, pos, _ = collate_questions(tok, qs[:1], fixed_len, device)
             with torch.no_grad():
                 return model.forward_embeds(pages, page_mask, di, dm, pos)
 
-        def q1_batched(qs=qs):
+        def q1_batched(qs=qs, pages=pages, page_mask=page_mask):
             di, dm, pos, _ = collate_questions(tok, qs, fixed_len, device)
             with torch.no_grad():
                 return model.forward_embeds(pages, page_mask, di, dm, pos)
 
-        def per_question(qs=qs):
+        def per_question(qs=qs, pages=pages, page_mask=page_mask):
             outs = []
             for q in qs:
                 di, dm, pos, _ = collate_questions(tok, [q], fixed_len, device)
@@ -183,7 +182,7 @@ def main() -> None:
     # --- 6: throughput ---
     case = test_cases[0]
 
-    def batched_all():
+    def batched_all(case=case):
         pages = torch.from_numpy(cache.get(case["page_key"]))[None].to(
             device=device, dtype=torch.bfloat16)
         pm = torch.ones(pages.size(0), IMG_TOKENS, dtype=torch.long, device=device)
@@ -222,6 +221,7 @@ def main() -> None:
     print("ALL PASS" if table["all_pass"] else "GATE-2 BARS NOT MET")
 
     import mlflow
+
     from drishyam.tracking import mlflow_run
 
     with mlflow_run("g2-eval") as run:
