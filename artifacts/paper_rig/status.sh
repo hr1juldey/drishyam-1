@@ -27,9 +27,10 @@ echo; echo "== gpu =="
 nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total --format=csv,noheader
 
 echo; echo "== artifacts (verdict pieces) =="
-for f in runs/img-e4/final runs/eval_embeds_v2.json runs/proof/PROOF.md runs/overnight_report.md; do
+for f in runs/img-e4/final runs/eval_embeds_v2.json runs/proof/PROOF.md; do
   [ -e "$f" ] && echo "READY   $f" || echo "pending $f"
 done
+[ -e runs/overnight_report.md ] && echo "old     runs/overnight_report.md (regenerated at chain end)"
 
 echo; echo "== eval (when ready) =="
 [ -f runs/eval_embeds_v2.json ] && cat runs/eval_embeds_v2.json | head -30
