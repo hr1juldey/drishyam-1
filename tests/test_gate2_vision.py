@@ -78,10 +78,6 @@ def test_row_case_grouping():
 
 def test_forward_row_binds_pages():
     """K1: encoder-row path — shapes, page-dependence, row_case mapping (t5-small)."""
-    sys.path.insert(0, str(ROOT / "src"))
-    from drishyam.tokenize import collate_questions
-    from tests.test_gate2_vision import tiny_setup
-
     torch.manual_seed(0)
     tok, bb, slot_id = tiny_setup()
     m = DecoupledDecision(bb, slot_id).eval()

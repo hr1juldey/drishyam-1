@@ -84,6 +84,7 @@ def main() -> None:
         return acc, ece15(ps, gs)
 
     acc0, ece0 = run_val()
+    vacc, vece = acc0, ece0
     print(f"row-smoke start (SFT-init, ZERO row training): acc={acc0:.4f} ece={ece0:.4f}",
           flush=True)
 
