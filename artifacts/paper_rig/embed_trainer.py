@@ -131,7 +131,7 @@ def main():
             return
         try:
             import mlflow
-            mlflow.set_tracking_uri("file:" + os.path.join(os.getcwd(), "runs", "mlruns"))
+            mlflow.set_tracking_uri("sqlite:///" + os.path.join(os.getcwd(), "runs", "mlflow.db"))
             mlflow.set_experiment("drishyam-doc")
             mlflow.start_run(run_name=os.path.basename(a.out.rstrip("/")))
             mlflow.log_params({k: getattr(a, k) for k in
@@ -298,6 +298,11 @@ def save_ckpt(model, tok, out, step, ckpts, keep, final=False):
         return d
     model.save_pretrained(d, safe_serialization=True)
     tok.save_pretrained(d)
+    try:  # full processor (image preprocessor config) so ckpts are self-contained
+        from transformers import AutoProcessor
+        AutoProcessor.from_pretrained(SNAP).save_pretrained(d)
+    except Exception as e:
+        print(f"processor save skipped: {e}", flush=True)
     ckpts.append(d)
     while len(ckpts) > keep:
         old = ckpts.pop(0)
