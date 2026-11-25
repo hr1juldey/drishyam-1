@@ -62,8 +62,13 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
     if families:
         want = {}
         for part in families.split(","):
-            name, cnt = part.split(":")
-            want[name.strip()] = int(cnt)
+            spec = part.strip()
+            off = 0
+            if "@" in spec:                      # name:count@offset (skip already-embedded prefix)
+                spec, off = spec.split("@")
+                off = int(off)
+            name, cnt = spec.split(":")
+            want[name.strip()] = (int(cnt), off)
         byfam = {}
         for r in rows:
             byfam.setdefault(r["family"], []).append(r)
@@ -71,8 +76,8 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
         if missing:
             raise SystemExit(f"families not in manifest: {missing}; known: {sorted(byfam)}")
         rows = []
-        for fam, cnt in want.items():
-            rows += byfam[fam][:cnt]
+        for fam, (cnt, off) in want.items():
+            rows += byfam[fam][off:off + cnt]
         print(f"families slice: { {f: len([r for r in rows if r['family']==f]) for f in want} }",
               flush=True)
     elif balanced:
