@@ -73,8 +73,13 @@ def ece15(probs: list, golds: list) -> float:
 
 
 def load_cases(split):
+    """JSONL rows -> cases with validated Question objects (schema gate at load time)."""
+    from drishyam.schemas import Question
+
     rows = [json.loads(l) for l in
             (ART / f"gate2_labels_{split}.jsonl").read_text().splitlines() if l.strip()]
+    for r in rows:
+        r["questions"] = [Question(**q) for q in r["questions"]]
     return rows
 
 
@@ -107,8 +112,9 @@ def run_epoch(model, tok, cases, device, fixed_len, cache, opt=None, sched=None,
             opt.zero_grad(set_to_none=True)
         out = model.forward_embeds(pages, page_mask, dec_ids, dec_mask, slot_pos,
                                    row_case=row_case)
-        per_q = [question_loss(logit.float(), torch.tensor(g, device=logit.device), p)
-                 for logit, g, p in zip(out, golds, prims, strict=False)]
+        per_q = [question_loss(logit.float(), torch.tensor(g, device=logit.device),
+                               q.primitive)
+                 for logit, (ci, q), g in zip(out, qtexts, golds, strict=False)]
         loss = torch.stack(per_q).mean()
         if train:
             loss.backward()
