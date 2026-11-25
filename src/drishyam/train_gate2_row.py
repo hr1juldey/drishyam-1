@@ -19,6 +19,7 @@ offload, grad checkpointing, cosine warmup, per-step MLflow every 25 steps,
 best/last ckpt + val_logits.npz, fp32 six-bar eval afterwards) unchanged.
 """
 import argparse
+import contextlib
 import hashlib
 import json
 import random
@@ -89,12 +90,15 @@ def run_rows(model, tok, cases, device, fixed_len, cache, opt=None, sched=None,
                                 device=device)
         if train:
             opt.zero_grad(set_to_none=True)
-        out = model.forward_row(pages, page_mask, dec_ids, dec_mask, slot_pos,
-                                row_case)
-        per_q = [question_loss(logit.float(), torch.tensor(g, device=logit.device),
-                               q.primitive)
-                 for logit, q, g in zip(out, qs, golds, strict=False)]
-        loss = torch.stack(per_q).mean()
+        # Val MUST run grad-free: with autograd graphs this same pass OOM'd the
+        # 3060 at 10.5 GiB (2026-11-25, epoch-0 val crash — train peak is 2.2 GiB).
+        with contextlib.nullcontext() if train else torch.inference_mode():
+            out = model.forward_row(pages, page_mask, dec_ids, dec_mask, slot_pos,
+                                    row_case)
+            per_q = [question_loss(logit.float(), torch.tensor(g, device=logit.device),
+                                   q.primitive)
+                     for logit, q, g in zip(out, qs, golds, strict=False)]
+            loss = torch.stack(per_q).mean()
         if train:
             loss.backward()
             gn = float(torch.nn.utils.clip_grad_norm_(
@@ -216,6 +220,12 @@ def main() -> None:
                                   opt=opt, sched=sched, seed=a.seed * 1000 + epoch,
                                   rows_per_batch=a.rows_per_batch, step_log=step_log,
                                   epoch=epoch)
+            # Pre-val checkpoint: a val-time crash must never eat a trained epoch
+            # (it ate epoch 0 once — 80 min, 2026-11-25).
+            torch.save({"model": model.state_dict(), "opt": opt.state_dict(),
+                        "sched": sched.state_dict(), "epoch": epoch, "best": best,
+                        "fixed_len": fixed_len, "slot_id": slot_id, "cfg_hash": cfg_hash,
+                        "pre_val": True}, last)
             vl, (vp, vg) = run_rows(model, tok, val_cases, device, fixed_len, cache)
             acc = float(np.mean([float(p.argmax() == g.argmax())
                                  for p, g in zip(vp, vg, strict=False)]))
