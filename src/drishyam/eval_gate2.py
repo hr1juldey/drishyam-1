@@ -61,7 +61,7 @@ def rows_embeds(model, tok, cases, fixed_len, temps, cache, device="cuda",
                 if blank_state:
                     pages = torch.zeros_like(pages)
                 out = model.forward_row(pages, page_mask, dec_ids, dec_mask, slot_pos,
-                                        torch.zeros(pages.size(0), dtype=torch.long,
+                                        torch.zeros(dec_ids.size(0), dtype=torch.long,
                                                     device=device))
             else:
                 out = model.forward_embeds(pages, page_mask, dec_ids, dec_mask, slot_pos,
@@ -113,7 +113,7 @@ def multiq_embeds(model, tok, cases, fixed_len, cache, device="cuda", n_max=50,
             with torch.no_grad():
                 if path == "row":
                     return model.forward_row(pages, page_mask, di, dm, pos,
-                                             torch.zeros(pages.size(0),
+                                             torch.zeros(di.size(0),
                                                          dtype=torch.long,
                                                          device=device))
                 return model.forward_embeds(pages, page_mask, di, dm, pos)
@@ -220,7 +220,7 @@ def main() -> None:
         with torch.no_grad():
             if a.path == "row":
                 model.forward_row(pages, pm, di, dm, pos,
-                                  torch.zeros(pages.size(0), dtype=torch.long,
+                                  torch.zeros(di.size(0), dtype=torch.long,
                                               device=device))
             else:
                 model.forward_embeds(pages, pm, di, dm, pos)
