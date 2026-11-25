@@ -123,6 +123,32 @@ def model_embeds_lookup(model, ids):
 
 def main():
     global model
+    # --- MLflow optional live tracking (never fatal: training runs without it)
+    _mf = {"m": None}
+
+    def ml_init(total_steps):
+        if not a.mlflow:
+            return
+        try:
+            import mlflow
+            mlflow.set_tracking_uri("file:" + os.path.join(os.getcwd(), "runs", "mlruns"))
+            mlflow.set_experiment("drishyam-doc")
+            mlflow.start_run(run_name=os.path.basename(a.out.rstrip("/")))
+            mlflow.log_params({k: getattr(a, k) for k in
+                               ["epochs", "micro", "accum", "lr", "warmup", "seed"]})
+            mlflow.log_param("total_steps", total_steps)
+            _mf["m"] = mlflow
+        except Exception as e:
+            print(f"mlflow disabled: {e}", flush=True)
+
+    def ml_log(step, **metrics):
+        if _mf["m"] is None:
+            return
+        try:
+            _mf["m"].log_metrics({k: float(v) for k, v in metrics.items()}, step=step)
+        except Exception:
+            pass
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--dirs", type=str, required=True, help="comma list of embedding dirs")
     ap.add_argument("--out", type=str, required=True, help="checkpoint dir (runs/...)")
@@ -141,6 +167,8 @@ def main():
     ap.add_argument("--cpu", action="store_true", help="wiring smoke on CPU")
     ap.add_argument("--smoke", action="store_true", help="10-step wiring smoke on 200 rows")
     ap.add_argument("--max-steps", type=int, default=None)
+    ap.add_argument("--mlflow", action="store_true",
+                    help="log step metrics to MLflow file-store under runs/mlruns")
     a = ap.parse_args()
     dirs = [d.strip() for d in a.dirs.split(",") if d.strip()]
     os.makedirs(a.out, exist_ok=True)
@@ -174,6 +202,7 @@ def main():
 
     step = 0
     t0 = time.time()
+    ml_init(total_steps)
     rows_seen = 0
     loss0 = None
     s_loss = 0.0
@@ -230,6 +259,8 @@ def main():
                           f"gn {float(gn):.2f} rows/s {rps:.1f} vram {vram:.0f}MB", flush=True)
                     loss_avg = s_loss / (a.accum * a.log_every)
                     s_loss = 0.0
+                    ml_log(step, loss=loss_avg, grad_norm=float(gn),
+                           rows_per_s=rps, vram_mb=vram)
                     # divergence guard: >3x the first logged avg after warmup -> halt
                     if step > a.warmup and loss_avg > 3.0 * loss0:
                         print(f"divergence: loss {loss_avg:.4f} > 3x initial {loss0:.4f} "
@@ -250,6 +281,12 @@ def main():
     dt = time.time() - t0
     print(f"DONE steps {step} rows {rows_seen} in {dt/60:.0f} min "
           f"({rows_seen/dt:.1f} rows/s)", flush=True)
+    ml_log(step, train_minutes=dt / 60, final_rows_per_s=rows_seen / dt)
+    if _mf["m"] is not None:
+        try:
+            _mf["m"].end_run(status="FINISHED")
+        except Exception:
+            pass
     if a.smoke:
         assert step >= 5, f"smoke ran only {step} steps"
         print("SMOKE OK", flush=True)
