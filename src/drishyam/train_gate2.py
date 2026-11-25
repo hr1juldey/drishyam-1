@@ -99,12 +99,11 @@ def run_epoch(model, tok, cases, device, fixed_len, cache, opt=None, sched=None,
         pages = torch.stack([torch.from_numpy(cache.get(c["page_key"])) for c in chunk])
         page_mask = torch.ones(pages.size(0), IMG_TOKENS, dtype=torch.long, device=device)
         pages = pages.to(device=device, dtype=torch.bfloat16)
-        qtexts, golds, prims = [], [], []
+        qtexts, golds = [], []
         for ci, case in enumerate(chunk):
             for q, g in zip(case["questions"], case["gold"], strict=False):
                 qtexts.append((ci, q))
                 golds.append(g)
-                prims.append(q["primitive"])
         dec_ids, dec_mask, slot_pos, _ = collate_questions(
             tok, [q for _, q in qtexts], fixed_len, device)
         row_case = torch.tensor([ci for ci, _ in qtexts], device=device)
