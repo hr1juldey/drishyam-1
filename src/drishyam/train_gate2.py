@@ -155,7 +155,7 @@ def evaluate_split(model, tok, cases, device, fixed_len, cache):
             out = model.forward_embeds(pages, page_mask, dec_ids, dec_mask, slot_pos)
         for logit, g, q in zip(out, case["gold"], case["questions"], strict=False):
             gf = torch.tensor(g, device=logit.device)
-            losses.append(float(question_loss(logit.float(), gf, q["primitive"])))
+            losses.append(float(question_loss(logit.float(), gf, q.primitive)))
             all_p.append(torch.softmax(logit.float(), -1).cpu().numpy())
             all_g.append(np.asarray(g, dtype=float))
     model.train()
