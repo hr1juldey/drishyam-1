@@ -109,6 +109,47 @@ class DecoupledDecision(nn.Module):
         h = out.decoder_hidden_states[-1].float()  # head stays fp32 for calibration-grade numerics
         return [self.head(h[i, p]) for i, p in enumerate(slot_pos_list)]  # per-question [n_slots_i]
 
+    def encode_state_embeds(self, page_embs, page_mask):
+        """Gate-2: cached page tokens [B, 256, d] -> h_enc, world knowledge untouched.
+
+        Encoder path: get_encoder()(inputs_embeds=...) works on plain T5 (t5-small CPU
+        tests); T5Gemma2's verified path (eval_metrics.py / proof gate) is
+        model.model.encoder.text_model(inputs_embeds=...) — try/except resolves per model."""
+        embs = page_embs.to(next(self.bb.parameters()).dtype)
+        try:
+            enc = self.bb.get_encoder()(inputs_embeds=embs, attention_mask=page_mask)
+        except (TypeError, AttributeError):
+            enc = self.bb.model.encoder.text_model(inputs_embeds=embs,
+                                                   attention_mask=page_mask)
+        return enc.last_hidden_state
+
+    def forward_embeds(self, page_embs, page_mask, dec_ids, dec_mask, slot_pos_list,
+                       row_case=None, blank_state=False):
+        """forward() with the state side swapped to cached page embeddings. The decoder
+        side (slot collation, fp32 head, logits_to_keep, blank ablation, row_case
+        materialization) is byte-identical to forward()."""
+        h_enc = self.encode_state_embeds(page_embs, page_mask)
+        if blank_state:
+            h_enc = torch.zeros_like(h_enc)
+        n_dec = dec_ids.size(0)
+        if row_case is not None:
+            h_enc, page_mask = h_enc[row_case], page_mask[row_case]
+        else:
+            h_enc = h_enc.repeat(n_dec, 1, 1)
+            page_mask = page_mask.repeat(n_dec, 1)
+        kwargs: dict = {"output_hidden_states": True, "use_cache": False}
+        if self._can_limit_logits:
+            kwargs["logits_to_keep"] = 0
+        out = self.bb(
+            decoder_input_ids=dec_ids,
+            decoder_attention_mask=dec_mask,
+            encoder_outputs=BaseModelOutput(last_hidden_state=h_enc),
+            attention_mask=page_mask,
+            **kwargs,
+        )
+        h = out.decoder_hidden_states[-1].float()
+        return [self.head(h[i, p]) for i, p in enumerate(slot_pos_list)]
+
 
 def trainable_groups(model, wd: float = 0.01):
     """LoRA + slot head train fully; weight decay skips norms and biases."""
