@@ -71,7 +71,7 @@ def main() -> None:
             for ci, qi in val_rows:
                 case = val_cases[ci]
                 pages = torch.from_numpy(cache.get(case["page_key"]))[None].to(
-                    device=device, dtype=torch.bfloat16)
+                    device=device, dtype=torch.float32)
                 pm = torch.ones(pages.size(0), IMG_TOKENS, dtype=torch.long, device=device)
                 di, dm, pos, _ = collate_questions(tok, [case["questions"][qi]],
                                                    fixed_len, device)
@@ -120,7 +120,7 @@ def main() -> None:
                 upages = list({train_cases[ci]["page_key"] for ci, _ in batch})
                 pidx = {k: i for i, k in enumerate(upages)}
                 pages = torch.stack([torch.from_numpy(cache.get(k)) for k in upages])
-                pages = pages.to(device=device, dtype=torch.bfloat16)
+                pages = pages.to(device=device, dtype=torch.float32)
                 pm = torch.ones(pages.size(0), IMG_TOKENS, dtype=torch.long, device=device)
                 di, dm, pos, _ = collate_questions(tok, qs, fixed_len, device)
                 row_case = torch.tensor([pidx[train_cases[ci]["page_key"]]
