@@ -46,8 +46,9 @@ def main():
             out = model.generate(pixel_values=px, input_ids=ids, attention_mask=mask,
                                  max_new_tokens=16, num_beams=1, do_sample=False,
                                  decoder_start_token_id=bos)
-        return proc.tokenizer.decode(out[0][ids.shape[1]:],
-                                     skip_special_tokens=True).strip()
+        # encoder-decoder generate() returns ONLY the decoder sequence
+        # ([decoder_start, gen...]) — slicing by input length yields EMPTY tensors
+        return proc.tokenizer.decode(out[0][1:], skip_special_tokens=True).strip()
 
     def norm(s):
         return " ".join(str(s).lower().split())
