@@ -39,9 +39,13 @@ def main():
         px = enc["pixel_values"].to(device="cuda", dtype=torch.bfloat16)
         ids = enc["input_ids"].cuda()
         mask = enc["attention_mask"].cuda()
+        # decoder MUST start at bos (same artifact as the eval fix: HF's default
+        # decoder_start for T5-family is pad -> empty predictions -> fake 0%)
+        bos = proc.tokenizer.bos_token_id if proc.tokenizer.bos_token_id is not None else 2
         with torch.no_grad():
             out = model.generate(pixel_values=px, input_ids=ids, attention_mask=mask,
-                                 max_new_tokens=16, num_beams=1, do_sample=False)
+                                 max_new_tokens=16, num_beams=1, do_sample=False,
+                                 decoder_start_token_id=bos)
         return proc.tokenizer.decode(out[0][ids.shape[1]:],
                                      skip_special_tokens=True).strip()
 
