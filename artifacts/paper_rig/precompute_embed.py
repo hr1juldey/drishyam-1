@@ -109,24 +109,24 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
     shard_files = sorted(f for f in os.listdir(OUT) if f.startswith("emb_") and f.endswith(".npy"))
     complete = set()
     for f in shard_files:
-        idx = int(f.split("_")[1].split(".")[0])
-        lab = os.path.join(OUT, f"lab_{idx:06d}.jsonl")
+        start_row = int(f.split("_")[1].split(".")[0])   # filename = START ROW, not shard no.
+        lab = os.path.join(OUT, f"lab_{start_row:06d}.jsonl")
         n_lab = 0
         if os.path.exists(lab):
             with open(lab) as lf:
                 n_lab = sum(1 for line in lf if line.strip())
-        expect = min(SHARD, len(rows) - idx * SHARD)
+        expect = min(SHARD, len(rows) - start_row)
         if n_lab == expect and expect > 0:
-            complete.add(idx)
+            complete.add(start_row)
         else:
-            print(f"husk/partial shard {idx:06d} ({n_lab}/{expect} labels) — deleting",
+            print(f"husk/partial shard start={start_row} ({n_lab}/{expect} labels) — deleting",
                   flush=True)
-            os.remove(os.path.join(OUT, f"emb_{idx:06d}.npy"))
+            os.remove(os.path.join(OUT, f"emb_{start_row:06d}.npy"))
             if os.path.exists(lab):
                 os.remove(lab)
-    while (done // SHARD) in complete and done < len(rows):
+    while done in complete and done < len(rows):
         done += SHARD
-    print(f"manifest {len(rows)} rows, complete shards {sorted(complete)}, "
+    print(f"manifest {len(rows)} rows, complete starts {sorted(complete)}, "
           f"resuming at {done}", flush=True)
 
     t_start = time.time()
@@ -152,7 +152,7 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
 
     while done < len(rows):
         chunk = rows[done:done + SHARD]
-        if (done // SHARD) in complete:   # complete-on-disk: keep, skip regen
+        if done in complete:   # complete-on-disk: keep, skip regen
             done += len(chunk)
             continue
         emb_path = os.path.join(OUT, f"emb_{done:06d}.npy")
