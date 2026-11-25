@@ -37,7 +37,13 @@ def _page_worker(rows_q, pages_q):
             for r in batch_rows:
                 pg, gt = gen_page(fam, r["seed"])
                 pages.append(pg); gts.append(gt)
-            pages_q.put((fam, pages, gts, batch_rows))
+            # prebuild the float32 atlas HERE (producer thread) so set_atlas on
+            # the consumer only uploads to GPU — identical ops, overlapped CPU.
+            from PIL import Image as _I
+            g = GEOM[fam]
+            atl = np.stack([np.asarray(_I.fromarray(np.clip(p, 0, 255).astype(np.uint8)).resize(
+                (g["pw"], g["ph"])), np.float32) for p in pages])
+            pages_q.put((fam, pages, gts, batch_rows, atl))
         except Exception as e:
             pages_q.put(e)
             return
@@ -175,8 +181,8 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
             item = pages_q.get()
             if isinstance(item, Exception):
                 raise item
-            fam, pages, gts, sub = item
-            rend(fam).set_atlas(pages)
+            fam, pages, gts, sub, atl = item
+            rend(fam).set_atlas(pages, prepared=atl)
             with torch.inference_mode():
                 rend(fam)
                 class GG:

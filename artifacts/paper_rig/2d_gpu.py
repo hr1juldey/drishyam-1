@@ -91,11 +91,16 @@ class GPURenderer:
                                 torch.linspace(-1, 1, tw, device=device, dtype=TD), indexing="ij")
         self.base = torch.stack([xs, ys], -1)                     # (th,tw,2)
 
-    def set_atlas(self, pages):
-        """swap the content atlas for a new batch of pages (factory JIT streaming)."""
+    def set_atlas(self, pages, prepared=None):
+        """swap the content atlas for a new batch of pages (factory JIT streaming).
+        prepared: optional prebuilt float32 atlas (producer-thread precomputed
+        clip+resize) — skips the CPU work so the consumer only uploads to GPU."""
         from PIL import Image as _I
-        atlas = np.stack([np.asarray(_I.fromarray(np.clip(p, 0, 255).astype(np.uint8)).resize(
-            (self.pw, self.ph)), np.float32) for p in pages])
+        if prepared is not None:
+            atlas = prepared
+        else:
+            atlas = np.stack([np.asarray(_I.fromarray(np.clip(p, 0, 255).astype(np.uint8)).resize(
+                (self.pw, self.ph)), np.float32) for p in pages])
         K = len(pages)
         t = torch.from_numpy(atlas).to(self.dev, TD).permute(0, 3, 1, 2) / 255.0
         alpha = torch.ones(1, 1, self.ph, self.pw, device=self.dev, dtype=TD)

@@ -51,6 +51,29 @@ EOF
 log "uniqueness check exit $?"
 grep -q UNIQUE_OK "$LOGD/verify_unique.txt" || { log "uniqueness FAIL — v3 not started"; exit 1; }
 
+# 3b. distribution gate: new-shard embedding stats must match the proven slice-1
+# stats (same encoder+projector) — catches a broken page/atlas path BEFORE v3.
+uv run python - "$E" "$E2" <<'EOF' > "$LOGD/verify_dist.txt" 2>&1
+import numpy as np, glob, sys, random
+def stats(pattern, n=6):
+    files = sorted(glob.glob(pattern))
+    random.seed(0); picks = random.sample(files, min(n, len(files)))
+    arrs = []
+    for f in picks:
+        m = np.load(f, mmap_mode="r")
+        idx = np.linspace(0, m.shape[0] - 1, 16).astype(int)
+        arrs.append(np.asarray(m[idx], dtype=np.float32))
+    a = np.concatenate(arrs)
+    return float(a.mean()), float(a.std())
+m1, s1 = stats(sys.argv[1] + "/emb_*.npy")
+m2, s2 = stats(sys.argv[2] + "/emb_*.npy")
+print(f"slice1 mean {m1:.4f} std {s1:.4f} | new mean {m2:.4f} std {s2:.4f}")
+ok = abs(m2 - m1) < 0.15 * abs(m1) and abs(s2 - s1) < 0.25 * abs(s1)
+print("DIST_OK" if ok else "DIST_FAIL")
+EOF
+log "distribution gate exit $?"
+grep -q DIST_OK "$LOGD/verify_dist.txt" || { log "distribution FAIL — new embeddings deviate from proven encoder stats; v3 not started"; exit 1; }
+
 # 4. v3: full 200k, fresh, 3 epochs, native MLflow this time
 log "v3 training on $E,$E2 (200k x 3 epochs, native mlflow)"
 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True \
