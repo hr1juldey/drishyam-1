@@ -4,7 +4,8 @@ Bars (plan 2026-11-25_144900, pre-registered BEFORE the SFT run):
   g2_1 ablation flip > 0.30   (the model READS the page; blank-state must change answers)
   g2_2 multiq delta  = 0.0000 @4dp (one cached state, questions in any batch shape)
   g2_3 post-TS ECE  < 0.08    (calibrated trust, temperature scaling fitted on VAL)
-  g2_4 unseen-family AUC > 0.75 on noul (family `table` never seen in train/val/TS)
+  g2_4 unseen-family AUC > 0.75 on noul (family `salary` never seen in train/val/TS;
+      table was planned but zero table pages exist in the banked 90k — measured)
   g2_5 jitter flip  < 0.05    (case/whitespace jitter on question text)
   g2_6 decisions/s  reported  (cached-state throughput; informational)
 

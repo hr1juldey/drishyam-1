@@ -42,8 +42,13 @@ from row_labels import TABLES, _leg, UNREADABLE_OPS  # noqa: E402
 from thermal_generator import apply_degradation, choose_plan, gen_thermal  # noqa: E402
 
 EMB_DIRS = [PAPER / "embeddings", PAPER / "embeddings_slice2"]
-UNSEEN_FAMILY = "table"
-TRAIN_FAMILIES = ["thermal", "savings", "card", "electricity", "telecom", "salary"]
+# LOFO unseen family = salary: the banked 90k embeddings contain NO `table` pages
+# (generation stopped before the table block of the family-ordered manifest), so the
+# originally planned table holdout is impossible. salary = most structurally distinct
+# banked family (payslip vs receipt/statement/card/bill). Measured in
+# gate2_label_stats.json: train+val+test carry the other five families only.
+UNSEEN_FAMILY = "salary"
+TRAIN_FAMILIES = ["thermal", "savings", "card", "electricity", "telecom"]
 AMOUNT_FIELDS = {"total_amt", "total_amount", "total_due", "min_due",
                  "gross_earnings", "net_pay"}
 INSTITUTION_FIELD = {"thermal": "shop_name", "card": "issuer", "savings": "bank",
