@@ -76,6 +76,35 @@ def test_row_case_grouping():
     torch.testing.assert_close(out[1], solo1[0], rtol=0, atol=1e-6)
 
 
+def test_forward_row_binds_pages():
+    """K1: encoder-row path — shapes, page-dependence, row_case mapping (t5-small)."""
+    sys.path.insert(0, str(ROOT / "src"))
+    from drishyam.tokenize import collate_questions
+    from tests.test_gate2_vision import tiny_setup
+
+    torch.manual_seed(0)
+    tok, bb, slot_id = tiny_setup()
+    m = DecoupledDecision(bb, slot_id).eval()
+    d = bb.config.d_model
+    pages = torch.randn(2, 16, d)
+    page_mask = torch.ones(2, 16, dtype=torch.long)
+    q = Question(qid="a", primitive=Primitive.NOUL, text="Is X present?",
+                 options=["No", "Yes"])
+    di, dm, pos, _ = collate_questions(tok, [q, q], 24)
+    row_case = torch.tensor([0, 1])
+    with torch.no_grad():
+        out = m.forward_row(pages, page_mask, di, dm, pos, row_case)
+    assert len(out) == 2 and all(t.shape == (2,) for t in out)
+    assert torch.isfinite(out[0]).all()
+    # same question on DIFFERENT pages -> different logits (page actually read)
+    assert not torch.allclose(out[0], out[1], atol=1e-4), "row path ignores the page"
+    # row_case mapping: solo run on page 0 must match the batched row 0
+    with torch.no_grad():
+        solo = m.forward_row(pages[0:1], page_mask[0:1], di[:1], dm[:1], [pos[0]],
+                             torch.zeros(1, dtype=torch.long))
+    torch.testing.assert_close(out[0], solo[0], rtol=0, atol=1e-5)
+
+
 def test_text_path_unchanged():
     """Gate-1 regression: the original forward() still behaves (t5-small)."""
     torch.manual_seed(0)

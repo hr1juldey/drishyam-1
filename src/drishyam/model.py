@@ -123,6 +123,27 @@ class DecoupledDecision(nn.Module):
                                                    attention_mask=page_mask)
         return enc.last_hidden_state
 
+    def forward_row(self, page_embs, page_mask, row_ids, row_mask, slot_pos_list,
+                    row_case):
+        """Gate-2.5 K1: ENCODER-ROW binding (ktcapraz layout) — one encoder row per
+        question = [page_embs ; question+option tokens], slots read from the ENCODER
+        output (shifted by the page segment). Their measured result: the encoder makes
+        the answer (51.4 encoder-only vs 51.8 full) — this path uses the pretrained
+        self-attention circuits for question<->page alignment instead of decoder
+        cross-attention (the pathway Gate-2 v1 found inert)."""
+        emb_layer = self.bb.get_input_embeddings()
+        q_emb = emb_layer(row_ids).to(page_embs.dtype)
+        inputs_embeds = torch.cat([page_embs[row_case], q_emb], dim=1)
+        attn = torch.cat([page_mask[row_case], row_mask], dim=1)
+        L_page = page_embs.size(1)
+        try:
+            enc = self.bb.get_encoder()(inputs_embeds=inputs_embeds, attention_mask=attn)
+        except (TypeError, AttributeError):
+            enc = self.bb.model.encoder.text_model(inputs_embeds=inputs_embeds,
+                                                   attention_mask=attn)
+        h = enc.last_hidden_state.float()
+        return [self.head(h[i, p + L_page]) for i, p in enumerate(slot_pos_list)]
+
     def forward_embeds(self, page_embs, page_mask, dec_ids, dec_mask, slot_pos_list,
                        row_case=None, blank_state=False):
         """forward() with the state side swapped to cached page embeddings. The decoder
