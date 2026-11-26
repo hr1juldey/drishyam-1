@@ -35,10 +35,10 @@ ROOT = HERE.parents[1]
 PAPER = ROOT / "artifacts" / "paper_rig"
 sys.path.insert(0, str(PAPER))
 
-from content_generator import gen_card, gen_statement  # noqa: E402
 import fin_docs  # noqa: E402
+from content_generator import gen_card, gen_statement  # noqa: E402
 from institutions import inr_group  # noqa: E402
-from row_labels import TABLES, _leg, UNREADABLE_OPS  # noqa: E402
+from row_labels import TABLES, UNREADABLE_OPS, _leg  # noqa: E402
 from thermal_generator import apply_degradation, choose_plan, gen_thermal  # noqa: E402
 
 EMB_DIRS = [PAPER / "embeddings", PAPER / "embeddings_slice2", PAPER / "embeddings_k5"]
@@ -321,7 +321,7 @@ def main():
                 continue
             try:
                 gt = page_gt(fam, seed)
-            except Exception as e:  # noqa: BLE001 — count, report, continue
+            except Exception as e:
                 pool_counts[f"ERR:{fam}:{type(e).__name__}"] += 1
                 continue
             gts[(fam, seed)] = gt
@@ -333,7 +333,7 @@ def main():
                 inst = {f2: a2 for f2, _, a2 in TABLES[fam](gt)}.get(inst_f)
                 if inst and inst != "unreadable":
                     inst_pool.append(inst)
-            except Exception as e:  # noqa: BLE001
+            except Exception as e:
                 pool_counts[f"ERR:pairs:{fam}:{type(e).__name__}"] += 1
     inst_pool = sorted(set(inst_pool))
     print(f"gt pages: {len(gts)}, institutions: {len(inst_pool)}, pool errors: "
@@ -380,6 +380,7 @@ def main():
     print("WROTE artifacts/gate2_label_stats.json sha=", stats["cfg_sha256"])
     if a.mlflow:
         import mlflow
+
         from drishyam.tracking import mlflow_run
         with mlflow_run("g2-labels") as run:
             mlflow.set_tag("gate", "2")

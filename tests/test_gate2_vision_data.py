@@ -4,13 +4,16 @@ import sys
 from pathlib import Path
 
 import numpy as np
-import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
 from drishyam.vision_data import (  # noqa: E402
-    EMB_DIRS, UNSEEN_FAMILY, LabelFactory, load_pages, page_gt,
+    EMB_DIRS,
+    UNSEEN_FAMILY,
+    LabelFactory,
+    load_pages,
+    page_gt,
 )
 
 
@@ -116,7 +119,6 @@ def test_k5_non_twin_parity_and_no_ghost_questions():
 
 def test_k5_thermal_unreadable_presence_no():
     """Thermal variance: unreadable fields get a presence question with gold No."""
-    import fin_docs
     found = False
     for seed in range(1_000_000, 1_001_000):
         gt = page_gt("thermal", seed)
