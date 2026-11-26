@@ -95,12 +95,20 @@ def task_to_case(r: dict, tier: str) -> dict:
         "case_id": r["id"],
         "tier": tier,
         "family": r.get("family", ""),
-        "state": r["state"],
+        "state": _state_text(r["state"]),
         "questions": [question],
         "gold": [gold],
         "expected_raw": expected,
         "labels_raw": labels,
     }
+
+
+def _state_text(state: object) -> str:
+    """Public-set states are str OR dict-of-documents (35 hard tasks) — canonical
+    text form is sorted-keys JSON: lossless + deterministic for the tokenizer."""
+    if isinstance(state, str):
+        return state
+    return json.dumps(state, sort_keys=True, ensure_ascii=False)
 
 
 def load_public(data_dir: str | Path) -> list[dict]:
