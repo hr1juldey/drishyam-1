@@ -136,3 +136,156 @@ def test_k5_thermal_unreadable_presence_no():
         if found:
             break
     assert found, "no thermal page with unreadable field produced a presence-No in probe range"
+
+
+# ---------------- K5-v4: train families + presence balancing ----------------
+def test_k5_train_family_gt_parity_fixed_seeds():
+    """Non-registered train seeds render gt byte-identical to the pre-change capture."""
+    fixture = ROOT / "tests" / "fixtures" / "gate2_k5_parity_gts.json"
+    with open(fixture) as fh:
+        fix = json.load(fh)
+    assert set(fix) == {"electricity", "telecom", "savings", "card"}
+    for fam, rec in fix.items():
+        gt = page_gt(fam, rec["seed"])
+        assert json.dumps(gt, sort_keys=True, default=str) == \
+            json.dumps(rec["gt"], sort_keys=True, default=str), fam
+
+
+def test_k5_train_twin_emits_presence_no_and_template_matches_yes():
+    """Train-family twin: presence-No emitted; twin No template == base Yes template."""
+    from test_row_labels import _first_asked_twin
+
+    from drishyam.vision_data import FIELD_LABEL
+    for fam in ("electricity", "telecom", "savings", "card"):
+        seed, field = _first_asked_twin(fam)
+        gt = page_gt(fam, seed)
+        assert field not in gt
+        factory = LabelFactory({}, {}, [], seed=1)
+        qs, golds = factory.questions_for(fam, seed, gt, "train")
+        hits = [(q, g) for q, g in zip(qs, golds, strict=False)
+                if q["qid"] == f"{fam}:{seed}:noul:pres:{field}"]
+        assert hits, f"no presence question for {fam} twin {field}: {[q['qid'] for q in qs]}"
+        q, g = hits[0]
+        assert g[_yes_idx(q["options"])] == 0.0
+        # same template the base Yes row for the matching extractor field uses
+        twin_label = FIELD_LABEL.get(field, field)
+        assert q["text"] == f"Is the {twin_label} present and readable on this page?"
+        for alias, label in (("printed_total", "total_amount"), ("min_amount_due", "min_due")):
+            if field == alias:
+                assert twin_label == FIELD_LABEL[label], (fam, field)
+
+
+def test_k5_train_non_twin_no_ghost_questions():
+    """Non-registered train seeds: exactly the 3 base presence questions (2 Yes + 1
+    cross-family No — the other-family field name is a designed presence-No)."""
+    for fam, seed in (("electricity", 1_005_011), ("telecom", 1_007_013),
+                      ("savings", 1_009_017), ("card", 1_011_019)):
+        gt = page_gt(fam, seed)
+        factory = LabelFactory({}, {}, [], seed=1)
+        qs, golds = factory.questions_for(fam, seed, gt, "train")
+        pres = [(q, g) for q, g in zip(qs, golds, strict=False) if ":noul:pres:" in q["qid"]]
+        assert len(pres) == 3, (fam, [q["qid"] for q, _ in pres])
+        from row_labels import TABLES
+        own_fields = {f for f, _, _ in TABLES[fam](gt)}
+        nos = [(q, g) for q, g in pres if g[_yes_idx(q["options"])] != 1.0]
+        yes = [(q, g) for q, g in pres if q not in [nq for nq, _ in nos]]
+        assert len(nos) == 1 and nos[0][0]["qid"].rsplit(":", 1)[1] not in own_fields, \
+            (fam, [(q["qid"], g) for q, g in pres])
+        assert len(yes) == 2, (fam, [(q["qid"], g) for q, g in pres])
+
+
+def _pres_case(family, qid, text, yes, options=("No", "Yes")):
+    gold = [0.0, 0.0]
+    gold[options.index("Yes" if yes else "No")] = 1.0
+    return {"family": family,
+            "questions": [{"qid": qid, "primitive": "noul", "text": text,
+                           "options": list(options)}],
+            "gold": [gold]}
+
+
+def _count_presence(rows):
+    yes = no = 0
+    for r in rows:
+        for q, g in zip(r["questions"], r["gold"], strict=False):
+            if q["primitive"] == "noul" and ":noul:pres:" in q["qid"]:
+                if g[_yes_idx(q["options"])] == 1.0:
+                    yes += 1
+                else:
+                    no += 1
+    return yes, no
+
+
+def test_balance_train_presence_caps_yes_rows():
+    """Cap: Yes <= 2x No per (family, template) group; excess Yes dropped by qid order."""
+    from drishyam.vision_data import balance_train_presence
+    tmpl = "Is the total amount payable present and readable on this page?"
+    rows = []
+    # electricity group: 9 Yes + 2 No -> cap 4 Yes, drop 5
+    for i in range(9):
+        rows.append(_pres_case("electricity", f"electricity:{i}:noul:pres:total_amount",
+                               tmpl, yes=True))
+    # shuffled option order must be detected too
+    rows.append(_pres_case("electricity", "electricity:90:noul:pres:total_amount",
+                           tmpl, yes=True, options=("Yes", "No")))
+    for i in (91, 92):
+        rows.append(_pres_case("electricity", f"electricity:{i}:noul:pres:printed_total",
+                               tmpl, yes=False))
+    # same template, different family -> own group, no No rows -> untouched
+    for i in range(5):
+        rows.append(_pres_case("card", f"card:{i}:noul:pres:total_due", tmpl, yes=True))
+    # a non-presence decision on a capped page must survive
+    rows.append({"family": "electricity",
+                 "questions": [{"qid": "electricity:0:choice:val:total_amount",
+                                "primitive": "choice", "text": "Which value ...",
+                                "options": ["a", "b", "c"]}],
+                 "gold": [[1.0, 0.0, 0.0]]})
+
+    import copy
+    snapshot = copy.deepcopy(rows)
+    dropped = balance_train_presence(rows)
+    assert dropped == 6                       # 10 Yes, 2 No -> cap 4 -> drop 6
+    yes, no = _count_presence(rows)
+    assert (yes, no) == (9, 2)                # 4 capped electricity + 5 untouched card
+    kept_qids = [q["qid"] for r in rows for q in r["questions"]]
+    # determinism: lowest qids kept
+    assert "electricity:0:noul:pres:total_amount" in kept_qids
+    assert "electricity:3:noul:pres:total_amount" in kept_qids
+    assert "electricity:4:noul:pres:total_amount" not in kept_qids
+    assert "electricity:90:noul:pres:total_amount" not in kept_qids
+    assert "card:0:noul:pres:total_due" in kept_qids           # untouched group
+    assert "electricity:0:choice:val:total_amount" in kept_qids  # non-presence kept
+    # every surviving case keeps gold/options aligned
+    for r in rows:
+        assert len(r["questions"]) == len(r["gold"])
+    # determinism: same input -> same outcome
+    rows2 = copy.deepcopy(snapshot)
+    assert balance_train_presence(rows2) == 6
+    assert json.dumps(rows, sort_keys=True) == json.dumps(rows2, sort_keys=True)
+
+
+def test_balance_train_presence_noop_cases():
+    """Groups without No rows, or already within cap, are left untouched."""
+    from drishyam.vision_data import balance_train_presence
+    tmpl = "Is the due date present and readable on this page?"
+    rows = [_pres_case("savings", f"savings:{i}:noul:pres:from_date", tmpl, yes=True)
+            for i in range(6)]
+    assert balance_train_presence(rows) == 0
+    assert _count_presence(rows) == (6, 0)
+    rows = ([_pres_case("telecom", f"telecom:{i}:noul:pres:due_date", tmpl, yes=True)
+             for i in range(2)]
+            + [_pres_case("telecom", "telecom:9:noul:pres:due_date", tmpl, yes=False)])
+    assert balance_train_presence(rows) == 0          # 2 Yes == 2 x 1 No -> at cap
+    assert _count_presence(rows) == (2, 1)
+
+
+def test_balance_flag_wiring():
+    """--balance-presence exists, defaults OFF, and applies to the train split only."""
+    import inspect
+
+    from drishyam.vision_data import main
+    src = inspect.getsource(main)
+    assert 'ap.add_argument("--balance-presence", action="store_true"' in src
+    assert 'if a.balance_presence:' in src
+    assert 'balance_train_presence(out_rows["train"])' in src
+    assert 'balance_train_presence(out_rows["val"])' not in src
+

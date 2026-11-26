@@ -66,6 +66,11 @@ FIELD_LABEL = {
     "card_masked": "masked card number", "units_consumed": "units consumed",
     "gross_earnings": "gross earnings", "net_pay": "net pay",
     "subtotal_amt": "subtotal amount",
+    # K5-v4: gt-key names of omittable fields whose extractor pair uses a different
+    # name — mapped to the SAME label so twin presence-No rows and base presence-Yes
+    # rows share one template text (required by balance_train_presence grouping).
+    "printed_total": "total amount payable",
+    "min_amount_due": "minimum amount due",
 }
 SCORE_OPTIONS = ["L1 most fields unreadable", "L2 several fields unreadable",
                  "L3 about half the fields unreadable", "L4 one field unreadable",
@@ -266,6 +271,52 @@ class LabelFactory:
         return qs, golds
 
 
+def _norm_template(text):
+    return " ".join(text.lower().split())
+
+
+def _gold_is_yes(question, gold):
+    for i, opt in enumerate(question["options"]):
+        if opt.lower().strip() == "yes":
+            return gold[i] == 1.0
+    return False
+
+
+def balance_train_presence(rows):
+    """K5-v4 train-side presence balancing (opt-in, --balance-presence).
+
+    v3 train data answers most presence questions Yes (fields are almost always
+    printed), so a reader can score by base-rate priors. Group every emitted noul
+    presence decision by (family, normalized template text); where a group holds
+    both answers and Yes-count > 2 x No-count, deterministically drop the excess
+    Yes decisions (sorted by qid, keep the first 2*N) so the prior stops paying.
+    Mutates rows in place; returns the number of dropped decisions.
+    """
+    groups = defaultdict(list)          # (family, norm_text) -> [(page_i, q_i, qid, is_yes)]
+    for pi, r in enumerate(rows):
+        for qi, q in enumerate(r["questions"]):
+            if q["primitive"] != "noul" or ":noul:pres:" not in q["qid"]:
+                continue
+            groups[(r["family"], _norm_template(q["text"]))].append(
+                (pi, qi, q["qid"], _gold_is_yes(q, r["gold"][qi])))
+    drop = set()
+    for _, items in sorted(groups.items()):
+        yes = sorted((it for it in items if it[3]), key=lambda t: t[2])
+        n_no = sum(1 for it in items if not it[3])
+        if not yes or n_no == 0:
+            continue
+        for pi, qi, _, _ in yes[2 * n_no:]:
+            drop.add((pi, qi))
+    per_page = defaultdict(list)
+    for pi, qi in drop:
+        per_page[pi].append(qi)
+    for pi, qis in per_page.items():
+        keep = [i for i in range(len(rows[pi]["questions"])) if i not in set(qis)]
+        rows[pi]["questions"] = [rows[pi]["questions"][i] for i in keep]
+        rows[pi]["gold"] = [rows[pi]["gold"][i] for i in keep]
+    return len(drop)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--train-pages-per-family", type=int, default=3000)
@@ -273,6 +324,9 @@ def main():
     ap.add_argument("--test-pages-per-family", type=int, default=600)
     ap.add_argument("--unseen-pages", type=int, default=600)
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--balance-presence", action="store_true",
+                    help="K5-v4: cap train Yes presence rows at 2x the No count per "
+                         "(family, template) group so priors cannot answer presence")
     ap.add_argument("--mlflow", action="store_true")
     ap.add_argument("--limit-pages", type=int, default=0, help="smoke cap")
     a = ap.parse_args()
@@ -353,6 +407,11 @@ def main():
                 "family": fam, "seed": seed,
                 "questions": qs, "gold": golds,
             })
+
+    if a.balance_presence:
+        dropped = balance_train_presence(out_rows["train"])
+        print(f"balance-presence: dropped {dropped} excess Yes presence rows in train "
+              f"(cap: Yes <= 2x No per family+template)", flush=True)
 
     stats = {}
     for b, rows in out_rows.items():

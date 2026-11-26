@@ -9,6 +9,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import json, random, string
 from institutions import BANKS, ACC_LABELS, draw_date, inr_group, fmt_amount
+from fin_docs import OMITTABLE_FIELDS, omitted_fields  # K5 omission registry (no cycle: fin_docs never imports this module)
 
 W, H = 1241, 1754
 FD = "/usr/share/fonts/truetype/liberation"
@@ -96,6 +97,10 @@ def draw_bank_logo(d, x, y, f, bank, credit=False):
 
 # ---------------- Family A: savings account statement ----------------
 def gen_statement(rng, seed=0):
+    # K5 counterfactual omissions: registry maps (family, seed) -> fields to drop
+    # (same contract as fin_docs.gen_salary). Old seeds not in the registry render
+    # identical. from_date omission drops the whole period line (and to_date with it).
+    omit = omitted_fields("savings", seed)
     f = fonts()
     bank = BANKS[seed % len(BANKS)]                  # LOIO-derivable: seed % len(POOL)
     acc_label = ACC_LABELS[min(rng.randint(0, len(ACC_LABELS)), len(ACC_LABELS) - 1)]
@@ -105,11 +110,13 @@ def gen_statement(rng, seed=0):
     acct = _digits(rng, 12)
     d1, y1, m1, dd1 = draw_date(rng)
     d2 = d1
-    d.text((150, 330), acc_label, font=f["label"], fill=(0, 0, 0))
-    d.text((375, 330), acct, font=f["value"], fill=(0, 0, 0))
+    if "account_number" not in omit:
+        d.text((150, 330), acc_label, font=f["label"], fill=(0, 0, 0))
+        d.text((375, 330), acct, font=f["value"], fill=(0, 0, 0))
     txn_label = ["Transaction date :", "Statement Period:", "Period :"][min(rng.randint(0, 3), 2)]
-    d.text((150, 385), txn_label, font=f["label"], fill=(0, 0, 0))
-    d.text((375, 385), f"From {d1} To {d2}", font=f["value"], fill=(0, 0, 0))
+    if "from_date" not in omit:
+        d.text((150, 385), txn_label, font=f["label"], fill=(0, 0, 0))
+        d.text((375, 385), f"From {d1} To {d2}", font=f["value"], fill=(0, 0, 0))
     # table
     x0, x1 = 110, 1130
     cols = [x0, 260, 705, 985, 1105, x1]
@@ -163,14 +170,24 @@ def gen_statement(rng, seed=0):
     d.text((80, y + 130), "This is a system-generated statement. Hence, it does not require any signature.",
            font=f["small"], fill=(0, 0, 0))
     d.text((1040, y + 130), "Page 1", font=f["small"], fill=(0, 0, 0))
-    gt = {"family": "bank_savings_statement", "bank": bank[0], "bank_index": seed % len(BANKS),
-          "account_number": acct,
-          "from_date": d1, "to_date": d2, "n_transactions": n,
-          "transactions": rows, "page": 1}
+    period_dropped = "from_date" in omit
+    gt = {k: v for k, v in
+          {"family": "bank_savings_statement", "bank": bank[0], "bank_index": seed % len(BANKS),
+           "account_number": acct,
+           "from_date": None if period_dropped else d1,
+           "to_date": None if period_dropped else d2, "n_transactions": n,
+           "transactions": rows, "page": 1}.items()
+          if v is not None and k not in omit}
     return np.asarray(img, float), gt
 
 # ---------------- Family B: credit card e-statement ----------------
 def gen_card(rng, seed=0):
+    # K5 counterfactual omissions: registry maps (family, seed) -> fields to drop
+    # (same contract as fin_docs.gen_salary). Old seeds not in the registry render
+    # identical. card_masked omission also drops card_number_row (no card digits
+    # anywhere on the page); customer_name omission scrubs the name from the box
+    # AND from the card-number row suffix.
+    omit = omitted_fields("card", seed)
     f = fonts()
     bank = BANKS[seed % len(BANKS)]                  # LOIO-derivable
     _, color, _, tag = bank
@@ -205,7 +222,10 @@ def gen_card(rng, seed=0):
     d.text((40, cy + 112), "BESIDE CGI", font=f["cell"], fill=(0, 0, 0))
     d.text((40, cy + 138), rng.choice(CITY_TAILS), font=f["cell"], fill=(0, 0, 0))
     d.text((855, cy + 4), "Card Account No", font=f["chip"], fill=(60, 60, 60))
-    d.text((855, cy + 30), card, font=F_BOLD, fill=(0, 0, 0))
+    if "card_masked" not in omit:
+        d.text((855, cy + 30), card, font=F_BOLD, fill=(0, 0, 0))
+    if "customer_name" not in omit:
+        d.text((40, cy + 30), name, font=f["value"], fill=(0, 0, 0))
     stmt_date = ddmmyyyy(rng); due_date = ddmmyyyy(rng)
     sy, sm = int(stmt_date[6:]), int(stmt_date[3:5])
     def stmt_month_date():
@@ -218,16 +238,20 @@ def gen_card(rng, seed=0):
     credit_limit = float(rng.choice([53000, 83000, 118000, 200000]))
     avail = round(credit_limit - rng.uniform(500, 6000), 2)
     # gray chips row
-    for (lx, lab, val) in [(40, "Statement Date", stmt_date), (270, "Minimum Amount Due", inr(min_due))]:
+    chips = [(40, "Statement Date", stmt_date)]
+    if "min_amount_due" not in omit:
+        chips.append((270, "Minimum Amount Due", inr(min_due)))
+    for (lx, lab, val) in chips:
         d.rectangle([lx, 480, lx + 220, 530], outline=BORDER, width=1)
         d.rectangle([lx, 480, lx + 220, 505], fill=GRAY_BOX)
         d.text((lx + 12, 484), lab, font=f["chip"], fill=(40, 40, 40))
         (d.text((lx + 12, 508), "₹ " + str(val), font=_rup(20), fill=(0, 0, 0))
          if "Due" in lab else d.text((lx + 12, 508), str(val), font=f["value"], fill=(0, 0, 0)))
     total_label = rng.choice(["Your Total Amount Due", "Total Amount Due", "Total Dues"])
-    d.rectangle([900, 480, 1210, 590], fill=color)
-    d.text((915, 486), total_label, font=f["chip"], fill=(255, 255, 255))
-    d.text((915, 520), "₹ " + inr(total_due), font=_rup(34), fill=(255, 255, 255))
+    if "total_amount_due" not in omit:
+        d.rectangle([900, 480, 1210, 590], fill=color)
+        d.text((915, 486), total_label, font=f["chip"], fill=(255, 255, 255))
+        d.text((915, 520), "₹ " + inr(total_due), font=_rup(34), fill=(255, 255, 255))
     # statement summary
     d.rectangle([40, 545, 860, 600], outline=BORDER, width=1)
     d.rectangle([40, 545, 150, 600], fill=color)
@@ -250,7 +274,8 @@ def gen_card(rng, seed=0):
     d.text((500, 616), "Available Credit", font=f["small"], fill=(40, 40, 40))
     d.text((500, 638), inr(avail), font=f["value"], fill=(0, 0, 0))
     d.rectangle([870, 600, 1210, 660], outline=BORDER, width=1)
-    d.text((882, 606), f"Due Date :   {due_date}", font=f["chip"], fill=(0, 0, 0))
+    if "due_date" not in omit:
+        d.text((882, 606), f"Due Date :   {due_date}", font=f["chip"], fill=(0, 0, 0))
     d.text((882, 632), "Interest will be levied if Total Amount", font=f["small"], fill=(0, 0, 0))
     # rewards
     d.rectangle([40, 675, 150, 775], outline=BORDER, width=1)
@@ -276,10 +301,14 @@ def gen_card(rng, seed=0):
     invoice = _digits(rng, 19)
     d.rectangle([40, 860, 1210, 900], fill=color)
     d.text((330, 868), "TRANSACTION DETAILS", font=f["banner"], fill=(255, 255, 255))
-    d.text((850, 872), f"INVOICE_NO :  {invoice}", font=f["small"], fill=(255, 255, 255))
+    if "invoice_no" not in omit:
+        d.text((850, 872), f"INVOICE_NO :  {invoice}", font=f["small"], fill=(255, 255, 255))
     card4 = card.split()[0] + " XXXX XXXX " + card.split()[-1]
-    d.text((40, 915), "Card Number :", font=f["value"], fill=(0, 0, 0))
-    d.text((190, 915), f"{card4}  -  {name.replace('MR ', '').replace('MRS ', '')}", font=F_BOLD, fill=(0, 0, 0))
+    if "card_masked" not in omit:
+        d.text((40, 915), "Card Number :", font=f["value"], fill=(0, 0, 0))
+        name_tail = "" if "customer_name" in omit else \
+            f"  -  {name.replace('MR ', '').replace('MRS ', '')}"
+        d.text((190, 915), f"{card4}{name_tail}", font=F_BOLD, fill=(0, 0, 0))
     # transactions table
     cols = [40, 148, 340, 672, 775, 850, 985, 1210]
     ty = 950
@@ -311,14 +340,18 @@ def gen_card(rng, seed=0):
         d.text((cols[5] + 6, y + 13), intl, font=f["small"], fill=(0, 0, 0))
         d.text((cols[6] + 6, y + 13), f"{amt:.2f}{cr}", font=f["small"], fill=(0, 0, 0))
         y += hcell
-    gt = {"family": "bank_card_estatement", "issuer": bank[0], "issuer_index": seed % len(BANKS),
-          "customer_name": name, "company": company,
-          "card_masked": card, "card_number_row": card4, "statement_date": stmt_date,
-          "due_date": due_date, "min_amount_due": min_due, "total_amount_due": total_due,
-          "credit_limit": credit_limit, "available_credit": avail, "payback_account": payback,
-          "invoice_no": invoice, "previous_balance": prev, "purchases_charges": purch,
-          "payments_credits": pays, "reward_points": pts, "n_transactions": n,
-          "transactions": txs}
+    gt = {k: v for k, v in
+          {"family": "bank_card_estatement", "issuer": bank[0], "issuer_index": seed % len(BANKS),
+           "customer_name": name, "company": company,
+           "card_masked": card,
+           "card_number_row": None if "card_masked" in omit else card4,
+           "statement_date": stmt_date,
+           "due_date": due_date, "min_amount_due": min_due, "total_amount_due": total_due,
+           "credit_limit": credit_limit, "available_credit": avail, "payback_account": payback,
+           "invoice_no": invoice, "previous_balance": prev, "purchases_charges": purch,
+           "payments_credits": pays, "reward_points": pts, "n_transactions": n,
+           "transactions": txs}.items()
+          if v is not None and k not in omit}
     return np.asarray(img, float), gt
 
 if __name__ == "__main__":

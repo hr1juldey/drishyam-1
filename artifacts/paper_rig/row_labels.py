@@ -26,47 +26,53 @@ def _thermal_pairs(gt):
     ]
 
 def _savings_pairs(gt):
-    return [
-        ("account_number", "What is the account number on this statement?", gt["account_number"]),
-        ("from_date", "What is the from-date on this statement?", gt["from_date"]),
+    # K5 twins: omitted fields are absent from gt — .get + None-filter degrades
+    # gracefully; non-twin pages have every key, so behaviour is unchanged there.
+    pairs = [
+        ("account_number", "What is the account number on this statement?", gt.get("account_number")),
+        ("from_date", "What is the from-date on this statement?", gt.get("from_date")),
         ("n_transactions", "How many transactions are listed on this statement?",
-         str(gt["n_transactions"])),
-        ("bank", "What is the bank name?", gt["bank"]),
+         str(gt["n_transactions"]) if "n_transactions" in gt else None),
+        ("bank", "What is the bank name?", gt.get("bank")),
     ]
+    return [(f, q, a) for f, q, a in pairs if a is not None]
 
 def _card_pairs(gt):
-    return [
+    pairs = [
         ("total_due", "What is the total amount due on this credit card statement?",
-         _inr(gt["total_amount_due"])),
+         _inr(gt["total_amount_due"]) if "total_amount_due" in gt else None),
         ("min_due", "What is the minimum amount due on this credit card statement?",
-         _inr(gt["min_amount_due"])),
-        ("due_date", "What is the due date on this statement?", gt["due_date"]),
-        ("card_masked", "What is the masked card number on this statement?", gt["card_masked"]),
-        ("customer_name", "Who is the customer on this statement?", gt["customer_name"]),
-        ("invoice_no", "What is the invoice number on this statement?", gt["invoice_no"]),
-        ("issuer", "Which bank issued this card statement?", gt["issuer"]),
+         _inr(gt["min_amount_due"]) if "min_amount_due" in gt else None),
+        ("due_date", "What is the due date on this statement?", gt.get("due_date")),
+        ("card_masked", "What is the masked card number on this statement?", gt.get("card_masked")),
+        ("customer_name", "Who is the customer on this statement?", gt.get("customer_name")),
+        ("invoice_no", "What is the invoice number on this statement?", gt.get("invoice_no")),
+        ("issuer", "Which bank issued this card statement?", gt.get("issuer")),
     ]
+    return [(f, q, a) for f, q, a in pairs if a is not None]
 
 def _electricity_pairs(gt):
-    return [
+    pairs = [
         ("total_amount", "What is the total amount payable on this electricity bill?",
-         gt["printed_total"]),
+         gt.get("printed_total")),
         ("units_consumed", "How many units were consumed on this electricity bill?",
-         str(gt["units_consumed"])),
-        ("due_date", "What is the due date on this electricity bill?", gt["due_date"]),
-        ("consumer_no", "What is the consumer number on this bill?", gt["consumer_no"]),
-        ("provider", "Which electricity board issued this bill?", gt["provider"]),
+         str(gt["units_consumed"]) if "units_consumed" in gt else None),
+        ("due_date", "What is the due date on this electricity bill?", gt.get("due_date")),
+        ("consumer_no", "What is the consumer number on this bill?", gt.get("consumer_no")),
+        ("provider", "Which electricity board issued this bill?", gt.get("provider")),
     ]
+    return [(f, q, a) for f, q, a in pairs if a is not None]
 
 def _telecom_pairs(gt):
-    return [
+    pairs = [
         ("total_amount", "What is the total amount payable on this telecom invoice?",
-         gt["printed_total"]),
-        ("due_date", "What is the due date on this telecom invoice?", gt["due_date"]),
-        ("invoice_no", "What is the invoice number on this telecom invoice?", gt["invoice_no"]),
-        ("mobile", "What is the mobile number on this invoice?", gt["mobile"]),
-        ("provider", "Which telecom operator issued this invoice?", gt["provider"]),
+         gt.get("printed_total")),
+        ("due_date", "What is the due date on this telecom invoice?", gt.get("due_date")),
+        ("invoice_no", "What is the invoice number on this telecom invoice?", gt.get("invoice_no")),
+        ("mobile", "What is the mobile number on this invoice?", gt.get("mobile")),
+        ("provider", "Which telecom operator issued this invoice?", gt.get("provider")),
     ]
+    return [(f, q, a) for f, q, a in pairs if a is not None]
 
 def _salary_pairs(gt):
     # K5 twins: omitted fields are absent from gt — .get + None-filter degrades

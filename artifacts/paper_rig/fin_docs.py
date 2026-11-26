@@ -15,6 +15,20 @@ from institutions import (DISCOMS, TELCO, draw_date, fmt_amount, inr_group,
 
 W, H = 1241, 1754
 FD = "/usr/share/fonts/truetype/liberation"
+# K5-v4: omittable fields per family — gt keys the counterfactual omission registry
+# may drop. Every extractor-asked non-identity field is here (so a twin page loses
+# the pair AND answers the presence question No); identity fields (family,
+# provider/provider_index, consumer_no) and one amount per page (energy_charges /
+# plan_amount+subtotal / credit_limit) are NEVER omittable. savings/card live in
+# content_generator.py but share this single source of truth.
+_ELECTRICITY_OMITTABLE = ("meter_no", "units_consumed", "due_date", "fixed_charges",
+                          "electricity_duty", "gst", "printed_total")
+_TELECOM_OMITTABLE = ("mobile", "invoice_no", "due_date", "data_used_gb", "printed_total")
+_SAVINGS_OMITTABLE = ("account_number", "from_date")   # from_date drops the whole period line (and to_date)
+_CARD_OMITTABLE = ("customer_name", "card_masked", "min_amount_due", "total_amount_due",
+                   "due_date", "invoice_no")           # card_masked also drops card_number_row
+OMITTABLE_FIELDS = {"electricity": _ELECTRICITY_OMITTABLE, "telecom": _TELECOM_OMITTABLE,
+                    "savings": _SAVINGS_OMITTABLE, "card": _CARD_OMITTABLE}
 def _f(name, size):
     try: return ImageFont.truetype(f"{FD}/{name}", size)
     except Exception:
@@ -37,6 +51,9 @@ def _digits(rng, n):
 
 # ---------------- electricity bill ----------------
 def gen_electricity(rng, seed=0):
+    # K5 counterfactual omissions: registry maps (family, seed) -> fields to drop
+    # (same contract as gen_salary). Old seeds not in the registry render identical.
+    omit = frozenset(_OMIT.get("electricity", {}).get(seed, ()))
     f = fonts()
     discom = DISCOMS[seed % len(DISCOMS)]            # LOIO-derivable
     name, color, city = discom
@@ -66,38 +83,53 @@ def gen_electricity(rng, seed=0):
     total = round(subtotal + gst, 2)
     due_off = rng.randint(10, 25)
     due, _, _, _ = draw_date(rng)
-    pt = fmt_amount(rng, total)                      # ONE draw: box and gt must match
-    rows = [("Consumer No.", cons), ("Meter No.", _digits(rng, 8)),
-            (period_label.rstrip(":"), f"{bill_date} - {due}"),
-            ("Units Consumed", str(units)),
-            ("Energy Charges", fmt_amount(rng, round(charge, 2))),
-            ("Fixed Charges", fmt_amount(rng, fixed)),
-            ("Electricity Duty", fmt_amount(rng, duty)),
-            ("GST (5%)", fmt_amount(rng, gst))]
+    if "printed_total" in omit:
+        pt = None
+    else:
+        pt = fmt_amount(rng, total)                  # ONE draw: box and gt must match
+    meter = None if "meter_no" in omit else _digits(rng, 8)
+    # due_date omitted -> scrub it everywhere, incl. the period line (still shows bill_date)
+    period_val = f"{bill_date} - {due}" if "due_date" not in omit else str(bill_date)
+    rows = [("Consumer No.", cons, "consumer_no"), ("Meter No.", meter, "meter_no"),
+            (period_label.rstrip(":"), period_val, "bill_period"),
+            ("Units Consumed", str(units), "units_consumed"),
+            ("Energy Charges", fmt_amount(rng, round(charge, 2)), "energy_charges"),
+            ("Fixed Charges", fmt_amount(rng, fixed), "fixed_charges"),
+            ("Electricity Duty", fmt_amount(rng, duty), "electricity_duty"),
+            ("GST (5%)", fmt_amount(rng, gst), "gst")]
     yy = 190
-    for lab, val in rows:
+    for lab, val, key in rows:
+        if key in omit or val is None:
+            continue
         d.text((110, yy), lab, font=f["label"], fill=(40, 40, 40))
         d.text((480, yy), str(val), font=f["value"], fill=(0, 0, 0))
         d.line([100, yy + 34, 1140, yy + 34], fill=(200, 200, 200), width=1)
         yy += 52
-    d.rectangle([100, yy + 30, 760, yy + 100], fill=color)
-    d.text((120, yy + 42), AMOUNT_DUE_LABELS[min(rng.randint(0, len(AMOUNT_DUE_LABELS)), len(AMOUNT_DUE_LABELS) - 1)],
-           font=f["banner"], fill=(255, 255, 255))
-    d.text((120, yy + 72), pt, font=_f("LiberationSans-Bold.ttf", 30),
-           fill=(255, 255, 255))
-    d.text((800, yy + 44), due_label + f" {due}", font=f["label"], fill=(0, 0, 0))
+    if "printed_total" not in omit:
+        d.rectangle([100, yy + 30, 760, yy + 100], fill=color)
+        d.text((120, yy + 42), AMOUNT_DUE_LABELS[min(rng.randint(0, len(AMOUNT_DUE_LABELS)), len(AMOUNT_DUE_LABELS) - 1)],
+               font=f["banner"], fill=(255, 255, 255))
+        d.text((120, yy + 72), pt, font=_f("LiberationSans-Bold.ttf", 30),
+               fill=(255, 255, 255))
+    if "due_date" not in omit:
+        d.text((800, yy + 44), due_label + f" {due}", font=f["label"], fill=(0, 0, 0))
     d.text((800, yy + 76), f"Bill Date: {bill_date}", font=f["small"], fill=(0, 0, 0))
     d.text((110, H - 120), "This is a computer generated bill and does not require signature.",
            font=f["small"], fill=(60, 60, 60))
-    gt = {"family": "electricity_bill", "provider": name, "provider_index": seed % len(DISCOMS),
-          "consumer_no": cons, "meter_no": rows[1][1], "bill_date": bill_date,
-          "due_date": due, "units_consumed": units, "energy_charges": round(charge, 2),
-          "fixed_charges": fixed, "electricity_duty": duty, "gst": gst,
-          "total_amount": total, "printed_total": pt}
+    gt = {k: v for k, v in
+          {"family": "electricity_bill", "provider": name, "provider_index": seed % len(DISCOMS),
+           "consumer_no": cons, "meter_no": meter, "bill_date": bill_date,
+           "due_date": due, "units_consumed": units, "energy_charges": round(charge, 2),
+           "fixed_charges": fixed, "electricity_duty": duty, "gst": gst,
+           "total_amount": total, "printed_total": pt}.items()
+          if v is not None and k not in omit}
     return np.asarray(img, float), gt
 
 # ---------------- telecom invoice ----------------
 def gen_telecom(rng, seed=0):
+    # K5 counterfactual omissions: registry maps (family, seed) -> fields to drop
+    # (same contract as gen_salary). Old seeds not in the registry render identical.
+    omit = frozenset(_OMIT.get("telecom", {}).get(seed, ()))
     f = fonts()
     telco = TELCO[seed % len(TELCO)]                 # LOIO-derivable
     name, color, brand = telco
@@ -117,32 +149,43 @@ def gen_telecom(rng, seed=0):
     gst = round(subtotal * 0.18, 2)
     total = round(subtotal + gst, 2)
     due, _, _, _ = draw_date(rng)
-    pt = fmt_amount(rng, total)                      # ONE draw: box and gt must match
-    rows = [("Mobile Number", mobile), ("Invoice No.", inv_no),
-            ("Plan", f"{plan_name} ({fmt_amount(rng, plan_amt)})"),
-            ("Data Used", f"{data_gb:.1f} GB"), ("Additional Charges", fmt_amount(rng, extra)),
-            ("Sub Total", fmt_amount(rng, subtotal)), ("GST 18%", fmt_amount(rng, gst)),
-            ("Bill Date", bill_date)]
+    if "printed_total" in omit:
+        pt = None
+    else:
+        pt = fmt_amount(rng, total)                  # ONE draw: box and gt must match
+    rows = [("Mobile Number", mobile, "mobile"), ("Invoice No.", inv_no, "invoice_no"),
+            ("Plan", f"{plan_name} ({fmt_amount(rng, plan_amt)})", "plan"),
+            ("Data Used", f"{data_gb:.1f} GB", "data_used_gb"),
+            ("Additional Charges", fmt_amount(rng, extra), "additional_charges"),
+            ("Sub Total", fmt_amount(rng, subtotal), "subtotal"),
+            ("GST 18%", fmt_amount(rng, gst), "gst"),
+            ("Bill Date", bill_date, "bill_date")]
     yy = 200
-    for lab, val in rows:
+    for lab, val, key in rows:
+        if key in omit or val is None:
+            continue
         d.text((110, yy), lab, font=f["label"], fill=(40, 40, 40))
         d.text((480, yy), str(val), font=f["value"], fill=(0, 0, 0))
         d.line([100, yy + 34, 1140, yy + 34], fill=(200, 200, 200), width=1)
         yy += 52
-    d.rectangle([100, yy + 30, 760, yy + 100], fill=color)
-    d.text((120, yy + 42), AMOUNT_DUE_LABELS[min(rng.randint(0, len(AMOUNT_DUE_LABELS)), len(AMOUNT_DUE_LABELS) - 1)],
-           font=f["banner"], fill=(255, 255, 255))
-    d.text((120, yy + 72), pt, font=_f("LiberationSans-Bold.ttf", 30),
-           fill=(255, 255, 255))
-    d.text((800, yy + 44), DUE_LABELS[min(rng.randint(0, len(DUE_LABELS)), len(DUE_LABELS) - 1)] + f" {due}",
-           font=f["label"], fill=(0, 0, 0))
+    if "printed_total" not in omit:
+        d.rectangle([100, yy + 30, 760, yy + 100], fill=color)
+        d.text((120, yy + 42), AMOUNT_DUE_LABELS[min(rng.randint(0, len(AMOUNT_DUE_LABELS)), len(AMOUNT_DUE_LABELS) - 1)],
+               font=f["banner"], fill=(255, 255, 255))
+        d.text((120, yy + 72), pt, font=_f("LiberationSans-Bold.ttf", 30),
+               fill=(255, 255, 255))
+    if "due_date" not in omit:
+        d.text((800, yy + 44), DUE_LABELS[min(rng.randint(0, len(DUE_LABELS)), len(DUE_LABELS) - 1)] + f" {due}",
+               font=f["label"], fill=(0, 0, 0))
     d.text((110, H - 120), "GST invoice for telecom services. Retain for your records.",
            font=f["small"], fill=(60, 60, 60))
-    gt = {"family": "telecom_invoice", "provider": name, "provider_index": seed % len(TELCO),
-          "mobile": mobile, "invoice_no": inv_no, "bill_date": bill_date, "due_date": due,
-          "plan_name": plan_name, "plan_amount": plan_amt, "data_used_gb": data_gb,
-          "subtotal": subtotal, "gst": gst, "total_amount": total,
-          "printed_total": pt}
+    gt = {k: v for k, v in
+          {"family": "telecom_invoice", "provider": name, "provider_index": seed % len(TELCO),
+           "mobile": mobile, "invoice_no": inv_no, "bill_date": bill_date, "due_date": due,
+           "plan_name": plan_name, "plan_amount": plan_amt, "data_used_gb": data_gb,
+           "subtotal": subtotal, "gst": gst, "total_amount": total,
+           "printed_total": pt}.items()
+          if v is not None and k not in omit}
     return np.asarray(img, float), gt
 
 # ---------------- salary slip ----------------
