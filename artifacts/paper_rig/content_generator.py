@@ -98,7 +98,7 @@ def draw_bank_logo(d, x, y, f, bank, credit=False):
 def gen_statement(rng, seed=0):
     f = fonts()
     bank = BANKS[seed % len(BANKS)]                  # LOIO-derivable: seed % len(POOL)
-    acc_label = ACC_LABELS[rng.randint(0, len(ACC_LABELS))]
+    acc_label = ACC_LABELS[min(rng.randint(0, len(ACC_LABELS)), len(ACC_LABELS) - 1)]
     img = Image.new("RGB", (W, H), (255, 255, 255))
     d = ImageDraw.Draw(img)
     draw_bank_logo(d, 80, 100, f, bank)
@@ -107,7 +107,7 @@ def gen_statement(rng, seed=0):
     d2 = d1
     d.text((150, 330), acc_label, font=f["label"], fill=(0, 0, 0))
     d.text((375, 330), acct, font=f["value"], fill=(0, 0, 0))
-    txn_label = ["Transaction date :", "Statement Period:", "Period :"][rng.randint(0, 3)]
+    txn_label = ["Transaction date :", "Statement Period:", "Period :"][min(rng.randint(0, 3), 2)]
     d.text((150, 385), txn_label, font=f["label"], fill=(0, 0, 0))
     d.text((375, 385), f"From {d1} To {d2}", font=f["value"], fill=(0, 0, 0))
     # table
@@ -118,7 +118,7 @@ def gen_statement(rng, seed=0):
     head_opts = [["Date", "Description", "Amount", "Type"],
                  ["Txn Date", "Narration", "Amount(INR)", "Dr/Cr"],
                  ["Date", "Particulars", "Amount", "Indicator"]]
-    heads = head_opts[rng.randint(0, len(head_opts))]
+    heads = head_opts[min(rng.randint(0, len(head_opts)), len(head_opts) - 1)]
     for i, h in enumerate(heads):
         d.text((cols[i] + 8, ty + 7), h, font=f["th"], fill=(0, 0, 0))
         if i > 0:

@@ -80,7 +80,7 @@ CUSTOMERS = ["David Stores", "Walk-in", "Mr Ramesh", "Mrs Sujatha", "Sri Medical
 
 def _gst(rng):
     from institutions import STATES
-    state = STATES[rng.randint(0, len(STATES))][0]   # real GSTIN state pool
+    state = STATES[min(rng.randint(0, len(STATES)), len(STATES) - 1)][0]   # real GSTIN state pool
     return state + "".join(chr(65 + rng.randint(0, 26)) for _ in range(5)) + \
            "P" + "".join(chr(65 + rng.randint(0, 26)) for _ in range(2)) + \
            f"{rng.randint(1, 9999):04d}" + "F" + "1Z" + chr(65 + rng.randint(0, 26))
@@ -121,7 +121,7 @@ def gen_thermal(rng, seed):
     hh, mi = rng.randint(9, 21), rng.randint(0, 59)
     date_s = f"Date : {dd:02d}/{mm:02d}/{yy}, {hh:02d}:{mi:02d} PM"
     field("date", date_s, (14, y), f_body); y += 26
-    cust = CUSTOMERS[rng.randint(0, len(CUSTOMERS))]
+    cust = CUSTOMERS[min(rng.randint(0, len(CUSTOMERS)), len(CUSTOMERS) - 1)]
     y += 8
     if cust:
         field("customer", cust, (14, y), f_body); y += 26
@@ -268,7 +268,7 @@ def apply_degradation(page, gt, rng):
 def choose_plan(rng, n_ops=3, candidate_fids=None):
     """degradation plan picker for the factory: which fields suffer, how."""
     ops = ["fade", "smudge_light", "smudge_heavy", "thermal_band", "crease", "tear"]
-    return {fid: ops[rng.randint(0, len(ops))] for fid in (candidate_fids or [])[:n_ops]}
+    return {fid: ops[min(rng.randint(0, len(ops)), len(ops) - 1)] for fid in (candidate_fids or [])[:n_ops]}
 
 if __name__ == "__main__":
     import os, json, sys

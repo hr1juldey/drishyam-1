@@ -69,14 +69,17 @@ def _telecom_pairs(gt):
     ]
 
 def _salary_pairs(gt):
-    return [
-        ("net_pay", "What is the net pay on this salary slip?", gt["printed_net"]),
+    # K5 twins: omitted fields are absent from gt — .get + None-filter degrades
+    # gracefully; non-twin pages have every key, so behaviour is unchanged there.
+    pairs = [
+        ("net_pay", "What is the net pay on this salary slip?", gt.get("printed_net")),
         ("gross_earnings", "What are the gross earnings on this salary slip?",
-         _inr(gt["gross_earnings"])),
-        ("employee_name", "Who is the employee on this salary slip?", gt["employee_name"]),
-        ("employer", "Which company issued this salary slip?", gt["employer"]),
-        ("period", "Which salary period does this slip cover?", gt["period"]),
+         _inr(gt["gross_earnings"]) if "gross_earnings" in gt else None),
+        ("employee_name", "Who is the employee on this salary slip?", gt.get("employee_name")),
+        ("employer", "Which company issued this salary slip?", gt.get("employer")),
+        ("period", "Which salary period does this slip cover?", gt.get("period")),
     ]
+    return [(f, q, a) for f, q, a in pairs if a is not None]
 
 def _table_pairs(gt):
     qa = gt["qa"]

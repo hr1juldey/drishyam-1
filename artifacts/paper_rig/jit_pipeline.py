@@ -50,7 +50,7 @@ def gen_page(family, seed):
     if family == "thermal":
         page, gt = gen_thermal(rng, seed)
         drng = np.random.RandomState(seed + 1)
-        k = drng.randint(0, 4)                       # 0..3 degraded fields
+        k = min(drng.randint(0, 4), 3)                # 0..3 degraded fields (clamp crash path)
         if k:
             fids = list(drng.choice(THERMAL_DECISION, size=k, replace=False))
             gt["degradation_plan"] = choose_plan(drng, n_ops=k, candidate_fids=list(fids))

@@ -4,6 +4,9 @@ renders. Same contract as the other generators: deterministic (rng, seed) ->
 (PIL-page np float, gt dict with PRINTED strings). Structure varies, arithmetic
 is internally consistent, answers are image-only. A4 portrait 1241x1754.
 Family tags: electricity_bill / telecom_invoice / salary_slip / table_sheet."""
+import json
+import os
+
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from institutions import (DISCOMS, TELCO, draw_date, fmt_amount, inr_group,
@@ -45,9 +48,9 @@ def gen_electricity(rng, seed=0):
     d.text((130, 80), city, font=f["small"], fill=(60, 60, 60))
     d.text((880, 55), "ELECTRICITY BILL", font=f["banner"], fill=color)
     cons = _digits(rng, rng.choice([10, 11, 12]))
-    cons_label = CONSUMER_LABELS[rng.randint(0, len(CONSUMER_LABELS))]
-    period_label = BILLPERIOD_LABELS[rng.randint(0, len(BILLPERIOD_LABELS))]
-    due_label = DUE_LABELS[rng.randint(0, len(DUE_LABELS))]
+    cons_label = CONSUMER_LABELS[min(rng.randint(0, len(CONSUMER_LABELS)), len(CONSUMER_LABELS) - 1)]
+    period_label = BILLPERIOD_LABELS[min(rng.randint(0, len(BILLPERIOD_LABELS)), len(BILLPERIOD_LABELS) - 1)]
+    due_label = DUE_LABELS[min(rng.randint(0, len(DUE_LABELS)), len(DUE_LABELS) - 1)]
     bill_date, y, m, dd = draw_date(rng)
     units = rng.randint(80, 920)
     slabs = [(100, 3.5), (200, 5.2), (400, 7.8), (10**9, 9.6)]     # slab arithmetic
@@ -78,7 +81,7 @@ def gen_electricity(rng, seed=0):
         d.line([100, yy + 34, 1140, yy + 34], fill=(200, 200, 200), width=1)
         yy += 52
     d.rectangle([100, yy + 30, 760, yy + 100], fill=color)
-    d.text((120, yy + 42), AMOUNT_DUE_LABELS[rng.randint(0, len(AMOUNT_DUE_LABELS))],
+    d.text((120, yy + 42), AMOUNT_DUE_LABELS[min(rng.randint(0, len(AMOUNT_DUE_LABELS)), len(AMOUNT_DUE_LABELS) - 1)],
            font=f["banner"], fill=(255, 255, 255))
     d.text((120, yy + 72), pt, font=_f("LiberationSans-Bold.ttf", 30),
            fill=(255, 255, 255))
@@ -127,11 +130,11 @@ def gen_telecom(rng, seed=0):
         d.line([100, yy + 34, 1140, yy + 34], fill=(200, 200, 200), width=1)
         yy += 52
     d.rectangle([100, yy + 30, 760, yy + 100], fill=color)
-    d.text((120, yy + 42), AMOUNT_DUE_LABELS[rng.randint(0, len(AMOUNT_DUE_LABELS))],
+    d.text((120, yy + 42), AMOUNT_DUE_LABELS[min(rng.randint(0, len(AMOUNT_DUE_LABELS)), len(AMOUNT_DUE_LABELS) - 1)],
            font=f["banner"], fill=(255, 255, 255))
     d.text((120, yy + 72), pt, font=_f("LiberationSans-Bold.ttf", 30),
            fill=(255, 255, 255))
-    d.text((800, yy + 44), DUE_LABELS[rng.randint(0, len(DUE_LABELS))] + f" {due}",
+    d.text((800, yy + 44), DUE_LABELS[min(rng.randint(0, len(DUE_LABELS)), len(DUE_LABELS) - 1)] + f" {due}",
            font=f["label"], fill=(0, 0, 0))
     d.text((110, H - 120), "GST invoice for telecom services. Retain for your records.",
            font=f["small"], fill=(60, 60, 60))
@@ -143,18 +146,39 @@ def gen_telecom(rng, seed=0):
     return np.asarray(img, float), gt
 
 # ---------------- salary slip ----------------
+# K5 omission registry: {"salary": {"<seed>": ["field", ...]}} — loaded once.
+_OMIT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "k5_omissions.json")
+try:
+    with open(_OMIT_PATH) as _fh:
+        _OMIT = {fam: {int(s): frozenset(fs) for s, fs in seeds.items()}
+                 for fam, seeds in json.load(_fh).items()}
+except FileNotFoundError:
+    _OMIT = {}
+
+
+def omitted_fields(family, seed):
+    """K5: fields the registry drops from (family, seed) pages (counterfactual twins)."""
+    return frozenset(_OMIT.get(family, {}).get(int(seed), ()))
+
+
 def gen_salary(rng, seed=0):
+    # K5 counterfactual omissions: registry maps (family, seed) -> fields to drop.
+    # Both the render path (jit_pipeline.gen_page -> this) and the label factory
+    # (vision_data.page_gt -> this) consult the SAME registry, so pixels and
+    # labels stay consistent. Old seeds not in the registry render byte-identical.
+    omit = frozenset(_OMIT.get("salary", {}).get(seed, ()))
     f = fonts()
     company = COMPANIES[seed % len(COMPANIES)]       # LOIO-derivable
-    emp = EMPLOYEES[rng.randint(0, len(EMPLOYEES))]
+    emp = EMPLOYEES[min(rng.randint(0, len(EMPLOYEES)), len(EMPLOYEES) - 1)]
     img = Image.new("RGB", (W, H), (255, 255, 255))
     d = ImageDraw.Draw(img)
     d.rectangle([30, 30, W - 30, 110], fill=(240, 240, 245))
-    d.text((50, 50), company, font=f["banner"], fill=(0, 0, 0))
+    if "employer" not in omit:
+        d.text((50, 50), company, font=f["banner"], fill=(0, 0, 0))
     d.text((900, 55), "SALARY SLIP", font=f["banner"], fill=(120, 30, 30))
     d.text((50, 80), rng.choice(["PAN India Operations", "Corporate Office", "Technology Division"]),
            font=f["small"], fill=(60, 60, 60))
-    m = rng.randint(1, 13)
+    m = min(rng.randint(1, 13), 12)  # clamp crash path (MONTHS[12] IndexError)
     period = rng.choice(["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]) \
         if False else ["January","February","March","April","May","June","July","August",
                        "September","October","November","December"][m - 1 if m < 12 else 11]
@@ -167,9 +191,11 @@ def gen_salary(rng, seed=0):
     tax = round(basic * rng.uniform(0.02, 0.12), 2)
     gross = round(basic + hra + conv + medical, 2)
     net = round(gross - pf - tax, 2)
-    d.text((50, 150), f"Employee Name: {emp}", font=f["value"], fill=(0, 0, 0))
+    if "employee_name" not in omit:
+        d.text((50, 150), f"Employee Name: {emp}", font=f["value"], fill=(0, 0, 0))
     d.text((700, 150), f"Employee ID: EMP{_digits(rng, 5)}", font=f["value"], fill=(0, 0, 0))
-    d.text((50, 190), f"Salary Period: {period} {year}", font=f["value"], fill=(0, 0, 0))
+    if "period" not in omit:
+        d.text((50, 190), f"Salary Period: {period} {year}", font=f["value"], fill=(0, 0, 0))
     d.text((700, 190), f"Designation: {rng.choice(['ENGINEER','ANALYST','MANAGER','LEAD','EXECUTIVE'])}",
            font=f["value"], fill=(0, 0, 0))
     ty = 260
@@ -178,33 +204,42 @@ def gen_salary(rng, seed=0):
     d.rectangle([640, ty, 1190, ty + 40], fill=(235, 210, 210))
     d.text((652, ty + 8), "DEDUCTIONS", font=f["th"], fill=(0, 0, 0))
     yy = ty + 46
-    for lab, val in [("Basic", basic), ("House Rent Allowance", hra),
-                     ("Conveyance", conv), ("Medical Allowance", medical),
-                     ("Gross Earnings", gross)]:
+    for lab, val, key in [("Basic", basic, "basic"), ("House Rent Allowance", hra, "hra"),
+                          ("Conveyance", conv, "conveyance"), ("Medical Allowance", medical, "medical"),
+                          ("Gross Earnings", gross, "gross_earnings")]:
+        if key in omit:
+            continue
         d.text((62, yy), lab, font=f["cell"], fill=(0, 0, 0))
         d.text((520, yy), fmt_amount(rng, val), font=f["cell"], fill=(0, 0, 0))
         d.line([50, yy + 34, 620, yy + 34], fill=(200, 200, 200), width=1)
         yy += 50
     yy2 = ty + 46
-    for lab, val in [("Provident Fund", pf), ("Income Tax (TDS)", tax),
-                     ("Net Pay", net)]:
+    for lab, val, key in [("Provident Fund", pf, "pf"), ("Income Tax (TDS)", tax, "tax"),
+                          ("Net Pay", net, "net_pay")]:
+        if key in omit:
+            continue
         d.text((652, yy2), lab, font=f["cell"], fill=(0, 0, 0))
         d.text((1110, yy2), fmt_amount(rng, val), font=f["cell"], fill=(0, 0, 0))
         d.line([640, yy2 + 34, 1190, yy2 + 34], fill=(200, 200, 200), width=1)
         yy2 += 50
-    d.rectangle([340, 620, 900, 700], fill=(25, 60, 110))
-    d.text((360, 632), rng.choice(["Net Pay", "Net Salary", "Take Home Pay"]),
-           font=f["banner"], fill=(255, 255, 255))
-    pn = fmt_amount(rng, net)                        # ONE draw: box and gt must match
-    d.text((360, 664), pn, font=_f("LiberationSans-Bold.ttf", 30),
-           fill=(255, 255, 255))
+    if "printed_net" not in omit:
+        d.rectangle([340, 620, 900, 700], fill=(25, 60, 110))
+        d.text((360, 632), rng.choice(["Net Pay", "Net Salary", "Take Home Pay"]),
+               font=f["banner"], fill=(255, 255, 255))
+        pn = fmt_amount(rng, net)                    # ONE draw: box and gt must match
+        d.text((360, 664), pn, font=_f("LiberationSans-Bold.ttf", 30),
+               fill=(255, 255, 255))
+    else:
+        pn = None
     d.text((50, H - 120), "This is a system generated payslip and does not require a signature.",
            font=f["small"], fill=(60, 60, 60))
-    gt = {"family": "salary_slip", "employer": company, "employer_index": seed % len(COMPANIES),
-          "employee_name": emp, "employee_id": f"EMP{_digits(rng, 5)}", "period": f"{period} {year}",
-          "basic": basic, "hra": hra, "conveyance": conv, "medical": medical,
-          "pf": pf, "tax": tax, "gross_earnings": gross, "net_pay": net,
-          "printed_net": pn}
+    gt = {k: v for k, v in
+          {"family": "salary_slip", "employer": company, "employer_index": seed % len(COMPANIES),
+           "employee_name": emp, "employee_id": f"EMP{_digits(rng, 5)}", "period": f"{period} {year}",
+           "basic": basic, "hra": hra, "conveyance": conv, "medical": medical,
+           "pf": pf, "tax": tax, "gross_earnings": gross, "net_pay": net,
+           "printed_net": pn}.items()
+          if v is not None and k not in omit}
     return np.asarray(img, float), gt
 
 # ---------------- CSV/Excel-style tabular render ----------------
@@ -247,7 +282,7 @@ def gen_table(rng, seed=0):
                          f"{debit:.2f}" if debit else "-", f"{credit:.2f}" if credit else "-",
                          inr_group(bal)])
         elif kind == "portfolio_holdings":
-            s, isin = scrips[rng.randint(0, len(scrips))]
+            s, isin = scrips[min(rng.randint(0, len(scrips)), len(scrips) - 1)]
             qty = rng.randint(5, 200)
             avg = round(rng.uniform(200, 3500), 2)
             ltp = round(avg * rng.uniform(0.85, 1.25), 2)

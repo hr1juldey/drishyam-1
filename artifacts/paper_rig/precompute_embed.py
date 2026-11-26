@@ -51,7 +51,7 @@ def _page_worker(rows_q, pages_q):
             rows_q.task_done()
 
 
-def main(limit_rows=None, balanced=None, families=None, out_dir=None):
+def main(limit_rows=None, balanced=None, families=None, out_dir=None, manifest_path=None):
     """balanced=N -> per-family quota slice (40/30/30), NOT a prefix — a prefix
     of the family-blocked manifest would be single-family.
     families='a:8000,b:6000' -> explicit per-family quotas (slice-2 new families).
@@ -65,6 +65,11 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None):
     from transformers import AutoModelForImageTextToText
     os.makedirs(OUT, exist_ok=True)
     rows, _ = build_manifest(200000)
+    if manifest_path:                        # K5 twin rows: JSONL of {"family","seed"}
+        with open(manifest_path) as mf:
+            rows = [json.loads(l) for l in mf if l.strip()]
+        print(f"manifest override: {len(rows)} rows from {manifest_path}", flush=True)
+        families = None                      # slicing flags don't apply to overrides
     if families:
         want = {}
         for part in families.split(","):
@@ -223,5 +228,7 @@ if __name__ == "__main__":
     ap.add_argument("--families", type=str, default=None,
                     help="explicit quotas: 'electricity_bill:8000,telecom_invoice:6000,...'")
     ap.add_argument("--out-dir", type=str, default=None, help="embedding output dir")
+    ap.add_argument("--manifest", dest="manifest_path", type=str, default=None,
+                    help="JSONL manifest override: rows of {family, seed} (K5 twins)")
     a = ap.parse_args()
-    main(a.rows, a.balanced, a.families, a.out_dir)
+    main(a.rows, a.balanced, a.families, a.out_dir, a.manifest_path)

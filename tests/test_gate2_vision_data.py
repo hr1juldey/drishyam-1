@@ -78,3 +78,59 @@ def test_factory_determinism():
             one.append(json.dumps([qs, golds], sort_keys=True, default=str))
         outs.append(one)
     assert outs[0] == outs[1], "label factory is not deterministic for fixed seed"
+
+
+def _yes_idx(options):
+    for i, o in enumerate(options):
+        if o.lower().strip() in ("yes", "true", "readable", "legible", "correct"):
+            return i
+    raise AssertionError(f"no yes-option in {options}")
+
+
+def test_k5_twin_emits_presence_no():
+    """Registered omission: page_gt drops the field AND the factory asks it with gold No."""
+    import fin_docs
+    assert fin_docs.omitted_fields("salary", 500123) == frozenset({"period"})
+    gt = page_gt("salary", 500123)
+    assert "period" not in gt, f"registry omission not applied to gt: {sorted(gt)}"
+    factory = LabelFactory({}, {}, [], seed=1)
+    qs, golds = factory.questions_for("salary", 500123, gt, "unseen")
+    hits = [(q, g) for q, g in zip(qs, golds, strict=False)
+            if q["qid"].endswith("noul:pres:period")]
+    assert hits, f"no presence question for omitted field: {[q['qid'] for q in qs]}"
+    q, g = hits[0]
+    assert g[_yes_idx(q["options"])] == 0.0, "omitted field must have gold No"
+
+
+def test_k5_non_twin_parity_and_no_ghost_questions():
+    """Non-registered seeds: gt unchanged, no omitted-field questions emitted."""
+    import fin_docs
+    assert fin_docs.omitted_fields("salary", 1_002_007) == frozenset()
+    gt = page_gt("salary", 1_002_007)
+    assert "period" in gt and "medical" in gt
+    factory = LabelFactory({}, {}, [], seed=1)
+    qs, _ = factory.questions_for("salary", 1_002_007, gt, "unseen")
+    pres = [q["qid"] for q in qs if ":noul:pres:" in q["qid"]]
+    assert len(pres) == 3, f"expected exactly 3 presence questions, got {pres}"
+
+
+def test_k5_thermal_unreadable_presence_no():
+    """Thermal variance: unreadable fields get a presence question with gold No."""
+    import fin_docs
+    found = False
+    for seed in range(1_000_000, 1_001_000):
+        gt = page_gt("thermal", seed)
+        leg = gt.get("legibility_applied", {})
+        from row_labels import _leg
+        unread = [f for f in leg if _leg(gt, f) == "unreadable"]
+        if not unread:
+            continue
+        factory = LabelFactory({}, {}, [], seed=3)
+        qs, golds = factory.questions_for("thermal", seed, gt, "train")
+        for q, g in zip(qs, golds, strict=False):
+            if q["qid"].endswith(f"noul:pres:{unread[0]}"):
+                assert g[_yes_idx(q["options"])] == 0.0
+                found = True
+        if found:
+            break
+    assert found, "no thermal page with unreadable field produced a presence-No in probe range"

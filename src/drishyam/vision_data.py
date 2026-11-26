@@ -41,7 +41,7 @@ from institutions import inr_group  # noqa: E402
 from row_labels import TABLES, _leg, UNREADABLE_OPS  # noqa: E402
 from thermal_generator import apply_degradation, choose_plan, gen_thermal  # noqa: E402
 
-EMB_DIRS = [PAPER / "embeddings", PAPER / "embeddings_slice2"]
+EMB_DIRS = [PAPER / "embeddings", PAPER / "embeddings_slice2", PAPER / "embeddings_k5"]
 # LOFO unseen family = salary: the banked 90k embeddings contain NO `table` pages
 # (generation stopped before the table block of the family-ordered manifest), so the
 # originally planned table holdout is impossible. salary = most structurally distinct
@@ -175,6 +175,25 @@ class LabelFactory:
                        "text": f"Is the {FIELD_LABEL.get(f, f)} present and readable on this page?",
                        "options": opts})
             golds.append(gold)
+        # K5 counterfactual twins: fields the omission registry dropped from THIS page
+        # get the exact same question text with gold No — template fixed, page decides.
+        for f in sorted(fin_docs.omitted_fields(family, seed))[:2]:
+            opts, gold = shuffle_options(["No", "Yes"], 0, rng)
+            qs.append({"qid": f"{family}:{seed}:noul:pres:{f}", "primitive": "noul",
+                       "text": f"Is the {FIELD_LABEL.get(f, f)} present and readable on this page?",
+                       "options": opts})
+            golds.append(gold)
+        # K5 thermal presence variance: unreadable fields get presence-No (label-only,
+        # same template as the Yes variant, answer depends on the page's legibility)
+        if family == "thermal":
+            unread = [f for f, _, a in pairs if a == "unreadable"]
+            rng.shuffle(unread)
+            for f in unread[:1]:
+                opts, gold = shuffle_options(["No", "Yes"], 0, rng)
+                qs.append({"qid": f"{family}:{seed}:noul:pres:{f}", "primitive": "noul",
+                           "text": f"Is the {FIELD_LABEL.get(f, f)} present and readable on this page?",
+                           "options": opts})
+                golds.append(gold)
         if other_fields:
             f = other_fields[rng.randrange(len(other_fields))]
             opts, gold = shuffle_options(["No", "Yes"], 0, rng)

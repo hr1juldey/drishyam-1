@@ -59,7 +59,8 @@ MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", 
 def draw_date(rng):
     """(printable string, y, m, d) — format varies by seed-derived style."""
     y, m, d = rng.randint(2019, 2025), rng.randint(1, 13), rng.randint(1, 29)
-    fmt = DATE_FMTS[rng.randint(0, len(DATE_FMTS))]
+    m = min(m, 12)                                   # clamp only the previously-crashing 13 path
+    fmt = DATE_FMTS[min(rng.randint(0, len(DATE_FMTS)), len(DATE_FMTS) - 1)]
     s = {"%d/%m/%Y": f"{d:02d}/{m:02d}/{y}", "%d-%m-%Y": f"{d:02d}-{m:02d}-{y}",
          "%d.%m.%Y": f"{d:02d}.{m:02d}.{y}", "%d %b %Y": f"{d:02d} {MONTHS[m-1]} {y}",
          "%d-%b-%Y": f"{d:02d}-{MONTHS[m-1]}-{y}", "%Y-%m-%d": f"{y}-{m:02d}-{d:02d}"}[fmt]
@@ -81,7 +82,7 @@ def inr_group(x):
 
 def fmt_amount(rng, x):
     """Printed amount string: prefix style + grouping style vary (gt stores printed)."""
-    pre = ["Rs ", "\u20b9 ", "INR ", ""][rng.randint(0, 4)]
+    pre = ["Rs ", "\u20b9 ", "INR ", ""][min(rng.randint(0, 4), 3)]
     body = inr_group(x)
     return f"{pre}{body}"
 
