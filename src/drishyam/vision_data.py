@@ -293,6 +293,18 @@ def main():
     for b in sel:
         for fam, items in per_fam[b].items():
             sel[b] += items[:caps[b]]
+    # K5: registry-omitted (twin) pages MUST be in the unseen split — they carry the
+    # counterfactual No rows. Dict order puts them last, so the cap would cut them;
+    # swap them in explicitly, dropping the tail base pages to stay at the cap.
+    twins = [(f, s) for (f, s) in pages
+             if f == UNSEEN_FAMILY and fin_docs.omitted_fields(f, s)]
+    if twins:
+        have = set(sel["unseen"])
+        add = [t for t in twins if t not in have]
+        keep = max(caps["unseen"] - len(add), len(add))
+        sel["unseen"] = sel["unseen"][:keep] + add
+        print(f"K5 twins forced into unseen: {len(add)} (kept {keep} base pages)",
+              flush=True)
     if a.limit_pages:
         for b in sel:
             sel[b] = sel[b][: a.limit_pages]
