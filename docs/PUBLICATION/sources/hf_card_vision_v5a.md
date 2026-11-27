@@ -102,9 +102,12 @@ receipts) — never the test pool. Per-field AUC company **0.9998**.
 | unseen-family AUC | 0.379 | > 0.75 | FAIL (v4: 0.394 — within noise) |
 | jitter flip | 0.0116 | < 0.05 | PASS |
 
-The internal ECE miss is a calibration-domain artifact (TS fitted on synthetic val);
-an ECE-optimal temperature refit is in progress and will be attached to this card
-when measured. The SROIE side is already calibrated (ECE 0.020).
+The internal ECE miss is a calibration-domain artifact (TS fitted on synthetic val).
+An ECE-optimal temperature refit was attempted twice (GPU ~14 min in, CPU ~1h45m in);
+both runs were killed externally before writing results, so the refit remains
+**deferred, not done** — ECE 0.1106 stands as the measured number. The refit script
+is committed (`drishyam.ts_polish`) and can be run any time (~15 min on GPU). The
+SROIE side is already calibrated (ECE 0.020).
 
 ## Also measured (context, honest)
 
