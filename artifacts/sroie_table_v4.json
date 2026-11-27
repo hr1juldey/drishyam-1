@@ -1,0 +1,78 @@
+{
+  "run_kind": "SROIE receipt verification v1 \u2014 first in-distribution PUBLIC image benchmark entry (protocol self-defined on public gold, recorded for comparability)",
+  "benchmark": "sroie-verification",
+  "ckpt": "runs/g2-row-sft-v4/best.pt",
+  "git_sha": "5ef71740722ec03ea08b16e80973cb7e5892ff55",
+  "seed": 2026,
+  "protocol": "SROIE receipt verification v1 (protocol defined here; recorded for comparability, precedent: bev-decider's self-defined 5k protocol). Pool: the OFFICIAL SROIE 400-image test pool as identifiable = the 361 test receipts with public Task-3 KIE gold (347 original + 14 recovered), taken from HF extension jsdnrs/ICDAR2019-SROIE test split; the remaining 39/400 images have no public Task-3 gold anywhere. The pinned source Voxel51/scanned_receipts (712 receipts, schema-verified: per-receipt company/date/address/total + image + OCR boxes) is trainval-side and contains ZERO official-test IDs (verified by receipt-ID join, recorded) \u2014 used only as the contamination check and sample inspection. Rows: per receipt x field (total, date, company) x {TRUE, FALSE}: TRUE quotes the gold value verbatim (outer whitespace stripped only) in the question; FALSE is a deterministic perturbation drawn from another receipt's same-field gold value (rng seeded per (receipt_id, field) under seed 2026, candidate pool excludes any value equal to this receipt's gold), exactly one TRUE + one FALSE -> 50/50 balanced. Question template: 'Does the {field} on this receipt read \"{value}\"? Answer No or Yes.' Options No/Yes (noul head). Eval: each receipt image encoded once (JPEG -> fp32 [0,1] -> bilinear stretch 896x896 -> frozen tower -> projector, precompute_embed.py convention), all 6 rows per receipt forwarded batched, fp32, raw softmax (no TS: gate2 temperatures are fitted on our synthetic val and documented not to transfer OOD). Metrics: accuracy (argmax), AUC of P(Yes) vs gold Yes/No, 15-bin ECE on max-prob confidence (house ece15 convention).",
+  "question_template": "Does the {field} on this receipt read \"{value}\"? Answer No or Yes.",
+  "fields": [
+    "total",
+    "date",
+    "company"
+  ],
+  "pool": {
+    "official_test_pool": 400,
+    "scored_receipts": 361,
+    "pool_note": "361/400 official test receipts have public Task-3 KIE gold (347 original + 14 recovered, HF jsdnrs/ICDAR2019-SROIE test split); remaining 39 have no public gold anywhere",
+    "voxel51_contamination_check": {
+      "voxel51_receipts": 712,
+      "official_test_receipts": 361,
+      "overlap": 0
+    },
+    "rows_sha256_16": "373d16ee6fab6c2d"
+  },
+  "n_rows": 2166,
+  "balance": {
+    "true": 1083,
+    "false": 1083
+  },
+  "embed_convention": "JPEG bytes -> fp32 [0,1] -> bilinear stretch 896x896 -> frozen tower -> projector (precompute_embed.py convention); each receipt encoded once, its 6 rows batched",
+  "no_temperature_scaling": "raw softmax; gate2 TS temps are synthetic-val fits, documented not to transfer OOD",
+  "timing_s": {
+    "embed": 545.4,
+    "forward": 45.2
+  },
+  "per_field": {
+    "total": {
+      "n": 722,
+      "n_true": 361,
+      "n_false": 361,
+      "acc": 0.5,
+      "acc_true": 0.002770083102493075,
+      "acc_false": 0.997229916897507,
+      "auc_p_yes": 0.4834984384711597,
+      "ece15": 0.25646752663926736
+    },
+    "date": {
+      "n": 722,
+      "n_true": 361,
+      "n_false": 361,
+      "acc": 0.49722991689750695,
+      "acc_true": 0.002770083102493075,
+      "acc_false": 0.9916897506925207,
+      "auc_p_yes": 0.5036410095072935,
+      "ece15": 0.24241261122299362
+    },
+    "company": {
+      "n": 722,
+      "n_true": 361,
+      "n_false": 361,
+      "acc": 0.5,
+      "acc_true": 0.0,
+      "acc_false": 1.0,
+      "auc_p_yes": 0.6143292332010958,
+      "ece15": 0.44878520645263126
+    }
+  },
+  "overall": {
+    "n": 2166,
+    "n_true": 1083,
+    "n_false": 1083,
+    "acc": 0.49907663896583565,
+    "acc_true": 0.0018467220683287165,
+    "acc_false": 0.9963065558633426,
+    "auc_p_yes": 0.5165501594780069,
+    "ece15": 0.3158884256500286
+  }
+}
