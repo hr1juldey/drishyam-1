@@ -317,6 +317,26 @@ def balance_train_presence(rows):
     return len(drop)
 
 
+def _pass1_item(fam, seed):
+    """Pool worker: regenerate one page's gt + field pairs.
+
+    gen_page is fully seed-parameterized and stateless, so a worker process
+    reproduces the parent's result byte-identically; the parent replays
+    results in submission order, so pools/inst_pool match the serial path.
+    """
+    try:
+        gt = page_gt(fam, seed)
+    except Exception as e:
+        return fam, seed, None, None, None, f"ERR:{fam}:{type(e).__name__}"
+    try:
+        pairs = TABLES[fam](gt)
+        inst_f = INSTITUTION_FIELD.get(fam)
+        inst = {f2: a2 for f2, _, a2 in pairs}.get(inst_f)
+        return fam, seed, gt, list(pairs), inst, None
+    except Exception as e:
+        return fam, seed, gt, None, None, f"ERR:pairs:{fam}:{type(e).__name__}"
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--train-pages-per-family", type=int, default=3000)
@@ -329,6 +349,10 @@ def main():
                          "(family, template) group so priors cannot answer presence")
     ap.add_argument("--mlflow", action="store_true")
     ap.add_argument("--limit-pages", type=int, default=0, help="smoke cap")
+    ap.add_argument("--workers", type=int, default=8,
+                    help="pass-1 gt/pairs process pool (0/1 = serial, legacy path)")
+    ap.add_argument("--out-prefix", type=str, default="",
+                    help="prefix for gate2_labels_* output files (smoke/parity runs)")
     a = ap.parse_args()
 
     pages = load_pages()
@@ -369,26 +393,38 @@ def main():
     pools = defaultdict(list)
     inst_pool = []
     gts = {}
+    uniq = []
+    seen_keys = set()
     for b in sel:
-        for fam, seed in sel[b]:
-            if (fam, seed) in gts:
-                continue
-            try:
-                gt = page_gt(fam, seed)
-            except Exception as e:
-                pool_counts[f"ERR:{fam}:{type(e).__name__}"] += 1
-                continue
-            gts[(fam, seed)] = gt
-            try:
-                for f, _, av in TABLES[fam](gt):
-                    pools[(fam, f)].append(av)
-                    pool_counts[f"{fam}:{f}"] += 1
-                inst_f = INSTITUTION_FIELD.get(fam)
-                inst = {f2: a2 for f2, _, a2 in TABLES[fam](gt)}.get(inst_f)
-                if inst and inst != "unreadable":
-                    inst_pool.append(inst)
-            except Exception as e:
-                pool_counts[f"ERR:pairs:{fam}:{type(e).__name__}"] += 1
+        for key in sel[b]:
+            if key not in seen_keys:
+                seen_keys.add(key)
+                uniq.append(key)
+    work = uniq if (getattr(a, "workers", 1) >= 2 and len(uniq) >= 200) else None
+    if work is not None:
+        from concurrent.futures import ProcessPoolExecutor
+        fams, seeds = zip(*work)
+        with ProcessPoolExecutor(max_workers=a.workers) as ex:
+            results = list(ex.map(_pass1_item, fams, seeds))
+        print(f"pass1 parallel: {len(work)} pages on {a.workers} workers", flush=True)
+    else:
+        results = [_pass1_item(fam, seed) for fam, seed in uniq]
+    # replay in submission order -> pools/inst_pool identical to the serial path
+    for fam, seed, gt, pairs, inst, err in results:
+        if err is not None:
+            if err.startswith("ERR:pairs:"):
+                pool_counts[err] += 1
+                gts[(fam, seed)] = gt
+            else:
+                pool_counts[err] += 1
+            continue
+        gts[(fam, seed)] = gt
+        for f, _, av in pairs or []:
+            pools[(fam, f)].append(av)
+            pool_counts[f"{fam}:{f}"] += 1
+        inst_f = INSTITUTION_FIELD.get(fam)
+        if inst and inst != "unreadable":
+            inst_pool.append(inst)
     inst_pool = sorted(set(inst_pool))
     print(f"gt pages: {len(gts)}, institutions: {len(inst_pool)}, pool errors: "
           f"{ {k: v for k, v in pool_counts.items() if k.startswith('ERR')} or 'none'}")
@@ -415,7 +451,7 @@ def main():
 
     stats = {}
     for b, rows in out_rows.items():
-        path = ROOT / "artifacts" / f"gate2_labels_{b}.jsonl"
+        path = ROOT / "artifacts" / f"gate2_labels_{a.out_prefix}{b}.jsonl"
         with open(path, "w") as f:
             for r in rows:
                 f.write(json.dumps(r) + "\n")
@@ -435,8 +471,8 @@ def main():
 
     payload = json.dumps(stats, sort_keys=True) + json.dumps(a.__dict__, sort_keys=True)
     stats["cfg_sha256"] = hashlib.sha256(payload.encode()).hexdigest()[:12]
-    (ROOT / "artifacts" / "gate2_label_stats.json").write_text(json.dumps(stats, indent=2))
-    print("WROTE artifacts/gate2_label_stats.json sha=", stats["cfg_sha256"])
+    (ROOT / "artifacts" / f"gate2_label_stats_{a.out_prefix}.json").write_text(json.dumps(stats, indent=2))
+    print("WROTE artifacts/gate2_label_stats_", a.out_prefix or "(none)", ".json sha=", stats["cfg_sha256"])
     if a.mlflow:
         import mlflow
 
