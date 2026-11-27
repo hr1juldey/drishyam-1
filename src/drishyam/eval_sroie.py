@@ -357,6 +357,9 @@ def main() -> None:
     ap.add_argument("--limit", type=int, default=0, help="cap receipts (smoke)")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--out", default="artifacts/sroie_table.json")
+    ap.add_argument("--dump-probs", default="",
+                    help="write per-row P(Yes)+gold to this JSON so TS re-scoring "
+                         "reuses the forward pass (step-2 calibration path)")
     a = ap.parse_args()
 
     receipts = load_official_test()
@@ -381,6 +384,13 @@ def main() -> None:
 
     t0 = time.time()
     probs_all = predict_rows(model, tok, rows, page_embs, fixed_len, a.device)
+    if a.dump_probs:
+        (ROOT / a.dump_probs).write_text(json.dumps({
+            "row_ids": [r["row_id"] for r in rows],
+            "p_yes": [float(p[1]) for p in probs_all],
+            "gold_argmax": [int(r["gold"].argmax()) for r in rows],
+        }))
+        print(f"probs dumped: {a.dump_probs}", flush=True)
     t_fwd = time.time() - t0
     print(f"forwarded {len(probs_all)} rows in {t_fwd:.1f}s", flush=True)
 
