@@ -138,6 +138,10 @@ def main() -> None:
     ap.add_argument("--sft-ckpt", default="runs/g2-sft/best.pt")
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--out", default="runs/g2-row-sft")
+    ap.add_argument("--train-labels", default=None,
+                    help="override gate2_labels_train.jsonl (domain-adaptation splits)")
+    ap.add_argument("--val-labels", default=None,
+                    help="override gate2_labels_val.jsonl")
     a = ap.parse_args()
 
     torch.manual_seed(a.seed)
@@ -147,8 +151,8 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     ART.mkdir(exist_ok=True)
 
-    train_cases = load_cases("train")
-    val_cases = load_cases("val")
+    train_cases = load_cases("train", a.train_labels)
+    val_cases = load_cases("val", a.val_labels)
     if a.smoke_pages:
         train_cases = train_cases[: a.smoke_pages]
         val_cases = val_cases[: max(8, a.smoke_pages // 8)]

@@ -4,7 +4,7 @@
 # Output is deliberately deterministic (no timestamps) so the cron monitor
 # compares equal across healthy ticks and wakes the agent only on a state change.
 # Healthy states: IDLE (no expected GPU job) / OK (job alive, util healthy).
-JOB=$(pgrep -f 'precompute_embed|train_gate2_row|eval_gate2|eval_sroie' | tail -1)
+JOB=$(pgrep -f 'precompute_embed|train_gate2_row|eval_gate2|eval_sroie|embed_sroie_trainval' | tail -1)
 if [ -z "$JOB" ]; then
   echo "IDLE"
   exit 0

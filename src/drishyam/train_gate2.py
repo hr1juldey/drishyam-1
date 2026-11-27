@@ -72,12 +72,12 @@ def ece15(probs: list, golds: list) -> float:
     return float(e)
 
 
-def load_cases(split):
+def load_cases(split, path=None):
     """JSONL rows -> cases with validated Question objects (schema gate at load time)."""
     from drishyam.schemas import Question
 
     rows = [json.loads(l) for l in
-            (ART / f"gate2_labels_{split}.jsonl").read_text().splitlines() if l.strip()]
+            (ART / (path or f"gate2_labels_{split}.jsonl")).read_text().splitlines() if l.strip()]
     for r in rows:
         r["questions"] = [Question(**q) for q in r["questions"]]
     return rows
