@@ -1,0 +1,116 @@
+dca405e|2026-11-23 21:13|Initial commit
+aa7914d|2026-11-23 21:16|docs+chore: Gate 1 planning suite — roadmap, exec engine, decisions/deltas, tooling law (uv/ruff/ast-grep), CUDA profile
+334d7c2|2026-11-23 21:29|chore: rename to drishyam-1 — vision/real-time framing, resident-teacher decision recorded (DECISIONS 17-19)
+9104d39|2026-11-23 21:33|docs: apply user decisions (criterion 5, pydantic, padded invariance mode, slot token, package->drishyam) + record Gemma-431B overnight teacher factory & browser image pipeline (Gate 2 preview, DECISIONS 20-21)
+a3b42b7|2026-11-23 21:37|docs: teacher corrected to local ollama gemma4:31b(-16k) — co-residency law, realistic throughput, Banking77-first + MIT confirmed
+f1f7050|2026-11-23 21:47|chore: gitignore .hermes/ — execution plans stay local per user
+9cc3bbc|2026-11-23 22:10|chore: uv lock — torch 2.15.0+cu132, transformers 5.24.0, peft 0.22.0
+05a60d3|2026-11-23 22:11|feat(engine): next_step loop engine + adversarial self-tests (G1-E0)
+67e5edd|2026-11-23 22:11|feat(drishyam): schemas, device probe, mlflow tracker, sanity gate (G1-E0/G1-S0 prep)
+1b823d9|2026-11-23 22:14|feat(m1): decoupled model — slot token, LoRA(+vision exclude), slot head, fixed-shape collate; CPU wiring tests green (G1-M1)
+750a360|2026-11-23 22:17|feat(d1): data inspection — counts verified 300/100 x4, schema discovered (questions dict, criteria), scorer snapshot (G1-D1)
+433fd12|2026-11-23 22:17|feat(d2): zero-leakage splits v1 — 3x(240/60/100), unseen train hashed never loaded (G1-D2)
+bfb3f3f|2026-11-23 22:17|feat(d3): deterministic stress suites — jitter n=300, multiq n=100 (G1-D3)
+d77a503|2026-11-23 22:21|feat(s0): sanity gate PASS both arms (15.38->0.11 / 15.09->0.15, 20/20 finite); artifacts excluded from lint (G1-S0)
+86ee350|2026-11-23 22:24|feat(m1): real-model smoke PASS — T5Gemma2ForConditionalGeneration, 7.8M trainable, VRAM 2.0GB; BaseModelOutput encoder_outputs, batch-expand for merged attn, fp32 head boundary (G1-M1)
+6e74ff4|2026-11-23 22:25|feat(t1): strictly proper scoring losses with hand-computed fixtures (G1-T1 part 1)
+e50ff3c|2026-11-23 22:25|test(t1): fix RPS fixture arithmetic
+236de55|2026-11-23 22:28|feat(t1): augs, case dataset, training loop — MLflow step-indexed, resume, early stop (G1-T1 part 2)
+f82d612|2026-11-23 22:39|feat(t1): smoke PASS (val 1.29->1.21, vram 4.4GB) — grad checkpointing, vision offload to CPU, ragged metrics, batch 4 (G1-T1)
+1431fbc|2026-11-23 22:48|feat(b1): trivial baselines — val .651/test .633/unseen .260 acc, unseen AUC 0.491 (no skill), jitter flip 0 (G1-B1)
+71eb00e|2026-11-23 22:49|feat(c1): per-primitive temperature scaling, val-NLL fitted, TDD (G1-C1 part 1)
+fa91c32|2026-11-23 22:50|feat(v1): evaluation suites + gate table assembly, blank-state ablation flag, CPU unit tests (G1-V1 part 1)
+b9cf6c8|2026-11-23 22:57|feat(b2): external reference eval through its own engine — smoke green, noul scalar alignment, full run launched (G1-B2 part 1)
+5ae69db|2026-11-23 23:13|feat(b2): reference eval full — test .759/.919, unseen .710/.910, jitter flip 5.67% FAIL, multiq invariance 0.0599 FAIL, ECE .183 FAIL (G1-B2)
+e9ae9b8|2026-11-23 23:46|feat(night): night queue (GPU chain: verdict+lr screen), CPU teacher lane (bake-off + quarantined drafter), verdict assembler, night plan (overnight)
+4dff4e1|2026-11-23 23:59|fix(c1): ragged-safe temperature fit — choice K varies (3/4), night queue caught it; T=0.94/0.955/0.9375
+ce1d64a|2026-11-24 00:04|fix(bakeoff): null-safe teacher coercion (teacher JSON had explicit nulls) — night rig caught it
+b42f02c|2026-11-24 00:15|feat(night): resumable queue + cpu chain + idempotent watchdog — lanes must survive arbitrary kills
+a2d3381|2026-11-24 00:18|fix(bakeoff): teacher answers may be arrays not dicts — normalize onto gold keys (nulls, length, junk handled)
+6dde069|2026-11-24 00:49|feat(g1): VERDICT NO-GO (0/5) — in-domain beats B2 (0.792/0.941/0.054 vs 0.759/0.919/0.161) but unseen collapses (acc .274, AUC .499, ablation blank=.268: state ignored off-domain); invariance delta .9947 (row-align suspect); fix verdict/bakeoff ROOT depth
+9cf6348|2026-11-24 00:53|chore(night): verdict + lr screen evidence
+5304433|2026-11-24 00:54|fix(v1): fp32 eval — CPU repro proved batch-invariance exact at fp32; bf16 GPU batch-shape noise + softmax tie produced delta .9947. Existing t5-small invariance test already encoded the fp32 contract; eval now honors it
+eed7232|2026-11-24 00:55|fix(bakeoff): num_gpu=0 — teacher is CPU-only by law; ollama was silently offloading 6.6GB to GPU and OOMing the training lane; also makes the bake-off a fair CPU-vs-CPU comparison
+38da618|2026-11-24 03:33|fix(bakeoff): --num-gpu flag (omit=server default, 0=CPU-only training nights) + 1800s timeout
+b9d7263|2026-11-24 03:44|chore(night): verdict + lr screen evidence
+635177d|2026-11-24 03:45|chore(g1): preserve bf16 gate table + verdict before fp32 re-eval
+360d31f|2026-11-24 04:18|feat(g1): fp32 gate table + verdict for main ckpt (invariance bar re-measured)
+3bd8962|2026-11-24 04:33|fix(v1): multiq_suite q1_batched returned bare tensor — iteration walked slot scalars, softmax(scalar)=1.0, delta metric measured |p-1| not invariance. Real invariance: 100/100 cases delta=0.0 (GPU fp32). Model was exact all along
+0d970da|2026-11-24 05:06|feat(g1): gate table + verdict with FIXED multiq metric (true invariance)
+089474e|2026-11-24 05:08|fix(drafter): num_predict 320->900 (state+answers JSON ~400 tokens truncated every call — 3-strikes exit, 0 drafts); chain reordered drafter-first
+6ec76a2|2026-11-24 05:18|fix(teacher): gemma4 is a thinking model — think:false top-level, else num_predict burns on hidden reasoning and content comes back empty (drafter 3-fail, bakeoff gemma4 leg wasted)
+a77e1dc|2026-11-24 06:14|feat(tf1-preview): teacher bake-off PASS — gemma4:31b beats lfm3-omni on KL (1.22 vs 1.38) and agreement (10.5% vs 0%) at 27x cost; both below random argmax — labeling prompt needs iteration before factory scale
+2cd019b|2026-11-24 07:23|audit(t): teacher referee audit — suspect 1 confirmed (unstable key format + silent zero-fill); fail-closed normalizer v2 + bare-key prompt; per-type agreement added; audit trail docs/TEACHER_AUDIT.md
+935d55d|2026-11-24 07:45|audit(t): alias table from dataset option strings — teacher keys by rank NAME (Routine/Material/Critical), gold by numeric rank; deterministic translation, fail-closed kept
+33b3c2a|2026-11-24 08:21|audit(t): TEACHER VINDICATED — alias referee + few-shot: KL 1.220->0.223, per-question agree 65-81% (choice .81 noul .74 score .65); suspects 1+2 confirmed+fixed, suspect 3 = caution shift + ~25% noul flips; factory gate = this bake-off rig
+6613edd|2026-11-24 10:35|feat(harness): Hermes-driven teacher interface — work orders + contract + deterministic scoring; NO direct API wiring; all question types (choice/noul/score) route through Hermes subagents (GLM via Hermes provider)
+5492e9a|2026-11-24 10:38|feat(harness): FIRST HARNESS EXAM PASS — GLM-via-Hermes 20/20 valid, KL 0.1387 (best measured; gemma4 0.223), noul 79.4% (best), ~436 cph @ 4 workers; contract+self-verify = perfect schema compliance on first try
+813d321|2026-11-24 10:54|feat(harness): 500-case exam rig — contract v1/v2 A/B (v2 = calibration rules + 3-workflow examples + shape guidance), per-workflow scoring, draft-prefix + limit for A/B deltas
+b763fe1|2026-11-24 11:02|feat(harness): contract variant race — v2a calibration+4examples, v2b +evidence-rules+recheck; few_shot count param; per-dir experiments; race on same seed-42 20 then winner to n=500
+c5cef29|2026-11-24 11:06|fix(harness): by_workflow counted cases vs questions — per-question n now
+f18435e|2026-11-24 11:09|audit(t): variant race — v2a wins (score +15pts, noul +6pts), v2b rejected; factory contract = v2a; rate-limit law <=4-5 workers
+b3bf158|2026-11-24 12:10|audit(t): h500a FINAL n=500 — v2a KL 0.157, score 68.6 (+11pts vs v1), noul 85.0, all schemas 71.8-79.5; 500/500 valid, 13 waves zero failures; factory contract locked
+702dfbc|2026-11-24 17:01|paper_rig: readable ICICI content generator + GPU doc-photo rows
+f558c3a|2026-11-24 17:08|thermal family + smudge/legibility layer (gold-label coupling)
+22c359e|2026-11-24 17:16|JIT data pipeline + training-parity proof (PASS, +0.8%)
+c0053af|2026-11-24 17:37|row labels: gt->QA with unreadable gold; manifest clobber fixed + 200k rebuilt
+5f90a73|2026-11-24 17:40|pack_batch + per-call render seeding + gst determinism fix (provenance law holds all families)
+0e138f1|2026-11-24 17:48|producer: JIT micro-batches (nested-images processor call, dec_in pack, seeded renders)
+1a93727|2026-11-24 17:49|trainer: enc-dec decision training (SigLIP frozen pre-opt, ckpt+VRAM guard) + micro-step test GREEN
+0a7540f|2026-11-24 18:35|overnight embedding precompute + JIT trainer (tasks 1-5 of plan)
+29dec7c|2026-11-24 19:12|diversity layer v1: 7 families, multi-institution
+f537b5d|2026-11-24 22:39|overnight chain: embeddings trainer (decoder-only, projector frozen), LOIO eval, infer CLI, slice-2 CLI + prefetch thread, verified chain runner
+100a406|2026-11-24 22:41|demo: camera web app (burst capture, sharpness pick) + $0 positioning (post-CamScanner slot)
+3af97a0|2026-11-24 23:45|fix prefetch deadlock (feeder thread, consumer-first); partial-shard resume deletes husks; chain stage timeouts; stall watchdog
+47e79fc|2026-11-25 01:29|eval: decoder hidden->lm_head logits + softcapping; precompute: gap-aware resume keeps complete shards, deletes husks
+db5cba0|2026-11-25 01:54|eval: bos decoder start (was pad -> empty preds, 0% artifact); warm-start flag; report arg case; paths to repo-root runs/
+2dae03a|2026-11-25 03:02|report: arg case fixes; continuation script (warm-start epochs + corrected eval)
+6472237|2026-11-25 07:37|resume: shard filename is START ROW not index — fixes -99M expect / good-shard deletion
+e517082|2026-11-25 07:39|proof gate: fresh-seed full-pixel-pipeline eval vs gt, 7 families
+135e7df|2026-11-25 07:39|morning run: heal-watch -> v2 (7 families, fresh 3ep) -> corrected eval -> pixel proof gate -> report
+c92bfb5|2026-11-25 10:50|trainer: optional --mlflow live metrics (runs/mlruns); status.sh self-serve dashboard
+0319363|2026-11-25 10:50|status.sh: mark stale report as old, not ready
+8fd98a9|2026-11-25 11:08|families selector: name:count@offset (skip embedded prefixes); afternoon_run.sh: remaining 126k -> verify 200k unique -> v3 full-data (native mlflow)
+87fcb1e|2026-11-25 11:17|atlas clip+resize moved to producer thread (A4 14s/batch bottleneck); distribution sanity gate before v3
+a0a8fd7|2026-11-25 12:14|proof gate: bos decoder_start in generate (same pad-vs-bos artifact as eval)
+037879a|2026-11-25 12:15|proof gate: encoder-decoder generate returns decoder-only seq — slice by [1:], not input length
+fccec54|2026-11-25 12:17|save_ckpt: persist full processor so checkpoints are self-contained for AutoProcessor
+5b221ac|2026-11-25 14:56|repo map + gate2 status lights: absence claims cite the map; stages observable without asking
+4c5ebd9|2026-11-25 15:01|gate2: decision labels from deterministic factory gt (noul/choice/score), LOFO unseen=table, TDD green
+41108e5|2026-11-25 15:03|gate2: encode_state_embeds + forward_embeds — cached page tokens as decoupled state; CPU micro green, text path untouched
+0604cc4|2026-11-25 15:04|gate2: train_gate2 — train.py loop on cached page states, per-step mlflow, patience 3
+2e8dad0|2026-11-25 15:08|gate2: validate label rows into Question objects at load; primitive from schema
+f7cd16e|2026-11-25 15:08|gate2: remove dead prims list (crashed on Question objects)
+62fcdee|2026-11-25 15:09|gate2: evaluate_split primitive access on schema object (last dict-subscript site)
+7099b68|2026-11-25 15:11|gate2: eval — six pre-registered bars, TS on val, fp32 eval law, mlflow g2-eval
+e0fff71|2026-11-25 15:11|gate2: eval — six pre-registered bars, TS on val, fp32 eval law, closure default-binding (B023), mlflow g2-eval
+a49c94a|2026-11-25 15:21|gate2: LOFO unseen family = salary (zero table pages banked — measured 89,976 family counts); labels re-derived
+04b089b|2026-11-25 15:39|gate2: RLCD stage — proper-scoring rewards (log+spherical+RPS), REINFORCE group baseline, soft-CE anchor, pre-registered abort rails; reward math TDD green
+58937d0|2026-11-25 15:50|tracking: set experiment drishyam-doc at run birth (g2 stages were invisible in the watched dashboard)
+44ada8f|2026-11-25 19:24|gate2.5 K1: forward_row encoder-row binding + row_smoke (thermal 300 pages, bar val_acc>0.60); TDD green
+664187e|2026-11-25 19:24|gate2.5: fix row test imports (no sys/ROOT in module), init vacc before epoch loop
+07aa5f6|2026-11-25 19:52|gate2.5: row-path full pipeline — train_gate2_row (per-question rows, lr 2e-5, fresh LoRA), eval --path row (all six bars route through forward_row); plan execution contract pre-registered
+2427990|2026-11-25 21:05|gate2.5: val pass inference_mode (epoch-0 val OOM: autograd graphs spiked 2.2->10.5GiB) + pre-val ckpt save (never lose a trained epoch to a val crash)
+6fc08f7|2026-11-25 22:03|gate2.5: morning playbook — per-failure branches with named mechanisms, pre-committed before the verdict; 'tune and rerun' forbidden
+aa9abfb|2026-11-26 00:25|gate2.5: standalone checkpoint report — full matrix for a context-free reader (data/arch/training/eval/infra/warts/decisions)
+944d894|2026-11-26 01:59|gate2.5: eval row-path row_case sized by questions not pages (1-page x N-question batch crashed forward_row cat)
+a4a363c|2026-11-26 08:10|gate2.5 K5: counterfactual presence twins — omission registry (render+labels share one source), salary gen omit guards, _salary_pairs None-tolerant, thermal presence-No for unreadable, twin manifest+embed entry; 17 randint inclusive-high crash paths clamped (draw-count preserved, parity safe); 3 new factory tests green
+9395217|2026-11-26 08:52|gate2.5 K5: registry extended to 600 twins (all 8 salary fields covered); unseen selection forces twins past the cap
+b57476d|2026-11-26 09:19|gate2.5 JF-track: bev-decision loader (pinned rev 11ed9b5b) + text-row trainer (state=emb_layer(state_ids) via forward_row, init from g2-row-sft head) + JevBench public-231 evaluator; 16 new CPU tests green, JevBench 231 tasks verified vs research table
+fa70951|2026-11-26 16:14|gate2.5 K5-v4: counterfactual omission support for the 4 train families (electricity/telecom/savings/card gens consult the registry, per-field render+gt guards, draw-order parity preserved) + OMITTABLE_FIELDS contract + pilot twins (44 banked train seeds) + None-tolerant _savings/_card/_electricity/_telecom_pairs (order-identical on complete gt) + --balance-presence flag (opt-in, train-only Yes<=2xNo cap per family+template, qid-sorted determinism, one-line drop print); printed_total/min_amount_due mapped to their Yes templates so twin No rows group with base Yes rows; 8 new CPU tests green, gt parity fixture for electricity 1_005_011 / telecom 1_007_013 / savings 1_009_017 / card 1_011_019, ruff clean vs baseline on touched src/tests files
+bebdf8b|2026-11-26 18:07|gate2.5 JF-track: eval crash fix — 35 hard-tier states are dict-of-documents, canonical sorted-keys JSON text form (_state_text); 231/231 parse+tokenize verified offline on CPU
+1feba17|2026-11-26 19:09|gate2.5 imajev-stock: ImajevBench v2-lite STOCK OOD-gap eval on locally scoreable splits (dev 173 + calibration 81, test untouched) — boolean->noul / choice->choice / ordinal->score mapping, JPEG->fp32 [0,1]->896px tower->projector embed path (precompute convention), abstention tau fitted on calibration vs their shipped scoring.py; dev 34.10% typed @tau=0.0 (abstention never wins: sweep monotone down, calibration 30.86%), per-track dev joint 39.2 / text 44.0 / visual 24.6, Brier 0.989 / ECE 0.407; OOD gap measurement, zero trained-family overlap (deleg_56fcabed); 19 CPU tests green, ruff clean, mlflow drishyam-doc 51ce4c22
+bb5aede|2026-11-26 19:43|docs/social: plain-language diagrams for the December article series
+b85a525|2026-11-26 19:56|gate2.5 sroie: verification-v1 evaluator — first in-distribution PUBLIC image benchmark entry; official 400-test pool identified (361/400 receipts with public Task-3 KIE gold via jsdnrs HF extension; pinned Voxel51 snapshot proven trainval-side, 0 test-ID overlap = contamination check recorded); 2166 rows 50/50 (per receipt x total/date/company x TRUE gold-verbatim / FALSE cross-receipt seed-2026), question template recorded, rows digest 373d16ee6fab6c2d; embed path JPEG->fp32 [0,1]->896px tower->projector, one encode per receipt, 6 rows batched, fp32 raw softmax; 9 CPU tests green, ruff clean; mlflow drishyam-doc df8b3094
+a6aff0f|2026-11-26 19:56|gate2.5 sroie: ledger — SROIE verification v1 measured 51.2 acc / AUC 0.516 / ECE 0.252 on the official 400-test pool (361 receipts with public Task-3 gold): home-turf domain, coin-flip score; reads real receipts (TRUE-Yes 98.3% dates) but cannot reject false claims (2.5% catch) — the v3 prior lesson on public data, clean probe for the parked v4 balanced-pair lever; benchmark_ledger.jsonl created with both prior rows (JevBench 39.8 @bebdf8b/951c4acb, ImajevBench 34.1 @1feba17/51ce4c22) + this one
+8daa759|2026-11-27 07:35|embed: sync path + expandable_segments fix async 600s wedge/OOM; add GPU-util watchdog script (fires on <10% x5s while expected-GPU job alive)
+5214e8b|2026-11-27 07:52|vision_data: parallel pass-1 (--workers N, ordered ProcessPoolExecutor replay; byte-identical labels proven vs serial on 150-page cap) + --out-prefix for safe parity smokes
+7bec037|2026-11-27 12:08|v4 verdict: balanced-pair retrain measured — flip 0.387 best-ever, blank 0.50, unseen AUC x2.25 vs champion; ECE 0.089 blocks promotion; ledger row + gate table
+07ccd89|2026-11-27 12:18|eval_sroie: --dump-probs for TS re-scoring without forwards; watchdog covers eval_sroie
+5ef7174|2026-11-27 12:29|eval_sroie: fix --dump-probs gold source (answer field, not gold str); smoke-validated on 3 receipts
+24002fe|2026-11-27 12:40|SROIE v4: public falsification — always-No collapse (true-Yes 0.3%), AUC unchanged 0.517 vs v2; balance flipped prior, not signal; ledger row
+93234a4|2026-11-27 13:18|v5-A prep: SROIE-trainval domain adaptation (625 real receipts, 3150/600 rows 50/50, template-parity verified; trainer --train-labels/--val-labels; embed script; gated chain; v5-A contract pre-registered)
+c3a7d1f|2026-11-27 19:00|v5a: ART-relative label paths (load_cases joins onto artifacts/); embed skip-if-manifest guard
+88de74e|2026-11-27 19:01|embed_sroie_trainval: module-level numpy import (pyright)
+3978067|2026-11-27 19:08|eval_gate2: widen fixed_len to eval splits' max (ckpt len is training-only; v5a SROIE-short 53 vs standard 60 crashed collate)
+75a42cd|2026-11-27 19:51|v5-A verdict: SROIE 95.89% / AUC 0.9878 / ECE 0.020 (v2: 51.3/0.516/0.252) — domain adaptation PASS; internal bars preserved; ledger row 3
