@@ -38,7 +38,6 @@ def main() -> None:
     manifest = OUT_DIR / "MANIFEST.json"
     if manifest.exists() and not a.force:
         m = json.loads(manifest.read_text())
-        import numpy as np
         shape = np.load(OUT_DIR / "emb_000000.npy", mmap_mode="r").shape
         if tuple(shape) == tuple(m["shape"]) and m["n"] == len(load_pool_keys()):
             print(f"bank already consistent ({m['n']} pages) — skipping embed (use --force to redo)",
