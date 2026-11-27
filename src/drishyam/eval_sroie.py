@@ -388,7 +388,7 @@ def main() -> None:
         (ROOT / a.dump_probs).write_text(json.dumps({
             "row_ids": [r["row_id"] for r in rows],
             "p_yes": [float(p[1]) for p in probs_all],
-            "gold_argmax": [int(r["gold"].argmax()) for r in rows],
+            "gold_argmax": [1 if r["answer"] == "Yes" else 0 for r in rows],
         }))
         print(f"probs dumped: {a.dump_probs}", flush=True)
     t_fwd = time.time() - t0
