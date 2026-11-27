@@ -21,12 +21,29 @@ TRAIN_PARQUET = ROOT / "runs/hub_ref/sroie/jsdnrs_ref/data/train-00000-of-00001.
 OUT_DIR = ROOT / "artifacts/embeddings_sroie"
 
 
+def load_pool_keys() -> list[str]:
+    from drishyam.sroie_trainval import load_pool
+    return [r["key"] for r in load_pool()]
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--ckpt", default="runs/g2-row-sft-v4/best.pt",
                     help="tower source (tower is frozen; bank is ckpt-invariant)")
     ap.add_argument("--device", default="cuda")
+    ap.add_argument("--force", action="store_true",
+                    help="re-embed even if a consistent bank manifest already exists")
     a = ap.parse_args()
+
+    manifest = OUT_DIR / "MANIFEST.json"
+    if manifest.exists() and not a.force:
+        m = json.loads(manifest.read_text())
+        import numpy as np
+        shape = np.load(OUT_DIR / "emb_000000.npy", mmap_mode="r").shape
+        if tuple(shape) == tuple(m["shape"]) and m["n"] == len(load_pool_keys()):
+            print(f"bank already consistent ({m['n']} pages) — skipping embed (use --force to redo)",
+                  flush=True)
+            return
 
     from drishyam.sroie_trainval import load_pool
     pool = load_pool()

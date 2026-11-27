@@ -9,7 +9,7 @@
 #   PARTIAL SROIE AUC 0.55-0.65 -> scale real data, then consider B on top
 #   DEAD    SROIE AUC <= 0.55 OR any internal bar breaks -> B (scanify) is next
 set -uo pipefail
-cd "$(dirname "$0")/../.."
+cd "$(dirname "$0")/.."
 LOG=runs/overnight/v5a_chain.log
 mkdir -p runs/overnight
 
@@ -40,8 +40,8 @@ log "v5a fine-tune starting (v4 init, real rows only, lr 1e-5 x 2ep)"
 HF_HUB_OFFLINE=1 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True OMP_NUM_THREADS=4 \
   uv run python -m drishyam.train_gate2_row --lr 1e-5 --epochs 2 --rows-per-batch 16 \
   --init sft --sft-ckpt runs/g2-row-sft-v4/best.pt \
-  --train-labels artifacts/gate2_labels_sroie_train.jsonl \
-  --val-labels artifacts/gate2_labels_sroie_val.jsonl \
+  --train-labels gate2_labels_sroie_train.jsonl \
+  --val-labels gate2_labels_sroie_val.jsonl \
   --out runs/g2-row-sft-v5a 2>&1 | tee -a "$LOG"
 test "${PIPESTATUS[0]}" -eq 0 || { echo "[v5a ABORT] fine-tune failed (PIPESTATUS ${PIPESTATUS[0]})" | tee -a "$LOG"; exit 1; }
 
