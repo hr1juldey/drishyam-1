@@ -20,6 +20,8 @@ GPURenderer = _il.import_module("2d_gpu").GPURenderer
 
 OUT = os.path.join(HERE, "embeddings")
 SHARD = 10000
+SYNC = False  # set by --sync in __main__
+_LAST_FAM = None
 BATCH = 32
 
 def _page_worker(rows_q, pages_q):
@@ -147,6 +149,61 @@ def main(limit_rows=None, balanced=None, families=None, out_dir=None, manifest_p
 
     t_start = time.time()
     n_done = 0
+    if SYNC:
+        # twin-embed path: fully synchronous, no background threads. The
+        # bounded-queue pipeline (feed_async -> rows_q -> _page_worker ->
+        # pages_q -> consumer) wedged deterministically ~600s into the twin
+        # run on two different thread pools (all threads futex-idle, GPU
+        # idle, process alive). 2.6k rows don't need render/encode overlap.
+        from PIL import Image as ImageSync
+        global _LAST_FAM
+        while done < len(rows):
+            chunk = rows[done:done + SHARD]
+            emb_path = os.path.join(OUT, f"emb_{done:06d}.npy")
+            lab_path = os.path.join(OUT, f"lab_{done:06d}.jsonl")
+            emb_mm = np.lib.format.open_memmap(emb_path, mode="w+", dtype=np.float16,
+                                               shape=(len(chunk), 256, 640))
+            lf = open(lab_path, "w")
+            got = 0
+            while got < len(chunk):
+                sub = chunk[got:got + BATCH]
+                fam = sub[0]["family"]
+                pages, gts = [], []
+                for r in sub:
+                    pg, gt = gen_page(fam, r["seed"])
+                    pages.append(pg); gts.append(gt)
+                g = GEOM[fam]
+                atl = np.stack([np.asarray(ImageSync.fromarray(
+                    np.clip(p, 0, 255).astype(np.uint8)).resize((g["pw"], g["ph"])),
+                    np.float32) for p in pages])
+                rend(fam).set_atlas(pages, prepared=atl)
+                with torch.inference_mode():
+                    class _GG:
+                        def seed_drawn(self, a, b): return 1
+                    out, _a = rend(fam).render_batch(len(sub), AZ[sub[0]["seed"] % 3],
+                                                     _GG(), content_idx=[0] * len(sub), **DOC)
+                    px = torch.nn.functional.interpolate(out, size=(896, 896), mode="bilinear",
+                                                         antialias=True).to(torch.bfloat16)
+                    hid = model.model.encoder.vision_tower(px).last_hidden_state
+                    emb = model.model.encoder.multi_modal_projector(hid)
+                emb_mm[got:got + len(sub)] = emb.to(torch.float16).cpu().numpy()
+                for r, gt in zip(sub, gts):
+                    qa = build_qa(fam, gt, r["seed"])[0]
+                    lf.write(json.dumps({"row_id": r["row_id"], "family": fam, "seed": r["seed"],
+                                         "field": qa["field"], "q": qa["q"], "a": qa["a"]}) + "\n")
+                got += len(sub); n_done += len(sub)
+                if fam != getattr(main, "_last_fam", None):
+                    torch.cuda.empty_cache()   # drop per-family atlas fragments
+                    main._last_fam = fam
+                if n_done % 320 < BATCH:
+                    print(f"batch done: {n_done}/{len(rows)} rows | "
+                          f"{time.time()-t_start:.0f}s", flush=True)
+                emb_mm.flush()
+            emb_mm.flush(); lf.close()
+            print(f"shard {done:06d} done ({len(chunk)} rows)", flush=True)
+            done += len(chunk)
+        print("PRECOMPUTE COMPLETE", flush=True)
+        return
     rows_q = queue.Queue(maxsize=3)
     pages_q = queue.Queue(maxsize=3)
     worker = threading.Thread(target=_page_worker, args=(rows_q, pages_q), daemon=True)
@@ -230,5 +287,8 @@ if __name__ == "__main__":
     ap.add_argument("--out-dir", type=str, default=None, help="embedding output dir")
     ap.add_argument("--manifest", dest="manifest_path", type=str, default=None,
                     help="JSONL manifest override: rows of {family, seed} (K5 twins)")
+    ap.add_argument("--sync", action="store_true",
+                    help="synchronous inline loop (no producer/consumer threads)")
     a = ap.parse_args()
+    globals()["SYNC"] = bool(getattr(a, "sync", False))
     main(a.rows, a.balanced, a.families, a.out_dir, a.manifest_path)
