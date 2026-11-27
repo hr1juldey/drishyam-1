@@ -162,6 +162,12 @@ def main() -> None:
     unseen_cases = load_cases("unseen")
     model, tok, fixed_len = load_model(ROOT / a.ckpt, device)
     model.float()  # fp32 eval law (see module docstring)
+    # ckpt fixed_len is the TRAINING length; eval questions can be longer
+    # (v5a trained on short SROIE texts -> 53 vs standard 60) — widen to the
+    # eval splits' max. Pad-length does not change outputs (attention mask).
+    from drishyam.train_gate2 import fixed_len_for
+    fixed_len = max(fixed_len,
+                    fixed_len_for(tok, val_cases + test_cases + unseen_cases, cap=128))
 
     # --- temperatures on VAL per primitive (trust layer) ---
     val_rows = rows_embeds(model, tok, val_cases, fixed_len, {}, cache, device,
