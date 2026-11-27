@@ -86,4 +86,4 @@ against session history before the paper draft.
 1. ECE-optimal TS refit on CPU (in flight, proc_a6e5882e21e5) → closes the v5-A internal ECE caveat or documents its persistence.
 2. ~~Session-history verification of [verify] cells~~ — RESOLVED 11-27 20:2x: generative wall = ~1–1.7% digit transcription (GATE25_CHECKPOINT_REPORT.md:16); exam-flaw discovery = v1≡v2 g2_4 0.174 identical-to-3dp across architectures (session 56308). Chronology cells updated with citations.
 3. JevBench 39.8 + ImajevBench 34.1 ledger rows already cite shas (bebdf8b, 1feba17) — confirmed in b85a525 message.
-4. HF publish of v5-A (weights v5a/best.pt + tables + chronology card) — upload in flight (proc_8864b937e4dd); verify remote listing when it lands.
+4. ~~HF publish of v5-A~~ — DONE + VERIFIED 20:22: remote listing carries v5a/best.pt + 3 tables + chronology README (commits 350194cd / f9de966a / 30e8b394 / 98121e1b / 7718a13e); v2 files preserved alongside.
